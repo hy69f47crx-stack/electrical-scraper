@@ -12,6 +12,39 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------
+# Inject Custom CSS (Pastel Theme)
+# ---------------------------------------------------
+st.markdown("""
+<style>
+
+body {
+    background-color: #FAFAFA;
+}
+
+.sidebar .sidebar-content {
+    background-color: #F7F7F7;
+}
+
+.metric-card {
+    padding: 20px;
+    border-radius: 12px;
+    background-color: #FFFFFF;
+    box-shadow: 0px 2px 8px rgba(0,0,0,0.05);
+    text-align: center;
+}
+
+h1, h2, h3 {
+    color: #444444;
+}
+
+.dataframe {
+    border-radius: 10px;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
+# ---------------------------------------------------
 # Load Data
 # ---------------------------------------------------
 @st.cache_data
@@ -41,9 +74,31 @@ if page == "Overview":
 
     # KPIs
     col1, col2, col3 = st.columns(3)
-    col1.metric("Total Products", len(df))
-    col2.metric("Stores", df['store'].nunique())
-    col3.metric("Last Update", df['date'].max() if "date" in df.columns else "N/A")
+
+    with col1:
+        st.markdown(f"""
+        <div class="metric-card">
+            <h3>Total Products</h3>
+            <h2>{len(df)}</h2>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col2:
+        st.markdown(f"""
+        <div class="metric-card">
+            <h3>Stores</h3>
+            <h2>{df['store'].nunique()}</h2>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col3:
+        last_update = df['date'].max() if "date" in df.columns else "N/A"
+        st.markdown(f"""
+        <div class="metric-card">
+            <h3>Last Update</h3>
+            <h2>{last_update}</h2>
+        </div>
+        """, unsafe_allow_html=True)
 
     st.write("---")
     st.subheader("Quick Glance")
@@ -159,87 +214,4 @@ elif page == "Charts":
     top20 = df.sort_values("price").head(20)
 
     hbar = (
-        alt.Chart(top20)
-        .mark_bar(color="#C1E1C1")  # Pastel Green
-        .encode(
-            x=alt.X("price:Q", title="Price"),
-            y=alt.Y("name:N", sort="-x", title="Product"),
-            tooltip=["name", "price", "store"]
-        )
-        .properties(height=500)
-    )
-
-    st.altair_chart(hbar, use_container_width=True)
-
-    # ---------------------------------------------------
-    # Advanced Store Comparison
-    # ---------------------------------------------------
-    st.subheader("🏪 Advanced Store Comparison")
-
-    # 1) Median Price per Store
-    median_df = df.groupby("store")["price"].median().reset_index()
-
-    median_chart = (
-        alt.Chart(median_df)
-        .mark_bar(color="#FFD6A5")  # Pastel Orange
-        .encode(
-            x=alt.X("store:N", title="Store"),
-            y=alt.Y("price:Q", title="Median Price"),
-            tooltip=["store", "price"]
-        )
-        .properties(height=300)
-    )
-
-    st.altair_chart(median_chart, use_container_width=True)
-
-    # 2) Price Range per Store (Min–Max)
-    range_df = df.groupby("store")["price"].agg(["min", "max"]).reset_index()
-
-    range_chart = (
-        alt.Chart(range_df)
-        .mark_rule(color="#BDB2FF")  # Pastel Purple
-        .encode(
-            x="store:N",
-            y="min:Q",
-            y2="max:Q",
-            tooltip=["store", "min", "max"]
-        )
-        .properties(height=300)
-    )
-
-    st.altair_chart(range_chart, use_container_width=True)
-
-    # 3) Box Plot per Store
-    st.subheader("Price Distribution per Store (Box Plot)")
-
-    box_chart = (
-        alt.Chart(df)
-        .mark_boxplot(color="#A0C4FF")  # Pastel Blue
-        .encode(
-            x="store:N",
-            y="price:Q",
-            tooltip=["store", "price"]
-        )
-        .properties(height=350)
-    )
-
-    st.altair_chart(box_chart, use_container_width=True)
-
-    # 4) Store Price Stability Score
-    st.subheader("Store Price Stability Score")
-
-    score_df = df.groupby("store")["price"].var().reset_index()
-    score_df["score"] = 1 / (1 + score_df["price"])  # lower variance → higher score
-
-    score_chart = (
-        alt.Chart(score_df)
-        .mark_bar(color="#C1E1C1")  # Pastel Green
-        .encode(
-            x="store:N",
-            y="score:Q",
-            tooltip=["store", "score"]
-        )
-        .properties(height=300)
-    )
-
-    st.altair_chart(score_chart, use_container_width=True)
+        alt.Chart(top20
