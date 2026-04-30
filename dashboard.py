@@ -3,11 +3,26 @@ import pandas as pd
 import altair as alt
 
 # ---------------------------------------------------
+# Page Config
+# ---------------------------------------------------
+st.set_page_config(
+    page_title="Electrical Market Dashboard",
+    page_icon="💡",
+    layout="wide",
+)
+
+# ---------------------------------------------------
 # Load Data
 # ---------------------------------------------------
 @st.cache_data
 def load_data():
-    return pd.read_json("products_all.json")
+    df = pd.read_json("products_all.json")
+
+    # Clean price column
+    df["price"] = pd.to_numeric(df["price"], errors="coerce")
+    df = df.dropna(subset=["price"])
+
+    return df
 
 df = load_data()
 
@@ -21,18 +36,25 @@ page = st.sidebar.radio("Go to:", ["Overview", "Products", "Charts"])
 # Overview Page
 # ---------------------------------------------------
 if page == "Overview":
-    st.title("📊 Electrical Market Dashboard")
+    st.title("💡 Electrical Market Dashboard")
+    st.markdown("لوحة متابعة لأسعار ومنتجات المتاجر الكهربائية.")
 
     # KPIs
     col1, col2, col3 = st.columns(3)
-
     col1.metric("Total Products", len(df))
     col2.metric("Stores", df['store'].nunique())
     col3.metric("Last Update", df['date'].max() if "date" in df.columns else "N/A")
 
     st.write("---")
-    st.subheader("Products Summary")
-    st.write("This dashboard shows scraped product data from multiple electrical stores.")
+    st.subheader("Quick Glance")
+
+    col4, col5 = st.columns(2)
+    with col4:
+        st.write("🔹 أسعار متفاوتة بين المتاجر")
+        st.write("🔹 إمكانية مقارنة الأسعار")
+    with col5:
+        st.write("🔹 بيانات تتحدث تلقائيًا")
+        st.write("🔹 جاهزة للتوسع (Risk, Growth, Alerts)")
 
 # ---------------------------------------------------
 # Products Page
@@ -40,7 +62,6 @@ if page == "Overview":
 elif page == "Products":
     st.title("📦 Products List")
 
-    # --- Filters Section ---
     st.subheader("Filters")
 
     col1, col2, col3 = st.columns(3)
@@ -49,44 +70,36 @@ elif page == "Products":
     with col1:
         search = st.text_input("Search by product name:")
 
-    # Filter by store
+    # Store filter
     with col2:
         stores = ["All"] + sorted(df["store"].unique().tolist())
         selected_store = st.selectbox("Store", stores)
 
-    # Filter by price range
+    # Price range filter
     with col3:
         min_price = float(df["price"].min())
         max_price = float(df["price"].max())
-       # Price filter
-min_price = float(df["price"].min())
-max_price = float(df["price"].max())
 
-# Prevent slider crash when min == max
-if min_price == max_price:
-    price_range = (min_price, max_price)
-    st.info(f"All products have the same price: {min_price}")
-else:
-    price_range = st.slider(
-        "Price range",
-        min_value=min_price,
-        max_value=max_price,
-        value=(min_price, max_price),
-    )
+        if min_price == max_price:
+            price_range = (min_price, max_price)
+            st.info(f"All products have the same price: {min_price}")
+        else:
+            price_range = st.slider(
+                "Price range",
+                min_value=min_price,
+                max_value=max_price,
+                value=(min_price, max_price),
+            )
 
-
-    # --- Apply Filters ---
+    # Apply filters
     filtered_df = df.copy()
 
-    # Name filter
     if search:
         filtered_df = filtered_df[filtered_df["name"].str.contains(search, case=False)]
 
-    # Store filter
     if selected_store != "All":
         filtered_df = filtered_df[filtered_df["store"] == selected_store]
 
-    # Price filter
     filtered_df = filtered_df[
         (filtered_df["price"] >= price_range[0]) &
         (filtered_df["price"] <= price_range[1])
@@ -94,7 +107,6 @@ else:
 
     st.write(f"Showing {len(filtered_df)} products")
     st.dataframe(filtered_df, use_container_width=True)
-
 
 # ---------------------------------------------------
 # Charts Page
