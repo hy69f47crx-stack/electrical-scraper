@@ -2,18 +2,54 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 
-# Load data
-df = pd.read_json("products_all.json")
+# ---------------------------------------------------
+# Load Data
+# ---------------------------------------------------
+@st.cache_data
+def load_data():
+    return pd.read_json("products_all.json")
 
+df = load_data()
+
+# ---------------------------------------------------
 # Sidebar Navigation
+# ---------------------------------------------------
 st.sidebar.title("Navigation")
 page = st.sidebar.radio("Go to:", ["Overview", "Products", "Charts"])
 
-# -----------------------------
+# ---------------------------------------------------
+# Overview Page
+# ---------------------------------------------------
+if page == "Overview":
+    st.title("📊 Electrical Market Dashboard")
+
+    # KPIs
+    col1, col2, col3 = st.columns(3)
+
+    col1.metric("Total Products", len(df))
+    col2.metric("Stores", df['store'].nunique())
+    col3.metric("Last Update", df['date'].max() if "date" in df.columns else "N/A")
+
+    st.write("---")
+    st.subheader("Products Summary")
+    st.write("This dashboard shows scraped product data from multiple electrical stores.")
+
+# ---------------------------------------------------
+# Products Page
+# ---------------------------------------------------
+elif page == "Products":
+    st.title("📦 Products List")
+
+    search = st.text_input("Search by product name:")
+    filtered_df = df[df["name"].str.contains(search, case=False)] if search else df
+
+    st.dataframe(filtered_df, use_container_width=True)
+
+# ---------------------------------------------------
 # Charts Page
-# -----------------------------
-if page == "Charts":
-    st.header("📊 Price Charts")
+# ---------------------------------------------------
+elif page == "Charts":
+    st.header("📈 Price Charts")
 
     # -----------------------------
     # 1) Price Distribution
