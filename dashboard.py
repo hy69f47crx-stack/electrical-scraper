@@ -20,13 +20,29 @@ except Exception as e:
     st.error("⚠️ لا يمكن تحميل ملف المنتجات. تأكد من وجود products_all.json")
     st.stop()
 
+# التأكد من وجود الأعمدة
+required_columns = ["name", "price", "store", "timestamp"]
+
+for col in required_columns:
+    if col not in df.columns:
+        df[col] = "N/A"
+
 # قسم الـ Overview
 st.subheader("📌 Overview — نظرة عامة")
 
 col1, col2, col3 = st.columns(3)
+
 col1.metric("عدد المنتجات", len(df))
-col2.metric("عدد المتاجر", df["store"].nunique())
-col3.metric("آخر تحديث", df["timestamp"].max())
+
+if "store" in df.columns:
+    col2.metric("عدد المتاجر", df["store"].nunique())
+else:
+    col2.metric("عدد المتاجر", "N/A")
+
+if "timestamp" in df.columns:
+    col3.metric("آخر تحديث", df["timestamp"].max())
+else:
+    col3.metric("آخر تحديث", "N/A")
 
 # جدول المنتجات
 st.subheader("📦 المنتجات — Products Table")
