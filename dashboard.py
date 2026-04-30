@@ -40,10 +40,51 @@ if page == "Overview":
 elif page == "Products":
     st.title("📦 Products List")
 
-    search = st.text_input("Search by product name:")
-    filtered_df = df[df["name"].str.contains(search, case=False)] if search else df
+    # --- Filters Section ---
+    st.subheader("Filters")
 
+    col1, col2, col3 = st.columns(3)
+
+    # Search by name
+    with col1:
+        search = st.text_input("Search by product name:")
+
+    # Filter by store
+    with col2:
+        stores = ["All"] + sorted(df["store"].unique().tolist())
+        selected_store = st.selectbox("Store", stores)
+
+    # Filter by price range
+    with col3:
+        min_price = float(df["price"].min())
+        max_price = float(df["price"].max())
+        price_range = st.slider(
+            "Price range",
+            min_value=min_price,
+            max_value=max_price,
+            value=(min_price, max_price),
+        )
+
+    # --- Apply Filters ---
+    filtered_df = df.copy()
+
+    # Name filter
+    if search:
+        filtered_df = filtered_df[filtered_df["name"].str.contains(search, case=False)]
+
+    # Store filter
+    if selected_store != "All":
+        filtered_df = filtered_df[filtered_df["store"] == selected_store]
+
+    # Price filter
+    filtered_df = filtered_df[
+        (filtered_df["price"] >= price_range[0]) &
+        (filtered_df["price"] <= price_range[1])
+    ]
+
+    st.write(f"Showing {len(filtered_df)} products")
     st.dataframe(filtered_df, use_container_width=True)
+
 
 # ---------------------------------------------------
 # Charts Page
