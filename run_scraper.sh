@@ -1,30 +1,12 @@
 #!/bin/bash
-# سكريبت التحديث اليومي — Linux
-# يمكن جدولته عبر cron: 0 2 * * * /path/to/run_scraper.sh
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LOG_FILE="$SCRIPT_DIR/log.txt"
+echo "Agent started at $(date)" >> /Users/fahadalkandri/Desktop/electrical-scraper/log.txt
 
-echo "=============================" >> "$LOG_FILE"
-echo "بدء التحديث: $(date)" >> "$LOG_FILE"
+export PATH="/Library/Frameworks/Python.framework/Versions/3.14/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
-cd "$SCRIPT_DIR"
+cd /Users/fahadalkandri/Desktop/electrical-scraper
 
-# جلب المنتجات من المتاجر
-python3 scraper.py >> "$LOG_FILE" 2>&1
-SCRAPER_EXIT=$?
+/Library/Frameworks/Python.framework/Versions/3.14/bin/python3 scraper.py >> log.txt 2>&1
 
-if [ $SCRAPER_EXIT -ne 0 ]; then
-    echo "خطأ في السكريبر (exit code: $SCRAPER_EXIT)" >> "$LOG_FILE"
-fi
 
-# تشغيل عميل المطابقة
-python3 matcher.py >> "$LOG_FILE" 2>&1
-MATCHER_EXIT=$?
 
-if [ $MATCHER_EXIT -ne 0 ]; then
-    echo "خطأ في عميل المطابقة (exit code: $MATCHER_EXIT)" >> "$LOG_FILE"
-fi
-
-echo "انتهى التحديث: $(date)" >> "$LOG_FILE"
-echo "=============================" >> "$LOG_FILE"
