@@ -176,7 +176,7 @@ elif page == "Charts":
 
     hist = (
         alt.Chart(df)
-        .mark_bar(color="#A3C4F3")  # Pastel Blue
+        .mark_bar(color="#A3C4F3")
         .encode(
             alt.X("price:Q", bin=alt.Bin(maxbins=40), title="Price"),
             alt.Y("count()", title="Number of Products")
@@ -195,7 +195,7 @@ elif page == "Charts":
 
     bar = (
         alt.Chart(avg_df)
-        .mark_bar(color="#F7A4A4")  # Pastel Red
+        .mark_bar(color="#F7A4A4")
         .encode(
             x=alt.X("store:N", title="Store"),
             y=alt.Y("price:Q", title="Average Price"),
@@ -214,4 +214,87 @@ elif page == "Charts":
     top20 = df.sort_values("price").head(20)
 
     hbar = (
-        alt.Chart(top20
+        alt.Chart(top20)
+        .mark_bar(color="#C1E1C1")
+        .encode(
+            x=alt.X("price:Q", title="Price"),
+            y=alt.Y("name:N", sort="-x", title="Product"),
+            tooltip=["name", "price", "store"]
+        )
+        .properties(height=500)
+    )
+
+    st.altair_chart(hbar, use_container_width=True)
+
+    # ---------------------------------------------------
+    # Advanced Store Comparison
+    # ---------------------------------------------------
+    st.subheader("🏪 Advanced Store Comparison")
+
+    # 1) Median Price per Store
+    median_df = df.groupby("store")["price"].median().reset_index()
+
+    median_chart = (
+        alt.Chart(median_df)
+        .mark_bar(color="#FFD6A5")
+        .encode(
+            x=alt.X("store:N", title="Store"),
+            y=alt.Y("price:Q", title="Median Price"),
+            tooltip=["store", "price"]
+        )
+        .properties(height=300)
+    )
+
+    st.altair_chart(median_chart, use_container_width=True)
+
+    # 2) Price Range per Store
+    range_df = df.groupby("store")["price"].agg(["min", "max"]).reset_index()
+
+    range_chart = (
+        alt.Chart(range_df)
+        .mark_rule(color="#BDB2FF")
+        .encode(
+            x="store:N",
+            y="min:Q",
+            y2="max:Q",
+            tooltip=["store", "min", "max"]
+        )
+        .properties(height=300)
+    )
+
+    st.altair_chart(range_chart, use_container_width=True)
+
+    # 3) Box Plot per Store
+    st.subheader("Price Distribution per Store (Box Plot)")
+
+    box_chart = (
+        alt.Chart(df)
+        .mark_boxplot(color="#A0C4FF")
+        .encode(
+            x="store:N",
+            y="price:Q",
+            tooltip=["store", "price"]
+        )
+        .properties(height=350)
+    )
+
+    st.altair_chart(box_chart, use_container_width=True)
+
+    # 4) Store Price Stability Score
+    st.subheader("Store Price Stability Score")
+
+    score_df = df.groupby("store")["price"].var().reset_index()
+    score_df["score"] = 1 / (1 + score_df["price"])
+
+    score_chart = (
+        alt.Chart(score_df)
+        .mark_bar(color="#C1E1C1")
+        .encode(
+            x="store:N",
+            y="score:Q",
+            tooltip=["store", "score"]
+        )
+        .properties(height=300)
+    )
+
+    st.altair_chart(score_chart, use_container_width=True)
