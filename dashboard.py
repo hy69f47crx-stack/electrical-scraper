@@ -196,7 +196,7 @@ def run_update(run_ai: bool = False):
         try:
             for script in steps:
                 subprocess.run(
-                    [sys.executable, script],
+                    [sys.executable, str(script)],
                     timeout=600,
                     check=True,
                     capture_output=True,
