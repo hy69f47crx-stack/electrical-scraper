@@ -155,7 +155,11 @@ def load_history():
     try:
         with open(BASE_DIR / "price_history.json", "r", encoding="utf-8") as f:
             data = json.load(f)
+        if not data:
+            return pd.DataFrame(columns=["name", "price", "store", "timestamp"])
         df = pd.DataFrame(data)
+        if "price" not in df.columns or "timestamp" not in df.columns:
+            return pd.DataFrame(columns=["name", "price", "store", "timestamp"])
         df["price"] = pd.to_numeric(df["price"], errors="coerce")
         df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
         return df.dropna(subset=["price", "timestamp"])
