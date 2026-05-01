@@ -1,10 +1,4 @@
 streamlit
 pandas
 altair
-playwright
-rapidfuzz
-apscheduler
-pytz
 pyarrow
-anthropic
-python-dotenv
