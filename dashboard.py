@@ -9,326 +9,325 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent
 
-# ---------------------------------------------------------------
-# إعداد الصفحة
-# ---------------------------------------------------------------
 st.set_page_config(
     page_title="مقارنة الأسعار الكهربائية - الكويت",
     page_icon="⚡",
     layout="wide",
 )
 
-# ---------------------------------------------------------------
-# CSS — تصميم احترافي هادئ (Gamma-style)
-# ---------------------------------------------------------------
+# ───────────────────────────────────────────────────────────────
+# DESIGN SYSTEM
+# ───────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;900&display=swap');
 
-/* ── متغيرات التصميم ── */
 :root {
-    --bg:        #f6f8fb;
-    --surface:   #ffffff;
-    --border:    #e4e9f0;
-    --primary:   #2563eb;
-    --primary-d: #1d4ed8;
-    --success:   #059669;
-    --success-l: #d1fae5;
-    --purple:    #7c3aed;
-    --purple-l:  #ede9fe;
-    --amber:     #d97706;
-    --amber-l:   #fef3c7;
-    --text-1:    #0f172a;
-    --text-2:    #475569;
-    --text-3:    #94a3b8;
-    --radius-sm: 8px;
-    --radius:    12px;
-    --radius-lg: 18px;
-    --shadow-sm: 0 1px 3px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
-    --shadow:    0 4px 16px rgba(15,23,42,.08), 0 1px 4px rgba(15,23,42,.04);
-    --shadow-lg: 0 12px 32px rgba(15,23,42,.10), 0 2px 8px rgba(15,23,42,.06);
+    --bg:       #f1f5f9;
+    --surface:  #ffffff;
+    --border:   #e2e8f0;
+    --blue:     #2563eb;
+    --blue-l:   #dbeafe;
+    --blue-d:   #1d4ed8;
+    --teal:     #0f766e;
+    --teal-l:   #ccfbf1;
+    --violet:   #7c3aed;
+    --violet-l: #ede9fe;
+    --amber:    #b45309;
+    --amber-l:  #fef3c7;
+    --red:      #dc2626;
+    --t1:       #0f172a;
+    --t2:       #475569;
+    --t3:       #94a3b8;
+    --r:        10px;
+    --r-lg:     16px;
+    --sh:       0 1px 3px rgba(15,23,42,.07), 0 1px 2px rgba(15,23,42,.04);
+    --sh-md:    0 4px 12px rgba(15,23,42,.08), 0 2px 4px rgba(15,23,42,.05);
 }
 
-/* ── القاعدة ── */
+/* ── Base ── */
 html, body, [class*="css"] {
-    font-family: 'Cairo', sans-serif;
+    font-family: 'Cairo', sans-serif !important;
     direction: rtl;
-    background: var(--bg);
-    color: var(--text-1);
+    background: var(--bg) !important;
+    color: var(--t1);
+}
+.block-container {
+    padding: 1.25rem 2rem 2rem !important;
+    max-width: 1400px;
 }
 
-/* ── إزالة padding افتراضي Streamlit ── */
-.block-container { padding-top: 1.5rem !important; padding-bottom: 2rem !important; }
-section[data-testid="stSidebar"] { background: var(--surface) !important; border-left: 1px solid var(--border); }
+/* ══════════════════════════
+   SIDEBAR — dark navy
+══════════════════════════ */
+section[data-testid="stSidebar"] {
+    background: #0f172a !important;
+    border-left: none !important;
+    width: 230px !important;
+}
+section[data-testid="stSidebar"] > div {
+    padding: 0 !important;
+}
+/* all text in sidebar */
+section[data-testid="stSidebar"] *:not(button) {
+    color: #cbd5e1 !important;
+    font-family: 'Cairo', sans-serif !important;
+}
+section[data-testid="stSidebar"] strong,
+section[data-testid="stSidebar"] b {
+    color: #f1f5f9 !important;
+}
+/* dividers */
+section[data-testid="stSidebar"] hr {
+    border-color: #1e293b !important;
+    margin: 6px 0 !important;
+}
+/* metric labels */
+section[data-testid="stSidebar"] [data-testid="stMetricLabel"] * {
+    color: #94a3b8 !important;
+    font-size: 0.72rem !important;
+}
+section[data-testid="stSidebar"] [data-testid="stMetricValue"] * {
+    color: #f1f5f9 !important;
+    font-size: 1.1rem !important;
+    font-weight: 700 !important;
+}
+/* radio — nav links */
+section[data-testid="stSidebar"] .stRadio > div {
+    gap: 2px !important;
+}
+section[data-testid="stSidebar"] .stRadio label {
+    background: transparent !important;
+    border-radius: 8px !important;
+    padding: 8px 14px !important;
+    cursor: pointer !important;
+    transition: background .15s !important;
+    width: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+}
+section[data-testid="stSidebar"] .stRadio label:hover {
+    background: rgba(255,255,255,.07) !important;
+}
+section[data-testid="stSidebar"] .stRadio label[data-checked="true"],
+section[data-testid="stSidebar"] .stRadio input:checked + div {
+    background: rgba(37,99,235,.25) !important;
+    border-right: 3px solid #2563eb !important;
+}
+section[data-testid="stSidebar"] .stRadio input {
+    display: none !important;
+}
+/* sidebar buttons */
+section[data-testid="stSidebar"] .stButton button {
+    background: #1e293b !important;
+    border: 1px solid #334155 !important;
+    color: #e2e8f0 !important;
+    border-radius: 8px !important;
+    font-family: 'Cairo', sans-serif !important;
+    font-size: 0.85rem !important;
+    padding: 6px 12px !important;
+    transition: background .15s !important;
+}
+section[data-testid="stSidebar"] .stButton button:hover {
+    background: #334155 !important;
+    border-color: #475569 !important;
+}
+section[data-testid="stSidebar"] .stButton [data-testid="baseButton-primary"] {
+    background: #1d4ed8 !important;
+    border-color: #2563eb !important;
+}
+section[data-testid="stSidebar"] .stButton [data-testid="baseButton-primary"]:hover {
+    background: #2563eb !important;
+}
+/* caption */
+section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
+    color: #64748b !important;
+    font-size: 0.74rem !important;
+}
 
-/* ══════════════════════════════
-   HEADER
-══════════════════════════════ */
-.main-header {
+/* ══════════════════════════
+   PAGE HEADER
+══════════════════════════ */
+.ph {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 32px 40px;
-    margin-bottom: 28px;
-    text-align: center;
-    box-shadow: var(--shadow);
-    position: relative;
-    overflow: hidden;
+    border-radius: var(--r-lg);
+    padding: 28px 36px;
+    margin-bottom: 24px;
+    box-shadow: var(--sh);
+    display: flex;
+    align-items: center;
+    gap: 20px;
 }
-.main-header::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(37,99,235,.06) 0%, rgba(124,58,237,.04) 100%);
-    pointer-events: none;
-}
-.main-header .header-icon {
-    font-size: 2.6rem;
-    display: block;
-    margin-bottom: 8px;
+.ph-icon {
+    font-size: 2.4rem;
     line-height: 1;
+    flex-shrink: 0;
 }
-.main-header h1 {
-    font-size: 1.85rem;
+.ph-text h1 {
+    font-size: 1.6rem;
     font-weight: 700;
-    color: var(--text-1);
-    margin: 0 0 6px;
+    color: var(--t1);
+    margin: 0 0 4px;
     letter-spacing: -.02em;
 }
-.main-header p {
-    font-size: 0.95rem;
-    color: var(--text-2);
+.ph-text p {
+    font-size: 0.88rem;
+    color: var(--t2);
     margin: 0;
-    font-weight: 400;
 }
-.header-tag {
-    display: inline-block;
-    background: var(--primary);
-    color: white;
+.ph-badge {
+    margin-right: auto;
+    background: var(--blue-l);
+    color: var(--blue-d);
     border-radius: 20px;
-    padding: 2px 14px;
+    padding: 4px 14px;
     font-size: 0.78rem;
     font-weight: 600;
-    margin-bottom: 14px;
+    white-space: nowrap;
 }
 
-/* ══════════════════════════════
+/* ══════════════════════════
    KPI CARDS
-══════════════════════════════ */
-.kpi-card {
+══════════════════════════ */
+.kpi {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 20px 16px 18px;
-    text-align: center;
-    box-shadow: var(--shadow-sm);
+    border-radius: var(--r);
+    padding: 18px 16px 16px;
+    box-shadow: var(--sh);
+    display: flex;
+    align-items: center;
+    gap: 14px;
     transition: box-shadow .18s, transform .18s;
-    position: relative;
-    overflow: hidden;
 }
-.kpi-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
-.kpi-card::after {
-    content: "";
-    position: absolute;
-    bottom: 0; right: 0; left: 0;
-    height: 3px;
-    background: var(--primary);
-    border-radius: 0 0 var(--radius) var(--radius);
+.kpi:hover { box-shadow: var(--sh-md); transform: translateY(-2px); }
+.kpi-icon-box {
+    width: 44px; height: 44px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
 }
-.kpi-card.green::after  { background: var(--success); }
-.kpi-card.purple::after { background: var(--purple); }
-.kpi-card.amber::after  { background: var(--amber); }
-.kpi-card .kpi-icon  { font-size: 1.5rem; margin-bottom: 6px; line-height: 1; }
-.kpi-card .kpi-value { font-size: 2rem; font-weight: 700; color: var(--text-1); line-height: 1.1; }
-.kpi-card .kpi-label { font-size: 0.82rem; color: var(--text-2); margin-top: 5px; font-weight: 400; }
+.kpi-icon-box.blue   { background: var(--blue-l); }
+.kpi-icon-box.teal   { background: var(--teal-l); }
+.kpi-icon-box.violet { background: var(--violet-l); }
+.kpi-icon-box.amber  { background: var(--amber-l); }
+.kpi-body { flex: 1; min-width: 0; }
+.kpi-val   { font-size: 1.7rem; font-weight: 700; color: var(--t1); line-height: 1; }
+.kpi-lbl   { font-size: 0.78rem; color: var(--t2); margin-top: 3px; }
 
-/* ══════════════════════════════
-   DEAL CARDS
-══════════════════════════════ */
-.deal-card {
+/* ══════════════════════════
+   SECTION HEADER
+══════════════════════════ */
+.sec {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 24px 0 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+}
+.sec-icon { font-size: 1.1rem; }
+.sec-title { font-size: 1.05rem; font-weight: 700; color: var(--t1); }
+.sec-badge {
+    margin-right: auto;
+    background: var(--violet-l);
+    color: var(--violet);
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 0.74rem;
+    font-weight: 700;
+}
+
+/* ══════════════════════════
+   DEAL ROW
+══════════════════════════ */
+.deal {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px 18px;
-    margin-bottom: 10px;
-    box-shadow: var(--shadow-sm);
+    border-radius: var(--r);
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    box-shadow: var(--sh);
     display: flex;
     align-items: center;
     gap: 12px;
     transition: box-shadow .15s;
 }
-.deal-card:hover { box-shadow: var(--shadow); }
-.deal-card .deal-rank {
-    background: var(--primary);
-    color: white;
-    border-radius: 50%;
-    width: 28px; height: 28px;
+.deal:hover { box-shadow: var(--sh-md); }
+.deal-num {
+    width: 26px; height: 26px;
+    border-radius: 8px;
+    background: var(--blue-l);
+    color: var(--blue-d);
     display: flex; align-items: center; justify-content: center;
-    font-size: 0.8rem; font-weight: 700;
+    font-size: 0.78rem; font-weight: 700;
     flex-shrink: 0;
 }
-.deal-card .deal-rank.gold   { background: #d97706; }
-.deal-card .deal-rank.silver { background: #94a3b8; }
-.deal-card .deal-rank.bronze { background: #b45309; }
-.deal-card .deal-body { flex: 1; }
-.deal-card .deal-name  { font-weight: 600; font-size: 0.95rem; color: var(--text-1); }
-.deal-card .deal-store { font-size: 0.82rem; color: var(--text-2); margin-top: 2px; }
-.deal-card .deal-price { text-align: left; }
-.deal-card .deal-kd    { font-weight: 700; color: var(--primary); font-size: 1rem; }
+.deal-num.n1 { background: #fef3c7; color: #92400e; }
+.deal-num.n2 { background: #f1f5f9; color: #475569; }
+.deal-num.n3 { background: #fff7ed; color: #9a3412; }
+.deal-info { flex: 1; min-width: 0; }
+.deal-name  { font-weight: 600; font-size: 0.9rem; color: var(--t1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.deal-store { font-size: 0.78rem; color: var(--t2); margin-top: 2px; }
+.deal-right { text-align: left; flex-shrink: 0; }
+.deal-price { font-weight: 700; color: var(--blue); font-size: 0.95rem; }
+.deal-save  { display: inline-block; background: var(--teal-l); color: var(--teal); border-radius: 20px; padding: 1px 8px; font-size: 0.73rem; font-weight: 700; margin-top: 2px; }
 
-/* ══════════════════════════════
-   WORK ITEM CARDS
-══════════════════════════════ */
-.work-card {
+/* ══════════════════════════
+   WORK CARD
+══════════════════════════ */
+.wc {
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px 18px;
-    margin-bottom: 10px;
-    box-shadow: var(--shadow-sm);
-    border-right: 4px solid var(--purple);
+    border-radius: var(--r);
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    box-shadow: var(--sh);
+    border-right: 3px solid var(--violet);
     transition: box-shadow .15s;
 }
-.work-card:hover { box-shadow: var(--shadow); }
-.work-card .work-desc     { font-weight: 600; font-size: 0.97rem; color: var(--text-1); margin: 6px 0 4px; }
-.work-card .work-price    { font-size: 0.88rem; color: var(--text-2); margin-top: 2px; }
-.work-card .work-price strong { color: var(--success); }
+.wc:hover { box-shadow: var(--sh-md); }
+.wc-cat  { display: inline-block; background: var(--violet-l); color: var(--violet); border-radius: 20px; padding: 1px 10px; font-size: 0.73rem; font-weight: 700; }
+.wc-desc { font-weight: 600; font-size: 0.92rem; color: var(--t1); margin: 6px 0 4px; line-height: 1.5; }
+.wc-meta { font-size: 0.82rem; color: var(--t2); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.wc-meta .p { color: var(--teal); font-weight: 600; }
+.wc-meta .s { background: var(--blue-l); color: var(--blue-d); border-radius: 20px; padding: 1px 9px; font-size: 0.73rem; font-weight: 600; }
 
-/* ══════════════════════════════
-   BADGES
-══════════════════════════════ */
-.badge {
-    display: inline-block;
-    border-radius: 20px;
-    padding: 2px 11px;
-    font-size: 0.76rem;
-    font-weight: 600;
-    line-height: 1.6;
-}
-.badge-green  { background: var(--success-l); color: #065f46; }
-.badge-blue   { background: #dbeafe; color: #1e40af; }
-.badge-purple { background: var(--purple-l); color: #5b21b6; }
-.badge-amber  { background: var(--amber-l);  color: #92400e; }
-.badge-white  { background: rgba(255,255,255,.15); color: white; border: 1px solid rgba(255,255,255,.25); }
+/* ══════════════════════════
+   PAGE TITLE (inner pages)
+══════════════════════════ */
+.pt  { font-size: 1.35rem; font-weight: 700; color: var(--t1); margin-bottom: 2px; }
+.ps  { font-size: 0.85rem; color: var(--t2); margin-bottom: 20px; }
 
-/* ══════════════════════════════
-   SECTION TITLE
-══════════════════════════════ */
-.section-title {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: var(--text-1);
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 16px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border);
+/* ══════════════════════════
+   STORES TABLE
+══════════════════════════ */
+.store-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 10px;
+    margin-top: 4px;
 }
-
-/* ══════════════════════════════
-   INFO BOX
-══════════════════════════════ */
-.info-box {
-    background: #eff6ff;
-    border: 1px solid #bfdbfe;
-    border-right: 4px solid var(--primary);
-    border-radius: var(--radius-sm);
-    padding: 14px 18px;
-    margin-bottom: 14px;
-    color: #1e3a8a;
-    font-size: 0.9rem;
-    line-height: 1.6;
-}
-
-/* ══════════════════════════════
-   PAGE TITLE
-══════════════════════════════ */
-.page-title {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text-1);
-    margin-bottom: 4px;
-}
-.page-subtitle {
-    font-size: 0.9rem;
-    color: var(--text-2);
-    margin-bottom: 24px;
-}
-
-/* ══════════════════════════════
-   STORE TABLE
-══════════════════════════════ */
-.store-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.92rem;
-}
-.store-table th {
-    background: #f1f5f9 !important;
-    color: var(--text-2) !important;
-    font-weight: 600;
-    padding: 10px 14px;
-    text-align: right;
-    border-bottom: 1px solid var(--border);
-}
-.store-table td {
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--border);
-    color: var(--text-1);
-}
-.store-table tr:last-child td { border-bottom: none; }
-.store-table tr:hover td { background: #f8fafc; }
-
-/* ── الـ sidebar ── */
-.sidebar-logo {
+.store-chip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 12px 14px;
+    box-shadow: var(--sh);
     text-align: center;
-    padding: 8px 0 16px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 16px;
 }
-.sidebar-logo .s-icon { font-size: 2rem; }
-.sidebar-logo .s-title { font-size: 1rem; font-weight: 700; color: var(--text-1); margin: 4px 0 2px; }
-.sidebar-logo .s-sub   { font-size: 0.78rem; color: var(--text-3); }
-
-/* ── إجبار ألوان الـ Sidebar ── */
-section[data-testid="stSidebar"] {
-    background: #ffffff !important;
-}
-section[data-testid="stSidebar"] p,
-section[data-testid="stSidebar"] span,
-section[data-testid="stSidebar"] label,
-section[data-testid="stSidebar"] div[data-testid="stMarkdownContainer"] p {
-    color: #0f172a !important;
-    font-family: 'Cairo', sans-serif !important;
-}
-section[data-testid="stSidebar"] small,
-section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] {
-    color: #475569 !important;
-    font-size: 0.82rem !important;
-}
-section[data-testid="stSidebar"] hr {
-    border-color: #e4e9f0 !important;
-    margin: 12px 0 !important;
-}
-.sidebar-stat {
-    background: #f8fafc;
-    border: 1px solid #e4e9f0;
-    border-radius: 8px;
-    padding: 10px 14px;
-    margin-bottom: 8px;
-    font-size: 0.88rem;
-    color: #0f172a;
-}
-.sidebar-stat .stat-label { color: #475569; font-size: 0.78rem; }
-.sidebar-stat .stat-val   { font-weight: 700; font-size: 1rem; color: #2563eb; }
+.store-chip .sc-name { font-weight: 700; font-size: 0.9rem; color: var(--t1); }
+.store-chip .sc-count { font-size: 0.78rem; color: var(--t2); margin-top: 3px; }
+.store-chip .sc-num { font-size: 1.4rem; font-weight: 700; color: var(--blue); }
 </style>
 """, unsafe_allow_html=True)
 
 
-# ---------------------------------------------------------------
-# تحميل البيانات
-# ---------------------------------------------------------------
+# ───────────────────────────────────────────────────────────────
+# DATA LOADING
+# ───────────────────────────────────────────────────────────────
 @st.cache_data(ttl=300)
 def load_products():
     try:
@@ -383,54 +382,43 @@ def reload_all():
     load_work_descriptions.clear()
 
 
-# ---------------------------------------------------------------
-# تشغيل التحديث اليدوي
-# ---------------------------------------------------------------
+# ───────────────────────────────────────────────────────────────
+# ACTIONS
+# ───────────────────────────────────────────────────────────────
 def run_update(run_ai: bool = False):
     steps = [BASE_DIR / "scraper.py", BASE_DIR / "matcher.py"]
     if run_ai:
         steps.append(BASE_DIR / "ai_agent.py")
-
-    label = "جاري تحديث البيانات" + (" وتوليد توصيف الأعمال بالذكاء الاصطناعي" if run_ai else "")
-    with st.spinner(f"{label} ... قد يستغرق هذا بضع دقائق"):
+    label = "جاري التحديث" + (" + AI" if run_ai else "") + " ..."
+    with st.spinner(label):
         try:
             for script in steps:
-                subprocess.run(
-                    [sys.executable, str(script)],
-                    timeout=600,
-                    check=True,
-                    capture_output=True,
-                )
+                subprocess.run([sys.executable, str(script)], timeout=600, check=True, capture_output=True)
             reload_all()
-            st.success("تم التحديث بنجاح!")
+            st.success("✅ تم التحديث بنجاح")
             st.rerun()
         except subprocess.CalledProcessError as e:
-            st.error(f"فشل التحديث: {e.stderr.decode() if e.stderr else str(e)}")
+            st.error(f"فشل: {e.stderr.decode() if e.stderr else str(e)}")
         except subprocess.TimeoutExpired:
-            st.error("انتهت مهلة التحديث. يرجى المحاولة لاحقاً.")
+            st.error("انتهت المهلة")
 
 
 def run_ai_only():
-    with st.spinner("عميل الذكاء الاصطناعي يحلل المنتجات ... قد يستغرق عدة دقائق"):
+    with st.spinner("عميل AI يحلل المنتجات ..."):
         try:
-            subprocess.run(
-                [sys.executable, str(BASE_DIR / "ai_agent.py")],
-                timeout=600,
-                check=True,
-                capture_output=True,
-            )
+            subprocess.run([sys.executable, str(BASE_DIR / "ai_agent.py")], timeout=600, check=True, capture_output=True)
             reload_all()
-            st.success("تم توليد توصيف الأعمال بنجاح!")
+            st.success("✅ تم توليد التوصيف")
             st.rerun()
         except subprocess.CalledProcessError as e:
-            st.error(f"فشل عميل الذكاء الاصطناعي: {e.stderr.decode() if e.stderr else str(e)}")
+            st.error(f"فشل AI: {e.stderr.decode() if e.stderr else str(e)}")
         except subprocess.TimeoutExpired:
-            st.error("انتهت مهلة العميل.")
+            st.error("انتهت المهلة")
 
 
-# ---------------------------------------------------------------
-# بدء الجدول الزمني (في الخلفية)
-# ---------------------------------------------------------------
+# ───────────────────────────────────────────────────────────────
+# SCHEDULER
+# ───────────────────────────────────────────────────────────────
 if "scheduler_started" not in st.session_state:
     try:
         from scheduler import start_scheduler
@@ -440,619 +428,458 @@ if "scheduler_started" not in st.session_state:
         st.session_state["scheduler_started"] = False
 
 
-# ---------------------------------------------------------------
-# تحميل البيانات
-# ---------------------------------------------------------------
-df = load_products()
-groups = load_groups()
+# ───────────────────────────────────────────────────────────────
+# LOAD DATA
+# ───────────────────────────────────────────────────────────────
+df      = load_products()
+groups  = load_groups()
 history_df = load_history()
-work_data = load_work_descriptions()
+work_data  = load_work_descriptions()
+
+n_products  = len(df)
+n_stores    = df["store"].nunique() if not df.empty else 0
+n_groups    = len(groups)
+n_ai        = len(work_data.get("work_items", []))
+avg_saving  = round(sum(g.get("savings_pct", 0) for g in groups) / len(groups), 1) if groups else 0
+sched_ok    = st.session_state.get("scheduler_started", False)
 
 
-# ---------------------------------------------------------------
-# الشريط الجانبي
-# ---------------------------------------------------------------
+# ───────────────────────────────────────────────────────────────
+# SIDEBAR
+# ───────────────────────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("## ⚡ مقارنة الأسعار")
-    st.caption("المتاجر الكهربائية — الكويت")
-    st.divider()
-
-    page = st.radio(
-        "الصفحات",
-        [
-            "🏠 الرئيسية",
-            "📦 المنتجات",
-            "⚖️ مقارنة الأسعار",
-            "🏆 أفضل العروض",
-            "🤖 توصيف الأعمال الكهربائية",
-            "📈 تاريخ الأسعار",
-            "📊 الرسوم البيانية",
-        ],
-        label_visibility="collapsed",
-    )
-
-    st.divider()
-
-    if st.button("🔄 تحديث البيانات", use_container_width=True):
-        run_update(run_ai=False)
-
-    if st.button("🤖 تحديث + AI", use_container_width=True, type="primary"):
-        run_update(run_ai=True)
-
-    if st.button("♻️ مسح الكاش", use_container_width=True):
-        reload_all()
-        st.rerun()
-
-    st.divider()
-
-    # إحصائيات
-    store_count = df["store"].nunique() if not df.empty else 0
-    work_items_count = len(work_data.get("work_items", []))
-    scheduler_ok = st.session_state.get("scheduler_started", False)
-
-    col_a, col_b = st.columns(2)
-    with col_a:
-        st.metric("المنتجات", f"{len(df):,}")
-        st.metric("التوصيف", work_items_count)
-    with col_b:
-        st.metric("المتاجر", store_count)
-        st.metric("المطابقة", len(groups))
-
-    st.caption(f"الجدول: {'✅ يعمل' if scheduler_ok else '⚠️ متوقف'}")
-
-    if not df.empty and "timestamp" in df.columns:
-        last_ts = df["timestamp"].max()
-        st.caption(f"آخر تحديث: {last_ts}")
-
-    if work_data:
-        gen_at = work_data.get("generated_at", "")
-        if gen_at:
-            try:
-                gen_dt = datetime.fromisoformat(gen_at).strftime("%Y-%m-%d %H:%M")
-            except ValueError:
-                gen_dt = gen_at
-            st.caption(f"توليد AI: {gen_dt}")
-
-
-# ===============================================================
-# صفحة الرئيسية
-# ===============================================================
-if page == "🏠 الرئيسية":
+    # Brand
     st.markdown("""
-    <div class="main-header">
-        <span class="header-icon">⚡</span>
-        <div class="header-tag">الكويت</div>
-        <h1>مقارنة الأسعار الكهربائية</h1>
-        <p>منصة ذكية لمتابعة أسعار المتاجر الكهربائية الكويتية مع توصيف أعمال بالذكاء الاصطناعي</p>
+    <div style="padding:20px 16px 14px;border-bottom:1px solid #1e293b">
+        <div style="font-size:1.6rem;line-height:1;margin-bottom:6px">⚡</div>
+        <div style="font-size:1rem;font-weight:700;color:#f1f5f9">مقارنة الأسعار</div>
+        <div style="font-size:0.75rem;color:#64748b;margin-top:2px">الكويت · الكهرباء</div>
     </div>
     """, unsafe_allow_html=True)
 
-    # تحذير إذا البيانات فاضية
+    # Navigation
+    st.markdown("<div style='padding:10px 8px 6px'>", unsafe_allow_html=True)
+    page = st.radio(
+        "nav",
+        ["🏠  الرئيسية", "📦  المنتجات", "⚖️  مقارنة الأسعار",
+         "🏆  أفضل العروض", "🤖  توصيف الأعمال", "📈  تاريخ الأسعار", "📊  الرسوم البيانية"],
+        label_visibility="collapsed",
+    )
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.divider()
+
+    # Actions
+    st.markdown("<div style='padding:0 8px'>", unsafe_allow_html=True)
+    if st.button("🔄  تحديث البيانات", use_container_width=True):
+        run_update(run_ai=False)
+    if st.button("🤖  تحديث + توصيف AI", use_container_width=True, type="primary"):
+        run_update(run_ai=True)
+    if st.button("♻️  مسح الكاش", use_container_width=True):
+        reload_all(); st.rerun()
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.divider()
+
+    # Stats grid
+    c1, c2 = st.columns(2)
+    with c1:
+        st.metric("المنتجات",  f"{n_products:,}")
+        st.metric("التوصيف AI", n_ai)
+    with c2:
+        st.metric("المتاجر",   n_stores)
+        st.metric("المطابقة",  n_groups)
+
+    st.divider()
+
+    # Status
+    st.caption(f"الجدول التلقائي: {'✅ يعمل' if sched_ok else '⚠️ متوقف'}")
+    if not df.empty and "timestamp" in df.columns:
+        st.caption(f"آخر جلب: {df['timestamp'].max()}")
+    if work_data.get("generated_at"):
+        try:
+            gd = datetime.fromisoformat(work_data["generated_at"]).strftime("%Y-%m-%d %H:%M")
+        except ValueError:
+            gd = work_data["generated_at"]
+        st.caption(f"آخر توليد AI: {gd}")
+
+
+# ───────────────────────────────────────────────────────────────
+# PAGE: الرئيسية
+# ───────────────────────────────────────────────────────────────
+if page == "🏠  الرئيسية":
+
+    st.markdown(f"""
+    <div class="ph">
+        <div class="ph-icon">⚡</div>
+        <div class="ph-text">
+            <h1>مقارنة الأسعار الكهربائية</h1>
+            <p>منصة ذكية لمتابعة أسعار المتاجر الكهربائية الكويتية مع توصيف أعمال بالذكاء الاصطناعي</p>
+        </div>
+        <div class="ph-badge">🇰🇼 الكويت</div>
+    </div>
+    """, unsafe_allow_html=True)
+
     if df.empty:
-        st.warning(
-            f"⚠️ لا توجد بيانات محملة. "
-            f"الملف المتوقع: `{BASE_DIR / 'products_all.json'}`\n\n"
-            "**الحل:** اضغط زر **🔄 تحديث البيانات** في الشريط الجانبي، "
-            "أو شغّل: `python3 scraper.py` ثم `python3 matcher.py`"
-        )
+        st.warning(f"⚠️ لا توجد بيانات. الملف المتوقع: `{BASE_DIR / 'products_all.json'}` — اضغط **🔄 تحديث البيانات** من الشريط الجانبي.")
 
-    work_items_count = len(work_data.get("work_items", []))
-    avg_saving = round(sum(g.get("savings_pct", 0) for g in groups) / len(groups), 1) if groups else 0
-
-    col1, col2, col3, col4, col5 = st.columns(5)
-
-    with col1:
-        st.markdown(f"""
-        <div class="kpi-card">
-            <div class="kpi-icon">📦</div>
-            <div class="kpi-value">{len(df):,}</div>
-            <div class="kpi-label">إجمالي المنتجات</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    with col2:
-        st.markdown(f"""
-        <div class="kpi-card green">
-            <div class="kpi-icon">🏪</div>
-            <div class="kpi-value">{df["store"].nunique() if not df.empty else 0}</div>
-            <div class="kpi-label">عدد المتاجر</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    with col3:
-        st.markdown(f"""
-        <div class="kpi-card">
-            <div class="kpi-icon">⚖️</div>
-            <div class="kpi-value">{len(groups)}</div>
-            <div class="kpi-label">منتجات مقارنة</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    with col4:
-        st.markdown(f"""
-        <div class="kpi-card amber">
-            <div class="kpi-icon">💰</div>
-            <div class="kpi-value">{avg_saving}%</div>
-            <div class="kpi-label">متوسط التوفير</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    with col5:
-        st.markdown(f"""
-        <div class="kpi-card purple">
-            <div class="kpi-icon">🤖</div>
-            <div class="kpi-value">{work_items_count}</div>
-            <div class="kpi-label">بنود التوصيف</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # أفضل العروض
-    if groups:
-        st.markdown('<div class="section-title">🏆 أبرز العروض اليوم</div>', unsafe_allow_html=True)
-        top5 = sorted(groups, key=lambda g: g.get("savings_pct", 0), reverse=True)[:5]
-        rank_classes = ["gold", "silver", "bronze", "", ""]
-        for i, g in enumerate(top5):
-            rank_cls = rank_classes[i] if i < len(rank_classes) else ""
+    # KPI row
+    k1, k2, k3, k4, k5 = st.columns(5)
+    kpis = [
+        (k1, "📦", "blue",   f"{n_products:,}", "إجمالي المنتجات"),
+        (k2, "🏪", "teal",   n_stores,          "عدد المتاجر"),
+        (k3, "⚖️", "blue",   n_groups,          "منتجات مقارنة"),
+        (k4, "💰", "amber",  f"{avg_saving}%",  "متوسط التوفير"),
+        (k5, "🤖", "violet", n_ai,              "بنود التوصيف"),
+    ]
+    for col, icon, color, val, lbl in kpis:
+        with col:
             st.markdown(f"""
-            <div class="deal-card">
-                <div class="deal-rank {rank_cls}">{i+1}</div>
-                <div class="deal-body">
-                    <div class="deal-name">{g['canonical_name']}</div>
-                    <div class="deal-store">🏪 {g['best_store']}</div>
+            <div class="kpi">
+                <div class="kpi-icon-box {color}">{icon}</div>
+                <div class="kpi-body">
+                    <div class="kpi-val">{val}</div>
+                    <div class="kpi-lbl">{lbl}</div>
                 </div>
-                <div class="deal-price">
-                    <div class="deal-kd">{g['best_price']} KD</div>
-                    <span class="badge badge-green">توفير {g['savings_pct']}%</span>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
+            </div>""", unsafe_allow_html=True)
 
-    # أبرز بنود التوصيف
+    # Two columns layout
+    left, right = st.columns([1.1, 1], gap="large")
+
+    with left:
+        if groups:
+            st.markdown('<div class="sec"><span class="sec-icon">🏆</span><span class="sec-title">أبرز العروض اليوم</span></div>', unsafe_allow_html=True)
+            top5 = sorted(groups, key=lambda g: g.get("savings_pct", 0), reverse=True)[:5]
+            num_cls = ["n1", "n2", "n3", "", ""]
+            for i, g in enumerate(top5):
+                nc = num_cls[i] if i < 3 else ""
+                st.markdown(f"""
+                <div class="deal">
+                    <div class="deal-num {nc}">{i+1}</div>
+                    <div class="deal-info">
+                        <div class="deal-name">{g['canonical_name']}</div>
+                        <div class="deal-store">🏪 {g['best_store']}</div>
+                    </div>
+                    <div class="deal-right">
+                        <div class="deal-price">{g['best_price']} KD</div>
+                        <div class="deal-save">وفّر {g['savings_pct']}%</div>
+                    </div>
+                </div>""", unsafe_allow_html=True)
+
+    with right:
+        if not df.empty:
+            st.markdown('<div class="sec"><span class="sec-icon">🏪</span><span class="sec-title">المتاجر المتاحة</span></div>', unsafe_allow_html=True)
+            sc = df.groupby("store").size().reset_index(name="n")
+            html_chips = '<div class="store-grid">'
+            for _, row in sc.iterrows():
+                html_chips += f"""
+                <div class="store-chip">
+                    <div class="sc-num">{row['n']}</div>
+                    <div class="sc-name">{row['store']}</div>
+                    <div class="sc-count">منتج</div>
+                </div>"""
+            html_chips += "</div>"
+            st.markdown(html_chips, unsafe_allow_html=True)
+
+    # AI preview
     if work_data.get("work_items"):
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown('<div class="section-title">🤖 أبرز بنود توصيف الأعمال &nbsp;<span class="badge badge-purple">AI</span></div>', unsafe_allow_html=True)
-        items_preview = work_data["work_items"][:5]
-        for item in items_preview:
+        st.markdown('<div class="sec"><span class="sec-icon">🤖</span><span class="sec-title">أبرز بنود التوصيف</span><span class="sec-badge">Claude AI</span></div>', unsafe_allow_html=True)
+        for item in work_data["work_items"][:4]:
             st.markdown(f"""
-            <div class="work-card">
-                <span class="badge badge-purple">{item.get("category", "")}</span>
-                <div class="work-desc">{item.get("description", "")}</div>
-                <div class="work-price">
-                    أدنى: <strong>{item.get("min_price", "—")} KD</strong> &nbsp;·&nbsp;
-                    متوسط: <strong>{item.get("avg_price", "—")} KD</strong> &nbsp;·&nbsp;
-                    أعلى: <strong>{item.get("max_price", "—")} KD</strong>
-                    &nbsp;&nbsp;<span class="badge badge-blue">🏪 {item.get("best_store", "—")}</span>
+            <div class="wc">
+                <span class="wc-cat">{item.get('category','')}</span>
+                <div class="wc-desc">{item.get('description','')}</div>
+                <div class="wc-meta">
+                    <span>أدنى: <span class="p">{item.get('min_price','—')} KD</span></span>
+                    <span>متوسط: <span class="p">{item.get('avg_price','—')} KD</span></span>
+                    <span>أعلى: <span class="p">{item.get('max_price','—')} KD</span></span>
+                    <span class="s">🏪 {item.get('best_store','—')}</span>
                 </div>
-            </div>
-            """, unsafe_allow_html=True)
-
-    # توزيع المتاجر
-    if not df.empty:
-        st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown('<div class="section-title">🏪 المتاجر المتاحة</div>', unsafe_allow_html=True)
-        store_counts = df.groupby("store").size().reset_index(name="عدد المنتجات")
-        store_counts.columns = ["المتجر", "عدد المنتجات"]
-        st.dataframe(store_counts, use_container_width=True, hide_index=True)
+            </div>""", unsafe_allow_html=True)
 
 
-# ===============================================================
-# صفحة المنتجات
-# ===============================================================
-elif page == "📦 المنتجات":
-    st.markdown('<div class="page-title">📦 قائمة المنتجات</div>', unsafe_allow_html=True)
-    st.markdown('<div class="page-subtitle">تصفح وابحث في جميع المنتجات المجلوبة من المتاجر الكهربائية</div>', unsafe_allow_html=True)
+# ───────────────────────────────────────────────────────────────
+# PAGE: المنتجات
+# ───────────────────────────────────────────────────────────────
+elif page == "📦  المنتجات":
+    st.markdown('<div class="pt">📦 قائمة المنتجات</div><div class="ps">تصفح وابحث في جميع المنتجات المجلوبة من المتاجر الكهربائية</div>', unsafe_allow_html=True)
 
     if df.empty:
-        st.warning("لا توجد بيانات. اضغط 'تحديث البيانات الآن' من الشريط الجانبي.")
+        st.warning("لا توجد بيانات. اضغط تحديث البيانات من الشريط الجانبي.")
     else:
-        col1, col2, col3 = st.columns(3)
-
-        with col1:
+        c1, c2, c3 = st.columns(3)
+        with c1:
             search = st.text_input("🔍 بحث باسم المنتج")
-
-        with col2:
+        with c2:
             stores = ["الكل"] + sorted(df["store"].unique().tolist())
-            selected_store = st.selectbox("🏪 المتجر", stores)
+            sel_store = st.selectbox("🏪 المتجر", stores)
+        with c3:
+            min_p, max_p = float(df["price"].min()), float(df["price"].max())
+            price_range = (min_p, max_p) if min_p == max_p else st.slider("💰 السعر (KD)", min_p, max_p, (min_p, max_p))
 
-        with col3:
-            min_p = float(df["price"].min())
-            max_p = float(df["price"].max())
-            if min_p == max_p:
-                price_range = (min_p, max_p)
-            else:
-                price_range = st.slider("💰 نطاق السعر (KD)", min_value=min_p, max_value=max_p, value=(min_p, max_p))
-
-        filtered = df.copy()
+        filt = df.copy()
         if search:
-            filtered = filtered[filtered["name"].str.contains(search, case=False, na=False)]
-        if selected_store != "الكل":
-            filtered = filtered[filtered["store"] == selected_store]
-        filtered = filtered[(filtered["price"] >= price_range[0]) & (filtered["price"] <= price_range[1])]
+            filt = filt[filt["name"].str.contains(search, case=False, na=False)]
+        if sel_store != "الكل":
+            filt = filt[filt["store"] == sel_store]
+        filt = filt[(filt["price"] >= price_range[0]) & (filt["price"] <= price_range[1])]
 
-        st.write(f"يُعرض **{len(filtered)}** منتج")
-
-        display_cols = [c for c in ["name", "price", "store", "url", "timestamp"] if c in filtered.columns]
-        col_labels = {
-            "name": "اسم المنتج",
-            "price": "السعر (KD)",
-            "store": "المتجر",
-            "url": "رابط",
-            "timestamp": "وقت الجلب",
-        }
-        show_df = filtered[display_cols].rename(columns=col_labels)
-        st.dataframe(show_df, use_container_width=True, hide_index=True)
-
-        csv = filtered.to_csv(index=False).encode("utf-8-sig")
-        st.download_button("⬇️ تحميل CSV", csv, "products.csv", "text/csv")
+        st.caption(f"يُعرض {len(filt):,} منتج")
+        cols = [c for c in ["name", "price", "store", "url", "timestamp"] if c in filt.columns]
+        labels = {"name": "المنتج", "price": "السعر (KD)", "store": "المتجر", "url": "رابط", "timestamp": "وقت الجلب"}
+        st.dataframe(filt[cols].rename(columns=labels), use_container_width=True, hide_index=True)
+        st.download_button("⬇️ تحميل CSV", filt.to_csv(index=False).encode("utf-8-sig"), "products.csv", "text/csv")
 
 
-# ===============================================================
-# صفحة مقارنة الأسعار
-# ===============================================================
-elif page == "⚖️ مقارنة الأسعار":
-    st.markdown('<div class="page-title">⚖️ مقارنة الأسعار بين المتاجر</div>', unsafe_allow_html=True)
-    st.markdown('<div class="page-subtitle">منتجات متطابقة من متاجر مختلفة مع تمييز الأرخص</div>', unsafe_allow_html=True)
+# ───────────────────────────────────────────────────────────────
+# PAGE: مقارنة الأسعار
+# ───────────────────────────────────────────────────────────────
+elif page == "⚖️  مقارنة الأسعار":
+    st.markdown('<div class="pt">⚖️ مقارنة الأسعار بين المتاجر</div><div class="ps">منتجات متطابقة من متاجر مختلفة — الأرخص مظلل بالأخضر</div>', unsafe_allow_html=True)
 
     if not groups:
         st.warning("لا توجد بيانات مقارنة. شغّل التحديث أولاً.")
     else:
-        search_compare = st.text_input("🔍 ابحث عن منتج للمقارنة")
-
-        filtered_groups = [
-            g for g in groups
-            if not search_compare or search_compare.lower() in g["canonical_name"].lower()
-        ]
-
-        st.write(f"عدد المنتجات المتطابقة: **{len(filtered_groups)}**")
+        q = st.text_input("🔍 ابحث عن منتج")
+        filtered_groups = [g for g in groups if not q or q.lower() in g["canonical_name"].lower()]
+        st.caption(f"{len(filtered_groups)} منتج مطابق")
 
         for g in filtered_groups[:50]:
-            with st.expander(
-                f"📦 {g['canonical_name']} — أفضل سعر: {g['best_price']} KD ({g['best_store']}) | توفير {g['savings_pct']}%"
-            ):
+            with st.expander(f"📦 {g['canonical_name']}  —  {g['best_price']} KD ({g['best_store']})  |  وفّر {g['savings_pct']}%"):
                 rows = []
                 for p in g["products"]:
-                    is_best = p["price"] == g["best_price"]
                     rows.append({
                         "المتجر": p["store"],
-                        "اسم المنتج": p["name"],
+                        "المنتج": p["name"],
                         "السعر (KD)": p["price"],
                         "الرابط": p.get("url", ""),
-                        "": "✅ الأرخص" if is_best else "",
+                        "": "✅ الأرخص" if p["price"] == g["best_price"] else "",
                     })
-                comparison_df = pd.DataFrame(rows)
-
-                def color_row(row):
-                    if row.get("") == "✅ الأرخص":
-                        return ["background-color: #c6f6d5"] * len(row)
-                    return [""] * len(row)
-
-                st.dataframe(
-                    comparison_df.style.apply(color_row, axis=1),
-                    use_container_width=True,
-                    hide_index=True,
-                )
+                cdf = pd.DataFrame(rows)
+                def cr(row):
+                    return (["background-color:#d1fae5"] * len(row) if row.get("") == "✅ الأرخص" else [""] * len(row))
+                st.dataframe(cdf.style.apply(cr, axis=1), use_container_width=True, hide_index=True)
 
 
-# ===============================================================
-# صفحة أفضل العروض
-# ===============================================================
-elif page == "🏆 أفضل العروض":
-    st.markdown('<div class="page-title">🏆 أفضل العروض</div>', unsafe_allow_html=True)
-    st.markdown('<div class="page-subtitle">المنتجات ذات أكبر فارق سعري بين المتاجر</div>', unsafe_allow_html=True)
+# ───────────────────────────────────────────────────────────────
+# PAGE: أفضل العروض
+# ───────────────────────────────────────────────────────────────
+elif page == "🏆  أفضل العروض":
+    st.markdown('<div class="pt">🏆 أفضل العروض</div><div class="ps">المنتجات ذات أكبر فارق سعري بين المتاجر</div>', unsafe_allow_html=True)
 
     if not groups:
-        st.warning("لا توجد بيانات. شغّل التحديث أولاً.")
+        st.warning("لا توجد بيانات.")
     else:
-        sorted_groups = sorted(groups, key=lambda g: g.get("savings_pct", 0), reverse=True)
+        sorted_g = sorted(groups, key=lambda g: g.get("savings_pct", 0), reverse=True)
+        min_save = st.slider("الحد الأدنى للتوفير (%)", 0, 100, 10)
+        deals = [g for g in sorted_g if g.get("savings_pct", 0) >= min_save]
+        st.caption(f"{len(deals)} عرض")
 
-        min_saving = st.slider("الحد الأدنى لنسبة التوفير (%)", 0, 100, 10)
-        filtered_deals = [g for g in sorted_groups if g.get("savings_pct", 0) >= min_saving]
-
-        st.write(f"عدد العروض: **{len(filtered_deals)}**")
-
-        if filtered_deals:
-            deals_data = [
-                {
-                    "المنتج": g["canonical_name"],
-                    "أفضل سعر (KD)": g["best_price"],
-                    "أغلى سعر (KD)": g["worst_price"],
-                    "أفضل متجر": g["best_store"],
-                    "نسبة التوفير": f"{g['savings_pct']}%",
-                }
-                for g in filtered_deals[:100]
-            ]
-            deals_df = pd.DataFrame(deals_data)
-            st.dataframe(deals_df, use_container_width=True, hide_index=True)
-
-            csv = deals_df.to_csv(index=False).encode("utf-8-sig")
-            st.download_button("⬇️ تحميل CSV", csv, "best_deals.csv", "text/csv")
+        if deals:
+            dd = pd.DataFrame([{
+                "المنتج": g["canonical_name"],
+                "أفضل سعر (KD)": g["best_price"],
+                "أغلى سعر (KD)": g["worst_price"],
+                "أفضل متجر": g["best_store"],
+                "التوفير": f"{g['savings_pct']}%",
+            } for g in deals[:100]])
+            st.dataframe(dd, use_container_width=True, hide_index=True)
+            st.download_button("⬇️ CSV", dd.to_csv(index=False).encode("utf-8-sig"), "best_deals.csv", "text/csv")
 
             st.markdown("---")
-            st.subheader("أفضل 20 عرضاً")
-            chart_data = pd.DataFrame([
-                {"المنتج": g["canonical_name"][:40], "توفير %": g["savings_pct"]}
-                for g in filtered_deals[:20]
-            ])
-
+            st.markdown('<div class="pt" style="font-size:1rem">أفضل 20 عرضاً</div>', unsafe_allow_html=True)
+            cd = pd.DataFrame([{"المنتج": g["canonical_name"][:35], "توفير %": g["savings_pct"]} for g in deals[:20]])
             bar = (
-                alt.Chart(chart_data)
-                .mark_bar(color="#38a169")
+                alt.Chart(cd).mark_bar(color="#0f766e", cornerRadiusTopLeft=4, cornerRadiusTopRight=4)
                 .encode(
                     x=alt.X("توفير %:Q", title="نسبة التوفير %"),
                     y=alt.Y("المنتج:N", sort="-x", title=""),
                     tooltip=["المنتج", "توفير %"],
-                )
-                .properties(height=500)
+                ).properties(height=480)
             )
             st.altair_chart(bar, use_container_width=True)
 
 
-# ===============================================================
-# صفحة توصيف الأعمال الكهربائية (AI)
-# ===============================================================
-elif page == "🤖 توصيف الأعمال الكهربائية":
-    st.markdown("""
-    <div class="page-title">🤖 توصيف الأعمال الكهربائية &nbsp;<span class="badge badge-purple">مدعوم بـ Claude AI</span></div>
-    <div class="page-subtitle">بنود أعمال الكهرباء المولّدة تلقائياً بالذكاء الاصطناعي بناءً على أسعار السوق</div>
-    """, unsafe_allow_html=True)
+# ───────────────────────────────────────────────────────────────
+# PAGE: توصيف الأعمال
+# ───────────────────────────────────────────────────────────────
+elif page == "🤖  توصيف الأعمال":
+    st.markdown('<div class="pt">🤖 توصيف الأعمال الكهربائية</div><div class="ps">بنود توصيف أعمال الكهرباء المولّدة بالذكاء الاصطناعي بناءً على أسعار السوق الكويتي</div>', unsafe_allow_html=True)
 
     if not work_data or not work_data.get("work_items"):
-        st.markdown("""
-        <div class="info-box">
-            لم يتم توليد بنود التوصيف بعد. اضغط الزر أدناه لتشغيل عميل الذكاء الاصطناعي وتحليل المنتجات.
-            <br><strong>تأكد من تعيين متغير البيئة ANTHROPIC_API_KEY قبل التشغيل.</strong>
-        </div>
-        """, unsafe_allow_html=True)
-
-        if st.button("🚀 تشغيل عميل الذكاء الاصطناعي الآن", use_container_width=True):
+        st.info("لم يتم توليد التوصيف بعد. تأكد من وجود ANTHROPIC_API_KEY ثم اضغط الزر.")
+        if st.button("🚀 توليد توصيف الأعمال الآن", type="primary"):
             run_ai_only()
     else:
-        work_items = work_data.get("work_items", [])
-        categories_summary = work_data.get("categories_summary", {})
-        generated_at = work_data.get("generated_at", "")
-        products_analyzed = work_data.get("products_analyzed", 0)
+        wi   = work_data["work_items"]
+        cats = work_data.get("categories_summary", {})
+        pa   = work_data.get("products_analyzed", 0)
 
-        # معلومات عامة
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.markdown(f"""
-            <div class="kpi-card">
-                <div class="kpi-value">{len(work_items)}</div>
-                <div class="kpi-label">بنود التوصيف</div>
-            </div>
-            """, unsafe_allow_html=True)
-        with col2:
-            st.markdown(f"""
-            <div class="kpi-card">
-                <div class="kpi-value">{len(categories_summary)}</div>
-                <div class="kpi-label">فئات العمل</div>
-            </div>
-            """, unsafe_allow_html=True)
-        with col3:
-            st.markdown(f"""
-            <div class="kpi-card">
-                <div class="kpi-value">{products_analyzed:,}</div>
-                <div class="kpi-label">منتجات تم تحليلها</div>
-            </div>
-            """, unsafe_allow_html=True)
+        k1, k2, k3 = st.columns(3)
+        for col, icon, color, val, lbl in [
+            (k1, "📋", "blue",   len(wi),   "بنود التوصيف"),
+            (k2, "📂", "teal",   len(cats), "فئات العمل"),
+            (k3, "📦", "violet", f"{pa:,}", "منتجات حُللت"),
+        ]:
+            with col:
+                st.markdown(f"""
+                <div class="kpi">
+                    <div class="kpi-icon-box {color}">{icon}</div>
+                    <div class="kpi-body">
+                        <div class="kpi-val">{val}</div>
+                        <div class="kpi-lbl">{lbl}</div>
+                    </div>
+                </div>""", unsafe_allow_html=True)
 
-        if generated_at:
+        if work_data.get("generated_at"):
             try:
-                gen_str = datetime.fromisoformat(generated_at).strftime("%Y-%m-%d %H:%M")
+                gs = datetime.fromisoformat(work_data["generated_at"]).strftime("%Y-%m-%d %H:%M")
             except ValueError:
-                gen_str = generated_at
-            st.caption(f"تاريخ التوليد: {gen_str}")
+                gs = work_data["generated_at"]
+            st.caption(f"تاريخ التوليد: {gs}")
 
-        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown("")
 
-        # فلاتر
-        col_f1, col_f2, col_f3 = st.columns(3)
-        with col_f1:
-            search_work = st.text_input("🔍 بحث في بنود التوصيف")
-        with col_f2:
-            all_categories = ["الكل"] + sorted(categories_summary.keys())
-            selected_cat = st.selectbox("📂 الفئة", all_categories)
-        with col_f3:
-            all_stores_work = ["الكل"] + sorted({item.get("best_store", "") for item in work_items if item.get("best_store")})
-            selected_store_work = st.selectbox("🏪 أفضل متجر", all_stores_work)
+        cf1, cf2, cf3 = st.columns(3)
+        with cf1:
+            sw = st.text_input("🔍 بحث في التوصيف")
+        with cf2:
+            sc = st.selectbox("📂 الفئة", ["الكل"] + sorted(cats.keys()))
+        with cf3:
+            ss = st.selectbox("🏪 أفضل متجر", ["الكل"] + sorted({i.get("best_store","") for i in wi if i.get("best_store")}))
 
-        # تصفية البنود
-        filtered_items = work_items
-        if search_work:
-            filtered_items = [
-                i for i in filtered_items
-                if search_work.lower() in i.get("description", "").lower()
-                or search_work.lower() in i.get("category", "").lower()
-            ]
-        if selected_cat != "الكل":
-            filtered_items = [i for i in filtered_items if i.get("category") == selected_cat]
-        if selected_store_work != "الكل":
-            filtered_items = [i for i in filtered_items if i.get("best_store") == selected_store_work]
+        fi = wi
+        if sw:
+            fi = [i for i in fi if sw.lower() in i.get("description","").lower() or sw.lower() in i.get("category","").lower()]
+        if sc != "الكل":
+            fi = [i for i in fi if i.get("category") == sc]
+        if ss != "الكل":
+            fi = [i for i in fi if i.get("best_store") == ss]
 
-        st.write(f"يُعرض **{len(filtered_items)}** بند")
+        st.caption(f"يُعرض {len(fi)} بند")
 
-        # عرض الجدول
-        if filtered_items:
-            table_data = [
-                {
-                    "رقم البند": item.get("item_no", i + 1),
-                    "وصف العمل": item.get("description", ""),
-                    "الوحدة": item.get("unit", ""),
-                    "أدنى سعر (KD)": item.get("min_price", ""),
-                    "متوسط السعر (KD)": item.get("avg_price", ""),
-                    "أعلى سعر (KD)": item.get("max_price", ""),
-                    "أفضل متجر": item.get("best_store", ""),
-                    "الفئة": item.get("category", ""),
-                }
-                for i, item in enumerate(filtered_items)
-            ]
-            table_df = pd.DataFrame(table_data)
-            st.dataframe(table_df, use_container_width=True, hide_index=True)
+        if fi:
+            td = pd.DataFrame([{
+                "رقم": i.get("item_no", n + 1),
+                "وصف العمل": i.get("description", ""),
+                "الوحدة": i.get("unit", ""),
+                "أدنى (KD)": i.get("min_price", ""),
+                "متوسط (KD)": i.get("avg_price", ""),
+                "أعلى (KD)": i.get("max_price", ""),
+                "أفضل متجر": i.get("best_store", ""),
+                "الفئة": i.get("category", ""),
+            } for n, i in enumerate(fi)])
+            st.dataframe(td, use_container_width=True, hide_index=True)
+            st.download_button("⬇️ تحميل CSV", td.to_csv(index=False).encode("utf-8-sig"), "work_descriptions.csv", "text/csv")
 
-            csv = table_df.to_csv(index=False).encode("utf-8-sig")
-            st.download_button("⬇️ تحميل توصيف الأعمال CSV", csv, "work_descriptions.csv", "text/csv")
-
-        # ملخص الفئات
-        if categories_summary:
+        if cats:
             st.markdown("---")
-            st.markdown('<div class="section-title">📊 ملخص الفئات</div>', unsafe_allow_html=True)
-            cat_df = pd.DataFrame(
-                [{"الفئة": k, "عدد البنود": v} for k, v in categories_summary.items()]
-            ).sort_values("عدد البنود", ascending=False)
-
-            cat_chart = (
-                alt.Chart(cat_df)
-                .mark_bar(color="#4263eb")
+            st.markdown('<div class="pt" style="font-size:1rem">توزيع الفئات</div>', unsafe_allow_html=True)
+            cat_df = pd.DataFrame([{"الفئة": k, "عدد البنود": v} for k, v in cats.items()]).sort_values("عدد البنود", ascending=False)
+            cc = (
+                alt.Chart(cat_df).mark_bar(color="#7c3aed", cornerRadiusTopLeft=4, cornerRadiusTopRight=4)
                 .encode(
-                    x=alt.X("عدد البنود:Q", title="عدد البنود"),
+                    x=alt.X("عدد البنود:Q", title=""),
                     y=alt.Y("الفئة:N", sort="-x", title=""),
                     tooltip=["الفئة", "عدد البنود"],
-                )
-                .properties(height=350)
+                ).properties(height=320)
             )
-            st.altair_chart(cat_chart, use_container_width=True)
+            st.altair_chart(cc, use_container_width=True)
 
         st.markdown("---")
-        if st.button("🔄 إعادة تشغيل عميل الذكاء الاصطناعي", use_container_width=False):
+        if st.button("🔄 إعادة التوليد"):
             run_ai_only()
 
 
-# ===============================================================
-# صفحة تاريخ الأسعار
-# ===============================================================
-elif page == "📈 تاريخ الأسعار":
-    st.markdown('<div class="page-title">📈 تاريخ الأسعار</div>', unsafe_allow_html=True)
-    st.markdown('<div class="page-subtitle">تتبع تغير سعر أي منتج عبر الزمن</div>', unsafe_allow_html=True)
+# ───────────────────────────────────────────────────────────────
+# PAGE: تاريخ الأسعار
+# ───────────────────────────────────────────────────────────────
+elif page == "📈  تاريخ الأسعار":
+    st.markdown('<div class="pt">📈 تاريخ الأسعار</div><div class="ps">تتبع تغير سعر أي منتج عبر الزمن ومقارنته بين المتاجر</div>', unsafe_allow_html=True)
 
     if history_df.empty:
-        st.warning("لا توجد بيانات تاريخية بعد. سيتم تجميعها تلقائياً عند كل تحديث.")
+        st.info("لا توجد بيانات تاريخية بعد. ستُجمع تلقائياً عند كل تحديث.")
     else:
-        product_names = sorted(history_df["name"].unique().tolist())
-        selected_product = st.selectbox("اختر منتجاً لعرض تاريخ سعره:", product_names)
-
-        if selected_product:
-            product_history = history_df[history_df["name"] == selected_product].sort_values("timestamp")
-
+        sel = st.selectbox("اختر منتجاً", sorted(history_df["name"].unique().tolist()))
+        if sel:
+            ph = history_df[history_df["name"] == sel].sort_values("timestamp")
             line = (
-                alt.Chart(product_history)
-                .mark_line(point=True)
+                alt.Chart(ph).mark_line(point=True, strokeWidth=2)
                 .encode(
                     x=alt.X("timestamp:T", title="التاريخ"),
                     y=alt.Y("price:Q", title="السعر (KD)"),
                     color=alt.Color("store:N", title="المتجر"),
                     tooltip=["store", "price", "timestamp"],
-                )
-                .properties(height=400, title=f"تاريخ سعر: {selected_product}")
+                ).properties(height=380, title=sel)
             )
             st.altair_chart(line, use_container_width=True)
-
-            st.markdown("---")
-            st.subheader("جدول البيانات التاريخية")
-            show = product_history[["timestamp", "store", "price"]].rename(
-                columns={"timestamp": "التاريخ", "store": "المتجر", "price": "السعر (KD)"}
-            )
-            st.dataframe(show, use_container_width=True, hide_index=True)
+            sh = ph[["timestamp", "store", "price"]].rename(columns={"timestamp": "التاريخ", "store": "المتجر", "price": "السعر (KD)"})
+            st.dataframe(sh, use_container_width=True, hide_index=True)
 
 
-# ===============================================================
-# صفحة الرسوم البيانية
-# ===============================================================
-elif page == "📊 الرسوم البيانية":
-    st.markdown('<div class="page-title">📊 الرسوم البيانية</div>', unsafe_allow_html=True)
-    st.markdown('<div class="page-subtitle">تحليل بصري شامل للأسعار والمتاجر</div>', unsafe_allow_html=True)
+# ───────────────────────────────────────────────────────────────
+# PAGE: الرسوم البيانية
+# ───────────────────────────────────────────────────────────────
+elif page == "📊  الرسوم البيانية":
+    st.markdown('<div class="pt">📊 الرسوم البيانية</div><div class="ps">تحليل بصري شامل للأسعار والمتاجر</div>', unsafe_allow_html=True)
 
     if df.empty:
         st.warning("لا توجد بيانات.")
     else:
-        # 1) توزيع الأسعار
-        st.subheader("توزيع الأسعار")
-        hist = (
-            alt.Chart(df)
-            .mark_bar(color="#A3C4F3")
-            .encode(
-                alt.X("price:Q", bin=alt.Bin(maxbins=40), title="السعر (KD)"),
-                alt.Y("count()", title="عدد المنتجات"),
-            )
-            .properties(height=300)
-        )
-        st.altair_chart(hist, use_container_width=True)
+        BLUE   = "#2563eb"
+        TEAL   = "#0f766e"
+        VIOLET = "#7c3aed"
+        AMBER  = "#b45309"
 
-        # 2) متوسط السعر لكل متجر
-        st.subheader("متوسط السعر لكل متجر")
-        avg_df = df.groupby("store")["price"].mean().reset_index()
-        bar = (
-            alt.Chart(avg_df)
-            .mark_bar(color="#F7A4A4")
-            .encode(
-                x=alt.X("store:N", title="المتجر"),
-                y=alt.Y("price:Q", title="متوسط السعر (KD)"),
-                tooltip=["store", "price"],
+        r1c1, r1c2 = st.columns(2)
+        with r1c1:
+            st.markdown('<div class="sec"><span class="sec-icon">📊</span><span class="sec-title">توزيع الأسعار</span></div>', unsafe_allow_html=True)
+            hist = (
+                alt.Chart(df).mark_bar(color=BLUE, opacity=.8, cornerRadiusTopLeft=3, cornerRadiusTopRight=3)
+                .encode(alt.X("price:Q", bin=alt.Bin(maxbins=35), title="السعر (KD)"), alt.Y("count()", title="عدد المنتجات"))
+                .properties(height=260)
             )
-            .properties(height=300)
-        )
-        st.altair_chart(bar, use_container_width=True)
+            st.altair_chart(hist, use_container_width=True)
 
-        # 3) أرخص 20 منتج
-        st.subheader("أرخص 20 منتج")
-        top20 = df.sort_values("price").head(20)
-        hbar = (
-            alt.Chart(top20)
-            .mark_bar(color="#C1E1C1")
-            .encode(
-                x=alt.X("price:Q", title="السعر (KD)"),
-                y=alt.Y("name:N", sort="x", title="المنتج"),
-                color=alt.Color("store:N", title="المتجر"),
-                tooltip=["name", "price", "store"],
+        with r1c2:
+            st.markdown('<div class="sec"><span class="sec-icon">🏪</span><span class="sec-title">متوسط السعر لكل متجر</span></div>', unsafe_allow_html=True)
+            avg_df = df.groupby("store")["price"].mean().reset_index()
+            ab = (
+                alt.Chart(avg_df).mark_bar(color=TEAL, cornerRadiusTopLeft=4, cornerRadiusTopRight=4)
+                .encode(x=alt.X("store:N", title=""), y=alt.Y("price:Q", title="متوسط السعر (KD)"), tooltip=["store", "price"])
+                .properties(height=260)
             )
-            .properties(height=500)
-        )
-        st.altair_chart(hbar, use_container_width=True)
+            st.altair_chart(ab, use_container_width=True)
 
-        # 4) مخطط الصندوق لكل متجر
-        st.subheader("توزيع الأسعار لكل متجر (Box Plot)")
-        box_chart = (
-            alt.Chart(df)
-            .mark_boxplot(color="#A0C4FF")
-            .encode(
-                x=alt.X("store:N", title="المتجر"),
-                y=alt.Y("price:Q", title="السعر (KD)"),
-                tooltip=["store", "price"],
+        r2c1, r2c2 = st.columns(2)
+        with r2c1:
+            st.markdown('<div class="sec"><span class="sec-icon">💰</span><span class="sec-title">أرخص 20 منتج</span></div>', unsafe_allow_html=True)
+            top20 = df.sort_values("price").head(20)
+            hb = (
+                alt.Chart(top20).mark_bar(cornerRadiusTopLeft=3, cornerRadiusTopRight=3)
+                .encode(
+                    x=alt.X("price:Q", title="السعر (KD)"),
+                    y=alt.Y("name:N", sort="x", title=""),
+                    color=alt.Color("store:N", title="المتجر", scale=alt.Scale(scheme="tableau10")),
+                    tooltip=["name", "price", "store"],
+                ).properties(height=460)
             )
-            .properties(height=350)
-        )
-        st.altair_chart(box_chart, use_container_width=True)
+            st.altair_chart(hb, use_container_width=True)
 
-        # 5) نطاق الأسعار لكل متجر
-        st.subheader("نطاق الأسعار لكل متجر")
-        range_df = df.groupby("store")["price"].agg(["min", "max"]).reset_index()
-        range_chart = (
-            alt.Chart(range_df)
-            .mark_rule(color="#BDB2FF", strokeWidth=4)
-            .encode(
-                x="store:N",
-                y="min:Q",
-                y2="max:Q",
-                tooltip=["store", "min", "max"],
+        with r2c2:
+            st.markdown('<div class="sec"><span class="sec-icon">📦</span><span class="sec-title">توزيع الأسعار (Box Plot)</span></div>', unsafe_allow_html=True)
+            box = (
+                alt.Chart(df).mark_boxplot(color=VIOLET)
+                .encode(x=alt.X("store:N", title=""), y=alt.Y("price:Q", title="السعر (KD)"), tooltip=["store", "price"])
+                .properties(height=460)
             )
-            .properties(height=300)
-        )
-        st.altair_chart(range_chart, use_container_width=True)
+            st.altair_chart(box, use_container_width=True)
 
-        # 6) درجة استقرار الأسعار
-        st.subheader("درجة استقرار الأسعار لكل متجر")
-        score_df = df.groupby("store")["price"].var().reset_index()
-        score_df["price"] = score_df["price"].fillna(0)
-        score_df["score"] = 1 / (1 + score_df["price"])
-        score_chart = (
-            alt.Chart(score_df)
-            .mark_bar(color="#FDCFE8")
-            .encode(
-                x="store:N",
-                y=alt.Y("score:Q", title="درجة الاستقرار"),
-                tooltip=["store", "score"],
-            )
-            .properties(height=300)
+        st.markdown('<div class="sec"><span class="sec-icon">📏</span><span class="sec-title">نطاق الأسعار لكل متجر</span></div>', unsafe_allow_html=True)
+        rdf = df.groupby("store")["price"].agg(["min", "max"]).reset_index()
+        rc = (
+            alt.Chart(rdf).mark_rule(strokeWidth=5, color=AMBER)
+            .encode(x="store:N", y="min:Q", y2="max:Q", tooltip=["store", "min", "max"])
+            .properties(height=280)
         )
-        st.altair_chart(score_chart, use_container_width=True)
+        st.altair_chart(rc, use_container_width=True)
