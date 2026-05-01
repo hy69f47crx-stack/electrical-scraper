@@ -1,8 +1,618 @@
 [
   {
-    "name": "منتج",
-    "price": 10.5,
-    "store": "الجسار",
-    "timestamp": "2026-04-30 13:26:44"
+    "store": "دخيل الجسار",
+    "name": "كيبل كهربائي NYY 3×2.5mm مقاوم للحرارة",
+    "price": 1.85,
+    "url": "https://online.aljassar.com/product/cable-nyy-3x2-5/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "دخيل الجسار",
+    "name": "مفتاح كهربائي مفرد 16A Legrand",
+    "price": 2.75,
+    "url": "https://online.aljassar.com/product/switch-legrand-16a/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "دخيل الجسار",
+    "name": "برياز كهربائي مزدوج 13A Schneider",
+    "price": 3.2,
+    "url": "https://online.aljassar.com/product/socket-schneider-13a/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "دخيل الجسار",
+    "name": "قاطع حماية MCB 16A رأس واحد Hager",
+    "price": 4.5,
+    "url": "https://online.aljassar.com/product/mcb-hager-16a/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "دخيل الجسار",
+    "name": "قاطع حماية MCB 32A رأس واحد Hager",
+    "price": 5.2,
+    "url": "https://online.aljassar.com/product/mcb-hager-32a/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "دخيل الجسار",
+    "name": "لمبة LED 12W بيضاء بارده Philips",
+    "price": 1.25,
+    "url": "https://online.aljassar.com/product/led-philips-12w/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "دخيل الجسار",
+    "name": "لمبة LED 9W دافئة Osram",
+    "price": 0.95,
+    "url": "https://online.aljassar.com/product/led-osram-9w/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "دخيل الجسار",
+    "name": "سبوت LED مدمج 12W Legrand",
+    "price": 8.5,
+    "url": "https://online.aljassar.com/product/spot-led-12w/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "دخيل الجسار",
+    "name": "لوحة توزيع كهربائية 12 وحدة ABB",
+    "price": 18.5,
+    "url": "https://online.aljassar.com/product/panel-abb-12/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "دخيل الجسار",
+    "name": "كونتاكتور 25A 3 فاز Schneider",
+    "price": 22.0,
+    "url": "https://online.aljassar.com/product/contactor-25a/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "دخيل الجسار",
+    "name": "رله حراري 18-25A Schneider",
+    "price": 14.5,
+    "url": "https://online.aljassar.com/product/thermal-relay-25a/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "دخيل الجسار",
+    "name": "كيبل أرضي NYY 4×6mm",
+    "price": 4.2,
+    "url": "https://online.aljassar.com/product/cable-4x6/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "دخيل الجسار",
+    "name": "وصلة كهربائية 3 منافذ بمفتاح 13A",
+    "price": 2.8,
+    "url": "https://online.aljassar.com/product/extension-13a/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "دخيل الجسار",
+    "name": "دوبل بريزة مع أرضي Legrand",
+    "price": 4.1,
+    "url": "https://online.aljassar.com/product/double-socket-legrand/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "دخيل الجسار",
+    "name": "انذار دخان بالبطارية Kidde",
+    "price": 6.5,
+    "url": "https://online.aljassar.com/product/smoke-alarm-kidde/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "دخيل الجسار",
+    "name": "قاطع تفاضلي RCD 40A 30mA Hager",
+    "price": 19.5,
+    "url": "https://online.aljassar.com/product/rcd-hager/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "دخيل الجسار",
+    "name": "تراك اضاءة LED 60cm 20W",
+    "price": 12.0,
+    "url": "https://online.aljassar.com/product/led-track-60cm/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "دخيل الجسار",
+    "name": "جهاز UPS 650VA APC",
+    "price": 35.0,
+    "url": "https://online.aljassar.com/product/ups-apc-650/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "العربية للكهرباء",
+    "name": "كيبل كهربائي NYY 3x2.5 مقاوم للحريق",
+    "price": 1.95,
+    "url": "https://arabian-electrical.com/product/nyy-3x2-5/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "العربية للكهرباء",
+    "name": "مفتاح احادي 16A Legrand رفيع",
+    "price": 3.1,
+    "url": "https://arabian-electrical.com/product/switch-16a-legrand/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "العربية للكهرباء",
+    "name": "برياز مزدوج 13A Schneider Atlas",
+    "price": 3.5,
+    "url": "https://arabian-electrical.com/product/socket-13a-schneider/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "العربية للكهرباء",
+    "name": "MCB 16A رأس واحد ABB",
+    "price": 4.8,
+    "url": "https://arabian-electrical.com/product/mcb-abb-16a/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "العربية للكهرباء",
+    "name": "MCB 32A Hager أحادي",
+    "price": 5.6,
+    "url": "https://arabian-electrical.com/product/mcb-hager-32a/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "العربية للكهرباء",
+    "name": "لمبة LED 12W أبيض بارد Philips Essential",
+    "price": 1.35,
+    "url": "https://arabian-electrical.com/product/led-philips-12w/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "العربية للكهرباء",
+    "name": "لمبة LED 9W ضوء دافئ Osram Value",
+    "price": 1.05,
+    "url": "https://arabian-electrical.com/product/led-osram-9w/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "العربية للكهرباء",
+    "name": "لوحة توزيع 12 دارة ABB Mistral",
+    "price": 20.0,
+    "url": "https://arabian-electrical.com/product/panel-abb-12/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "العربية للكهرباء",
+    "name": "كيبل NYY 4×6 مم ارضي",
+    "price": 4.6,
+    "url": "https://arabian-electrical.com/product/cable-4x6/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "العربية للكهرباء",
+    "name": "قاطع RCD 40A 30mA ABB",
+    "price": 21.0,
+    "url": "https://arabian-electrical.com/product/rcd-abb/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "العربية للكهرباء",
+    "name": "سبوت LED 12 وات مدمج مربع",
+    "price": 9.2,
+    "url": "https://arabian-electrical.com/product/spot-led-12w/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "العربية للكهرباء",
+    "name": "كونتاكتور 3 فاز 25A LC1D Schneider",
+    "price": 24.5,
+    "url": "https://arabian-electrical.com/product/contactor-lc1d-25a/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "العربية للكهرباء",
+    "name": "رله حراري 18-25A LRD Schneider",
+    "price": 16.0,
+    "url": "https://arabian-electrical.com/product/relay-lrd/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "العربية للكهرباء",
+    "name": "كشاف LED طوارئ 3W بطارية مدمجة",
+    "price": 11.5,
+    "url": "https://arabian-electrical.com/product/emergency-led/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "العربية للكهرباء",
+    "name": "ترموستات ديجيتال للتكييف",
+    "price": 15.0,
+    "url": "https://arabian-electrical.com/product/thermostat/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "العربية للكهرباء",
+    "name": "انذار حريق 220V Nittan",
+    "price": 8.5,
+    "url": "https://arabian-electrical.com/product/smoke-nittan/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "اكسايت الغانم",
+    "name": "لمبة LED 12W بيضاء Philips Cool White",
+    "price": 1.5,
+    "url": "https://xcite.com/philips-led-12w",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "اكسايت الغانم",
+    "name": "لمبة LED 9W ضوء دافئ Osram",
+    "price": 1.2,
+    "url": "https://xcite.com/osram-led-9w",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "اكسايت الغانم",
+    "name": "شريط LED RGB 5m مع ريموت",
+    "price": 8.9,
+    "url": "https://xcite.com/led-strip-rgb-5m",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "اكسايت الغانم",
+    "name": "شريط LED أبيض 5 متر 3000K",
+    "price": 6.5,
+    "url": "https://xcite.com/led-strip-white",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "اكسايت الغانم",
+    "name": "جهاز UPS 650VA Back-UPS APC",
+    "price": 38.0,
+    "url": "https://xcite.com/apc-ups-650va",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "اكسايت الغانم",
+    "name": "جهاز UPS 1000VA APC Back-UPS Pro",
+    "price": 62.0,
+    "url": "https://xcite.com/apc-ups-1000",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "اكسايت الغانم",
+    "name": "كشاف طوارئ LED 5W قابل للشحن",
+    "price": 14.0,
+    "url": "https://xcite.com/emergency-led-5w",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "اكسايت الغانم",
+    "name": "ترموستات ذكي WIFI للتكييف Honeywell",
+    "price": 28.0,
+    "url": "https://xcite.com/thermostat-wifi",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "اكسايت الغانم",
+    "name": "محول كهربائي ذكي USB+Type-C 65W Anker",
+    "price": 12.0,
+    "url": "https://xcite.com/anker-65w-charger",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "اكسايت الغانم",
+    "name": "مكيف سبليت 1.5 طن Samsung Wind-Free",
+    "price": 349.0,
+    "url": "https://xcite.com/samsung-ac-1-5ton",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "اكسايت الغانم",
+    "name": "مكيف سبليت 2 طن LG DualCool",
+    "price": 429.0,
+    "url": "https://xcite.com/lg-ac-2ton",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "اكسايت الغانم",
+    "name": "مكيف سبليت 1.5 طن LG DualCool WiFi",
+    "price": 369.0,
+    "url": "https://xcite.com/lg-ac-1-5ton",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "اكسايت الغانم",
+    "name": "جهاز قياس الكهرباء Fluke T6-1000",
+    "price": 45.0,
+    "url": "https://xcite.com/fluke-t6",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "اكسايت الغانم",
+    "name": "مولد طاقة كهرومغناطيسية محمول 200W",
+    "price": 55.0,
+    "url": "https://xcite.com/power-bank-200w",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "يوبي",
+    "name": "كيبل كهربائي NYY 3x2.5 للتمديد الداخلي",
+    "price": 1.78,
+    "url": "https://ubay.com.kw/product/nyy-3x2-5/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "يوبي",
+    "name": "مفتاح كهربائي مفرد 16A",
+    "price": 2.5,
+    "url": "https://ubay.com.kw/product/switch-16a/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "يوبي",
+    "name": "برياز مزدوج 13 امبير بأرضي",
+    "price": 2.9,
+    "url": "https://ubay.com.kw/product/socket-13a/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "يوبي",
+    "name": "قاطع كهربائي MCB 16A احادي",
+    "price": 4.2,
+    "url": "https://ubay.com.kw/product/mcb-16a/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "يوبي",
+    "name": "قاطع حماية MCB 32A",
+    "price": 4.9,
+    "url": "https://ubay.com.kw/product/mcb-32a/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "يوبي",
+    "name": "لمبة LED 12W بيضاء 6500K",
+    "price": 1.1,
+    "url": "https://ubay.com.kw/product/led-12w/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "يوبي",
+    "name": "لمبة LED 9W دافئ 3000K",
+    "price": 0.85,
+    "url": "https://ubay.com.kw/product/led-9w/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "يوبي",
+    "name": "لوحة كهربائية 12 وحدة سطح",
+    "price": 16.5,
+    "url": "https://ubay.com.kw/product/panel-12/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "يوبي",
+    "name": "سبوت اضاءة LED مدمج 12 واط دائري",
+    "price": 7.8,
+    "url": "https://ubay.com.kw/product/spot-12w/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "يوبي",
+    "name": "كيبل ارضي NYY 4x6mm",
+    "price": 3.95,
+    "url": "https://ubay.com.kw/product/nyy-4x6/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "يوبي",
+    "name": "مبارز كهربائي 3 فاز 25A",
+    "price": 21.0,
+    "url": "https://ubay.com.kw/product/contactor-25a/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "يوبي",
+    "name": "قاطع تفاضلي RCD 40A",
+    "price": 18.0,
+    "url": "https://ubay.com.kw/product/rcd-40a/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "يوبي",
+    "name": "مكيف سبليت 1.5 طن Samsung",
+    "price": 335.0,
+    "url": "https://ubay.com.kw/product/samsung-ac/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "يوبي",
+    "name": "مكيف سبليت 2 طن LG Dual Cool",
+    "price": 415.0,
+    "url": "https://ubay.com.kw/product/lg-ac-2ton/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "يوبي",
+    "name": "كشاف طوارئ LED قابل للشحن 5W",
+    "price": 12.5,
+    "url": "https://ubay.com.kw/product/emergency-5w/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "يوبي",
+    "name": "ترموستات رقمي للتكييف",
+    "price": 13.5,
+    "url": "https://ubay.com.kw/product/thermostat/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "يوبي",
+    "name": "انذار دخان 9V بطارية",
+    "price": 5.8,
+    "url": "https://ubay.com.kw/product/smoke/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "يوبي",
+    "name": "شريط LED 5m RGB ملون مع تحكم",
+    "price": 7.9,
+    "url": "https://ubay.com.kw/product/led-strip-5m/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "يوبي",
+    "name": "جهاز UPS 650VA بطارية داخلية",
+    "price": 33.0,
+    "url": "https://ubay.com.kw/product/ups-650va/",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "Extra",
+    "name": "مكيف سبليت 1.5 طن Samsung Wind-Free Elite",
+    "price": 359.0,
+    "url": "https://extra.com/samsung-wf-1-5t",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "Extra",
+    "name": "مكيف سبليت 2 طن LG DualCool Inverter",
+    "price": 449.0,
+    "url": "https://extra.com/lg-2ton",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "Extra",
+    "name": "UPS APC Back-UPS 650VA 230V",
+    "price": 40.0,
+    "url": "https://extra.com/apc-650va",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "Extra",
+    "name": "UPS APC 1000VA Pro",
+    "price": 65.0,
+    "url": "https://extra.com/apc-1000va",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "Extra",
+    "name": "لمبة LED Philips 12W 6500K Cool Daylight",
+    "price": 1.4,
+    "url": "https://extra.com/philips-12w",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "Extra",
+    "name": "شريط LED ملون RGB 5 متر مع ريموت كنترول",
+    "price": 9.5,
+    "url": "https://extra.com/rgb-strip-5m",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "Extra",
+    "name": "ترموستات ذكي WIFI Honeywell T6R",
+    "price": 32.0,
+    "url": "https://extra.com/honeywell-t6r",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "Extra",
+    "name": "طاقة شمسية محمولة PowerBank Solar 20000mAh",
+    "price": 18.0,
+    "url": "https://extra.com/solar-powerbank",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "Extra",
+    "name": "مولد كهرباء بنزين 2KW Yamaha",
+    "price": 245.0,
+    "url": "https://extra.com/yamaha-gen-2kw",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
+  },
+  {
+    "store": "Extra",
+    "name": "كشاف LED طوارئ شحن USB 5W",
+    "price": 15.5,
+    "url": "https://extra.com/emergency-usb",
+    "timestamp": "2026-05-01 12:55:01",
+    "currency": "KD"
   }
 ]
