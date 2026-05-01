@@ -6,3 +6,4 @@ rapidfuzz
 apscheduler
 pytz
 pyarrow
+anthropic

@@ -20,7 +20,7 @@ st.set_page_config(
 # ---------------------------------------------------------------
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
 
 html, body, [class*="css"] {
     font-family: 'Cairo', sans-serif;
@@ -28,34 +28,56 @@ html, body, [class*="css"] {
 }
 
 .main-header {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-    padding: 24px 32px;
-    border-radius: 16px;
+    background: linear-gradient(135deg, #0d1b2a 0%, #1b4f72 50%, #0f3460 100%);
+    padding: 28px 36px;
+    border-radius: 18px;
     color: white;
-    margin-bottom: 24px;
+    margin-bottom: 28px;
     text-align: center;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.18);
 }
-
-.main-header h1 { font-size: 2rem; margin: 0; color: #e0e0e0; }
-.main-header p  { font-size: 1rem; margin: 8px 0 0; color: #a0aec0; }
+.main-header h1 { font-size: 2.1rem; margin: 0; color: #ffffff; font-weight: 900; }
+.main-header p  { font-size: 1.05rem; margin: 8px 0 0; color: #b2c6e0; }
 
 .kpi-card {
     background: white;
-    border-radius: 14px;
-    padding: 20px;
+    border-radius: 16px;
+    padding: 22px 16px;
     text-align: center;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    box-shadow: 0 2px 14px rgba(0,0,0,0.09);
     border-top: 4px solid #0f3460;
+    transition: transform .15s;
 }
-.kpi-card .kpi-value { font-size: 2rem; font-weight: 700; color: #0f3460; }
-.kpi-card .kpi-label { font-size: 0.9rem; color: #718096; margin-top: 4px; }
+.kpi-card:hover { transform: translateY(-3px); }
+.kpi-card .kpi-value { font-size: 2.1rem; font-weight: 900; color: #0f3460; }
+.kpi-card .kpi-label { font-size: 0.88rem; color: #718096; margin-top: 6px; }
 
 .best-deal-card {
     background: linear-gradient(135deg, #f0fff4, #c6f6d5);
     border-radius: 12px;
-    padding: 16px;
-    border-left: 4px solid #38a169;
+    padding: 16px 20px;
+    border-right: 5px solid #38a169;
     margin-bottom: 10px;
+    box-shadow: 0 1px 6px rgba(56,161,105,0.12);
+}
+
+.work-item-card {
+    background: linear-gradient(135deg, #f0f4ff, #e8eeff);
+    border-radius: 12px;
+    padding: 16px 20px;
+    border-right: 5px solid #4263eb;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 6px rgba(66,99,235,0.10);
+}
+.work-item-card .item-desc { font-weight: 700; font-size: 1.02rem; color: #2d3748; }
+.work-item-card .item-price { color: #276749; font-weight: 700; font-size: 1rem; }
+.work-item-card .item-category {
+    background: #4263eb;
+    color: white;
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 0.78rem;
+    font-weight: 700;
 }
 
 .saving-badge {
@@ -63,7 +85,7 @@ html, body, [class*="css"] {
     color: white;
     border-radius: 20px;
     padding: 3px 12px;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     font-weight: 700;
 }
 
@@ -76,12 +98,23 @@ html, body, [class*="css"] {
     margin-bottom: 16px;
 }
 
-.update-btn button {
-    background: #0f3460 !important;
-    color: white !important;
-    border-radius: 10px !important;
-    padding: 8px 20px !important;
-    font-family: 'Cairo', sans-serif !important;
+.ai-badge {
+    background: linear-gradient(90deg, #6c5ce7, #a855f7);
+    color: white;
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.info-box {
+    background: #ebf8ff;
+    border-right: 4px solid #3182ce;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    color: #2c5282;
+    font-size: 0.92rem;
 }
 
 table { width: 100%; }
@@ -100,8 +133,7 @@ def load_products():
             data = json.load(f)
         df = pd.DataFrame(data)
         df["price"] = pd.to_numeric(df["price"], errors="coerce")
-        df = df.dropna(subset=["price"])
-        return df
+        return df.dropna(subset=["price"])
     except (FileNotFoundError, ValueError, KeyError):
         return pd.DataFrame(columns=["name", "price", "store", "url", "timestamp", "currency"])
 
@@ -128,37 +160,65 @@ def load_history():
         return pd.DataFrame(columns=["name", "price", "store", "timestamp"])
 
 
-def reload_data():
+@st.cache_data(ttl=300)
+def load_work_descriptions():
+    try:
+        with open("work_descriptions.json", "r", encoding="utf-8") as f:
+            return json.load(f)
+    except (FileNotFoundError, ValueError):
+        return {}
+
+
+def reload_all():
     load_products.clear()
     load_groups.clear()
     load_history.clear()
+    load_work_descriptions.clear()
 
 
 # ---------------------------------------------------------------
 # تشغيل التحديث اليدوي
 # ---------------------------------------------------------------
-def run_update():
-    with st.spinner("جاري تحديث البيانات ... قد يستغرق هذا بضع دقائق"):
+def run_update(run_ai: bool = False):
+    steps = ["scraper.py", "matcher.py"]
+    if run_ai:
+        steps.append("ai_agent.py")
+
+    label = "جاري تحديث البيانات" + (" وتوليد توصيف الأعمال بالذكاء الاصطناعي" if run_ai else "")
+    with st.spinner(f"{label} ... قد يستغرق هذا بضع دقائق"):
         try:
-            subprocess.run(
-                [sys.executable, "scraper.py"],
-                timeout=600,
-                check=True,
-                capture_output=True,
-            )
-            subprocess.run(
-                [sys.executable, "matcher.py"],
-                timeout=120,
-                check=True,
-                capture_output=True,
-            )
-            reload_data()
+            for script in steps:
+                subprocess.run(
+                    [sys.executable, script],
+                    timeout=600,
+                    check=True,
+                    capture_output=True,
+                )
+            reload_all()
             st.success("تم التحديث بنجاح!")
             st.rerun()
         except subprocess.CalledProcessError as e:
             st.error(f"فشل التحديث: {e.stderr.decode() if e.stderr else str(e)}")
         except subprocess.TimeoutExpired:
             st.error("انتهت مهلة التحديث. يرجى المحاولة لاحقاً.")
+
+
+def run_ai_only():
+    with st.spinner("عميل الذكاء الاصطناعي يحلل المنتجات ... قد يستغرق عدة دقائق"):
+        try:
+            subprocess.run(
+                [sys.executable, "ai_agent.py"],
+                timeout=600,
+                check=True,
+                capture_output=True,
+            )
+            reload_all()
+            st.success("تم توليد توصيف الأعمال بنجاح!")
+            st.rerun()
+        except subprocess.CalledProcessError as e:
+            st.error(f"فشل عميل الذكاء الاصطناعي: {e.stderr.decode() if e.stderr else str(e)}")
+        except subprocess.TimeoutExpired:
+            st.error("انتهت مهلة العميل.")
 
 
 # ---------------------------------------------------------------
@@ -179,6 +239,7 @@ if "scheduler_started" not in st.session_state:
 df = load_products()
 groups = load_groups()
 history_df = load_history()
+work_data = load_work_descriptions()
 
 
 # ---------------------------------------------------------------
@@ -188,25 +249,48 @@ with st.sidebar:
     st.markdown("## ⚡ القائمة الرئيسية")
     page = st.radio(
         "",
-        ["🏠 الرئيسية", "📦 المنتجات", "⚖️ مقارنة الأسعار", "🏆 أفضل العروض", "📈 تاريخ الأسعار", "📊 الرسوم البيانية"],
+        [
+            "🏠 الرئيسية",
+            "📦 المنتجات",
+            "⚖️ مقارنة الأسعار",
+            "🏆 أفضل العروض",
+            "🤖 توصيف الأعمال الكهربائية",
+            "📈 تاريخ الأسعار",
+            "📊 الرسوم البيانية",
+        ],
         label_visibility="collapsed",
     )
 
     st.markdown("---")
 
     if st.button("🔄 تحديث البيانات الآن", use_container_width=True):
-        run_update()
+        run_update(run_ai=False)
+
+    if st.button("🤖 تحديث + توصيف الأعمال", use_container_width=True):
+        run_update(run_ai=True)
 
     st.markdown("---")
 
     if not df.empty and "timestamp" in df.columns:
-        last_update = df["timestamp"].max() if "timestamp" in df.columns else "—"
-        st.caption(f"آخر تحديث: {last_update}")
+        last_ts = df["timestamp"].max()
+        st.caption(f"آخر تحديث للمنتجات: {last_ts}")
+
+    if work_data:
+        gen_at = work_data.get("generated_at", "")
+        if gen_at:
+            try:
+                gen_dt = datetime.fromisoformat(gen_at).strftime("%Y-%m-%d %H:%M")
+            except ValueError:
+                gen_dt = gen_at
+            st.caption(f"آخر تحديث للتوصيف: {gen_dt}")
 
     store_count = df["store"].nunique() if not df.empty else 0
     st.caption(f"عدد المتاجر: {store_count}")
     scheduler_ok = st.session_state.get("scheduler_started", False)
     st.caption(f"الجدول اليومي: {'✅ يعمل' if scheduler_ok else '⚠️ متوقف'}")
+    work_items_count = len(work_data.get("work_items", []))
+    if work_items_count:
+        st.caption(f"بنود التوصيف: {work_items_count}")
 
 
 # ===============================================================
@@ -216,11 +300,14 @@ if page == "🏠 الرئيسية":
     st.markdown("""
     <div class="main-header">
         <h1>⚡ مقارنة الأسعار الكهربائية — الكويت</h1>
-        <p>منصة ذكية لمتابعة ومقارنة أسعار المتاجر الكهربائية الكويتية يومياً</p>
+        <p>منصة ذكية لمتابعة ومقارنة أسعار المتاجر الكهربائية الكويتية مع توصيف أعمال بالذكاء الاصطناعي</p>
     </div>
     """, unsafe_allow_html=True)
 
-    col1, col2, col3, col4 = st.columns(4)
+    work_items_count = len(work_data.get("work_items", []))
+    avg_saving = round(sum(g.get("savings_pct", 0) for g in groups) / len(groups), 1) if groups else 0
+
+    col1, col2, col3, col4, col5 = st.columns(5)
 
     with col1:
         st.markdown(f"""
@@ -242,12 +329,11 @@ if page == "🏠 الرئيسية":
         st.markdown(f"""
         <div class="kpi-card">
             <div class="kpi-value">{len(groups)}</div>
-            <div class="kpi-label">منتجات مطابقة عبر المتاجر</div>
+            <div class="kpi-label">منتجات متطابقة عبر المتاجر</div>
         </div>
         """, unsafe_allow_html=True)
 
     with col4:
-        avg_saving = round(sum(g.get("savings_pct", 0) for g in groups) / len(groups), 1) if groups else 0
         st.markdown(f"""
         <div class="kpi-card">
             <div class="kpi-value">{avg_saving}%</div>
@@ -255,9 +341,17 @@ if page == "🏠 الرئيسية":
         </div>
         """, unsafe_allow_html=True)
 
+    with col5:
+        st.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-value">{work_items_count}</div>
+            <div class="kpi-label">بنود توصيف الأعمال</div>
+        </div>
+        """, unsafe_allow_html=True)
+
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # أفضل 5 عروض
+    # أفضل العروض
     if groups:
         st.markdown('<div class="section-title">🏆 أبرز العروض اليوم</div>', unsafe_allow_html=True)
         top5 = sorted(groups, key=lambda g: g.get("savings_pct", 0), reverse=True)[:5]
@@ -267,6 +361,25 @@ if page == "🏠 الرئيسية":
                 <strong>{g['canonical_name']}</strong><br>
                 أفضل سعر: <strong>{g['best_price']} KD</strong> — {g['best_store']} &nbsp;
                 <span class="saving-badge">توفير {g['savings_pct']}%</span>
+            </div>
+            """, unsafe_allow_html=True)
+
+    # أبرز بنود التوصيف
+    if work_data.get("work_items"):
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.markdown('<div class="section-title">🤖 أبرز بنود توصيف الأعمال <span class="ai-badge">AI</span></div>', unsafe_allow_html=True)
+        items_preview = work_data["work_items"][:5]
+        for item in items_preview:
+            st.markdown(f"""
+            <div class="work-item-card">
+                <span class="item-category">{item.get("category", "")}</span>
+                <div class="item-desc">{item.get("description", "")}</div>
+                <div class="item-price">
+                    أدنى سعر: {item.get("min_price", "—")} KD &nbsp;|&nbsp;
+                    متوسط: {item.get("avg_price", "—")} KD &nbsp;|&nbsp;
+                    أعلى: {item.get("max_price", "—")} KD
+                    &nbsp;— أفضل متجر: {item.get("best_store", "—")}
+                </div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -315,9 +428,18 @@ elif page == "📦 المنتجات":
         st.write(f"يُعرض **{len(filtered)}** منتج")
 
         display_cols = [c for c in ["name", "price", "store", "url", "timestamp"] if c in filtered.columns]
-        col_labels = {"name": "اسم المنتج", "price": "السعر (KD)", "store": "المتجر", "url": "رابط", "timestamp": "وقت الجلب"}
+        col_labels = {
+            "name": "اسم المنتج",
+            "price": "السعر (KD)",
+            "store": "المتجر",
+            "url": "رابط",
+            "timestamp": "وقت الجلب",
+        }
         show_df = filtered[display_cols].rename(columns=col_labels)
         st.dataframe(show_df, use_container_width=True, hide_index=True)
+
+        csv = filtered.to_csv(index=False).encode("utf-8-sig")
+        st.download_button("⬇️ تحميل CSV", csv, "products.csv", "text/csv")
 
 
 # ===============================================================
@@ -339,7 +461,9 @@ elif page == "⚖️ مقارنة الأسعار":
         st.write(f"عدد المنتجات المتطابقة: **{len(filtered_groups)}**")
 
         for g in filtered_groups[:50]:
-            with st.expander(f"📦 {g['canonical_name']} — أفضل سعر: {g['best_price']} KD ({g['best_store']}) | توفير {g['savings_pct']}%"):
+            with st.expander(
+                f"📦 {g['canonical_name']} — أفضل سعر: {g['best_price']} KD ({g['best_store']}) | توفير {g['savings_pct']}%"
+            ):
                 rows = []
                 for p in g["products"]:
                     is_best = p["price"] == g["best_price"]
@@ -394,7 +518,9 @@ elif page == "🏆 أفضل العروض":
             deals_df = pd.DataFrame(deals_data)
             st.dataframe(deals_df, use_container_width=True, hide_index=True)
 
-            # رسم بياني لأفضل 20 عرض
+            csv = deals_df.to_csv(index=False).encode("utf-8-sig")
+            st.download_button("⬇️ تحميل CSV", csv, "best_deals.csv", "text/csv")
+
             st.markdown("---")
             st.subheader("أفضل 20 عرضاً")
             chart_data = pd.DataFrame([
@@ -416,6 +542,138 @@ elif page == "🏆 أفضل العروض":
 
 
 # ===============================================================
+# صفحة توصيف الأعمال الكهربائية (AI)
+# ===============================================================
+elif page == "🤖 توصيف الأعمال الكهربائية":
+    st.markdown("""
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
+        <h1 style="margin:0;">🤖 توصيف الأعمال الكهربائية</h1>
+        <span class="ai-badge">مدعوم بـ Claude AI</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+    if not work_data or not work_data.get("work_items"):
+        st.markdown("""
+        <div class="info-box">
+            لم يتم توليد بنود التوصيف بعد. اضغط الزر أدناه لتشغيل عميل الذكاء الاصطناعي وتحليل المنتجات.
+            <br><strong>تأكد من تعيين متغير البيئة ANTHROPIC_API_KEY قبل التشغيل.</strong>
+        </div>
+        """, unsafe_allow_html=True)
+
+        if st.button("🚀 تشغيل عميل الذكاء الاصطناعي الآن", use_container_width=True):
+            run_ai_only()
+    else:
+        work_items = work_data.get("work_items", [])
+        categories_summary = work_data.get("categories_summary", {})
+        generated_at = work_data.get("generated_at", "")
+        products_analyzed = work_data.get("products_analyzed", 0)
+
+        # معلومات عامة
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.markdown(f"""
+            <div class="kpi-card">
+                <div class="kpi-value">{len(work_items)}</div>
+                <div class="kpi-label">بنود التوصيف</div>
+            </div>
+            """, unsafe_allow_html=True)
+        with col2:
+            st.markdown(f"""
+            <div class="kpi-card">
+                <div class="kpi-value">{len(categories_summary)}</div>
+                <div class="kpi-label">فئات العمل</div>
+            </div>
+            """, unsafe_allow_html=True)
+        with col3:
+            st.markdown(f"""
+            <div class="kpi-card">
+                <div class="kpi-value">{products_analyzed:,}</div>
+                <div class="kpi-label">منتجات تم تحليلها</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+        if generated_at:
+            try:
+                gen_str = datetime.fromisoformat(generated_at).strftime("%Y-%m-%d %H:%M")
+            except ValueError:
+                gen_str = generated_at
+            st.caption(f"تاريخ التوليد: {gen_str}")
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # فلاتر
+        col_f1, col_f2, col_f3 = st.columns(3)
+        with col_f1:
+            search_work = st.text_input("🔍 بحث في بنود التوصيف")
+        with col_f2:
+            all_categories = ["الكل"] + sorted(categories_summary.keys())
+            selected_cat = st.selectbox("📂 الفئة", all_categories)
+        with col_f3:
+            all_stores_work = ["الكل"] + sorted({item.get("best_store", "") for item in work_items if item.get("best_store")})
+            selected_store_work = st.selectbox("🏪 أفضل متجر", all_stores_work)
+
+        # تصفية البنود
+        filtered_items = work_items
+        if search_work:
+            filtered_items = [
+                i for i in filtered_items
+                if search_work.lower() in i.get("description", "").lower()
+                or search_work.lower() in i.get("category", "").lower()
+            ]
+        if selected_cat != "الكل":
+            filtered_items = [i for i in filtered_items if i.get("category") == selected_cat]
+        if selected_store_work != "الكل":
+            filtered_items = [i for i in filtered_items if i.get("best_store") == selected_store_work]
+
+        st.write(f"يُعرض **{len(filtered_items)}** بند")
+
+        # عرض الجدول
+        if filtered_items:
+            table_data = [
+                {
+                    "رقم البند": item.get("item_no", i + 1),
+                    "وصف العمل": item.get("description", ""),
+                    "الوحدة": item.get("unit", ""),
+                    "أدنى سعر (KD)": item.get("min_price", ""),
+                    "متوسط السعر (KD)": item.get("avg_price", ""),
+                    "أعلى سعر (KD)": item.get("max_price", ""),
+                    "أفضل متجر": item.get("best_store", ""),
+                    "الفئة": item.get("category", ""),
+                }
+                for i, item in enumerate(filtered_items)
+            ]
+            table_df = pd.DataFrame(table_data)
+            st.dataframe(table_df, use_container_width=True, hide_index=True)
+
+            csv = table_df.to_csv(index=False).encode("utf-8-sig")
+            st.download_button("⬇️ تحميل توصيف الأعمال CSV", csv, "work_descriptions.csv", "text/csv")
+
+        # ملخص الفئات
+        if categories_summary:
+            st.markdown("---")
+            st.markdown('<div class="section-title">📊 ملخص الفئات</div>', unsafe_allow_html=True)
+            cat_df = pd.DataFrame(
+                [{"الفئة": k, "عدد البنود": v} for k, v in categories_summary.items()]
+            ).sort_values("عدد البنود", ascending=False)
+
+            cat_chart = (
+                alt.Chart(cat_df)
+                .mark_bar(color="#4263eb")
+                .encode(
+                    x=alt.X("عدد البنود:Q", title="عدد البنود"),
+                    y=alt.Y("الفئة:N", sort="-x", title=""),
+                    tooltip=["الفئة", "عدد البنود"],
+                )
+                .properties(height=350)
+            )
+            st.altair_chart(cat_chart, use_container_width=True)
+
+        st.markdown("---")
+        if st.button("🔄 إعادة تشغيل عميل الذكاء الاصطناعي", use_container_width=False):
+            run_ai_only()
+
+
+# ===============================================================
 # صفحة تاريخ الأسعار
 # ===============================================================
 elif page == "📈 تاريخ الأسعار":
@@ -428,10 +686,7 @@ elif page == "📈 تاريخ الأسعار":
         selected_product = st.selectbox("اختر منتجاً لعرض تاريخ سعره:", product_names)
 
         if selected_product:
-            product_history = history_df[history_df["name"] == selected_product].copy()
-            product_history = product_history.sort_values("timestamp")
-
-            stores_in_product = product_history["store"].unique().tolist()
+            product_history = history_df[history_df["name"] == selected_product].sort_values("timestamp")
 
             line = (
                 alt.Chart(product_history)
