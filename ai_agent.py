@@ -2,7 +2,6 @@ import json
 import os
 import re
 from datetime import datetime
-from pathlib import Path
 
 from dotenv import load_dotenv
 import anthropic
@@ -34,7 +33,8 @@ SYSTEM_PROMPT = """أنت خبير في توصيف أعمال الكهرباء �
 - اذكر المتجر الأفضل سعراً
 - صنّف كل بند تحت فئته الصحيحة
 
-اكتب مخرجاتك كـ JSON نقي فقط، بدون أي نص إضافي قبله أو بعده."""
+أعد JSON نقي فقط بدون أي نص قبله أو بعده، بالشكل:
+{"work_items": [...]}"""
 
 
 def load_products() -> list:
@@ -45,7 +45,7 @@ def load_products() -> list:
         return []
 
 
-def chunk_products(products: list, chunk_size: int = 80) -> list[list]:
+def chunk_products(products: list, chunk_size: int = 25) -> list[list]:
     return [products[i : i + chunk_size] for i in range(0, len(products), chunk_size)]
 
 
@@ -58,35 +58,20 @@ def build_products_text(products: list) -> str:
 
 
 def call_claude_for_chunk(client: anthropic.Anthropic, products_text: str, chunk_index: int) -> dict | None:
-    user_message = f"""حلّل هذه المنتجات الكهربائية (الدفعة {chunk_index + 1}) وحوّلها إلى بنود توصيف أعمال:
+    user_message = f"""حلّل هذه المنتجات الكهربائية وحوّلها إلى بنود توصيف أعمال. أعد JSON نقي فقط:
 
 {products_text}
 
-أعد JSON بالشكل الآتي فقط:
-{{
-  "work_items": [
-    {{
-      "item_no": 1,
-      "description": "توريد وتركيب ...",
-      "unit": "قطعة",
-      "min_price": 5.500,
-      "avg_price": 7.250,
-      "max_price": 9.000,
-      "best_store": "اسم المتجر",
-      "category": "فئة العمل",
-      "related_products": ["اسم المنتج"]
-    }}
-  ]
-}}"""
+الشكل المطلوب:
+{{"work_items": [{{"item_no": 1, "description": "توريد وتركيب ...", "unit": "قطعة", "min_price": 0.0, "avg_price": 0.0, "max_price": 0.0, "best_store": "اسم المتجر", "category": "فئة العمل", "related_products": ["منتج"]}}]}}"""
 
-    print(f"[AI] معالجة الدفعة {chunk_index + 1} ...")
+    print(f"\n[AI] معالجة الدفعة {chunk_index + 1} ({len(products_text.splitlines())} منتج) ...")
     full_text = ""
 
     try:
         with client.messages.stream(
             model="claude-opus-4-7",
-            max_tokens=4096,
-            thinking={"type": "adaptive"},
+            max_tokens=16000,
             system=[
                 {
                     "type": "text",
@@ -101,13 +86,17 @@ def call_claude_for_chunk(client: anthropic.Anthropic, products_text: str, chunk
                 print(text, end="", flush=True)
         print()
 
-        json_match = re.search(r"\{[\s\S]*\}", full_text)
+        # استخراج JSON من الرد
+        json_match = re.search(r'\{[\s\S]*"work_items"[\s\S]*\}', full_text)
         if json_match:
             return json.loads(json_match.group())
+
+        print(f"[AI] لم يُعثر على JSON في رد الدفعة {chunk_index + 1}")
     except anthropic.APIError as e:
         print(f"[AI] خطأ في API: {e}")
     except json.JSONDecodeError as e:
         print(f"[AI] خطأ في تحليل JSON: {e}")
+        print(f"[AI] آخر 200 حرف: {full_text[-200:]}")
 
     return None
 
@@ -138,8 +127,8 @@ def merge_work_items(chunks_results: list[dict], products_count: int) -> dict:
 
 def run_ai_agent() -> dict:
     api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key:
-        print("[AI] تحذير: ANTHROPIC_API_KEY غير محدد. يرجى تعيينه في متغيرات البيئة.")
+    if not api_key or api_key == "PUT_YOUR_KEY_HERE":
+        print("[AI] تحذير: ANTHROPIC_API_KEY غير محدد. أضفه في ملف .env")
         return {}
 
     products = load_products()
@@ -150,7 +139,8 @@ def run_ai_agent() -> dict:
     print(f"[AI] تحليل {len(products)} منتج بواسطة Claude ...")
 
     client = anthropic.Anthropic(api_key=api_key)
-    chunks = chunk_products(products, chunk_size=80)
+    chunks = chunk_products(products, chunk_size=25)
+    print(f"[AI] تقسيم المنتجات إلى {len(chunks)} دفعة (25 منتج لكل دفعة)")
     results = []
 
     for i, chunk in enumerate(chunks):
@@ -158,13 +148,16 @@ def run_ai_agent() -> dict:
         result = call_claude_for_chunk(client, text, i)
         if result:
             results.append(result)
+            print(f"[AI] ✅ الدفعة {i+1}: {len(result.get('work_items', []))} بند")
+        else:
+            print(f"[AI] ⚠️ الدفعة {i+1}: فشلت")
 
     final = merge_work_items(results, len(products))
 
     with open(WORK_DESCRIPTIONS_FILE, "w", encoding="utf-8") as f:
         json.dump(final, f, ensure_ascii=False, indent=4)
 
-    print(f"[AI] تم حفظ {final['total_work_items']} بند توصيف في {WORK_DESCRIPTIONS_FILE}")
+    print(f"\n[AI] ✅ تم حفظ {final['total_work_items']} بند توصيف في {WORK_DESCRIPTIONS_FILE}")
     return final
 
 
