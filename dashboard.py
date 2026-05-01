@@ -5,6 +5,9 @@ import json
 import subprocess
 import sys
 from datetime import datetime
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent
 
 # ---------------------------------------------------------------
 # إعداد الصفحة
@@ -129,7 +132,7 @@ th { background: #0f3460 !important; color: white !important; }
 @st.cache_data(ttl=300)
 def load_products():
     try:
-        with open("products_all.json", "r", encoding="utf-8") as f:
+        with open(BASE_DIR / "products_all.json", "r", encoding="utf-8") as f:
             data = json.load(f)
         df = pd.DataFrame(data)
         df["price"] = pd.to_numeric(df["price"], errors="coerce")
@@ -141,7 +144,7 @@ def load_products():
 @st.cache_data(ttl=300)
 def load_groups():
     try:
-        with open("matched_groups.json", "r", encoding="utf-8") as f:
+        with open(BASE_DIR / "matched_groups.json", "r", encoding="utf-8") as f:
             return json.load(f)
     except (FileNotFoundError, ValueError):
         return []
@@ -150,7 +153,7 @@ def load_groups():
 @st.cache_data(ttl=300)
 def load_history():
     try:
-        with open("price_history.json", "r", encoding="utf-8") as f:
+        with open(BASE_DIR / "price_history.json", "r", encoding="utf-8") as f:
             data = json.load(f)
         df = pd.DataFrame(data)
         df["price"] = pd.to_numeric(df["price"], errors="coerce")
@@ -163,7 +166,7 @@ def load_history():
 @st.cache_data(ttl=300)
 def load_work_descriptions():
     try:
-        with open("work_descriptions.json", "r", encoding="utf-8") as f:
+        with open(BASE_DIR / "work_descriptions.json", "r", encoding="utf-8") as f:
             return json.load(f)
     except (FileNotFoundError, ValueError):
         return {}
@@ -180,9 +183,9 @@ def reload_all():
 # تشغيل التحديث اليدوي
 # ---------------------------------------------------------------
 def run_update(run_ai: bool = False):
-    steps = ["scraper.py", "matcher.py"]
+    steps = [BASE_DIR / "scraper.py", BASE_DIR / "matcher.py"]
     if run_ai:
-        steps.append("ai_agent.py")
+        steps.append(BASE_DIR / "ai_agent.py")
 
     label = "جاري تحديث البيانات" + (" وتوليد توصيف الأعمال بالذكاء الاصطناعي" if run_ai else "")
     with st.spinner(f"{label} ... قد يستغرق هذا بضع دقائق"):
@@ -207,7 +210,7 @@ def run_ai_only():
     with st.spinner("عميل الذكاء الاصطناعي يحلل المنتجات ... قد يستغرق عدة دقائق"):
         try:
             subprocess.run(
-                [sys.executable, "ai_agent.py"],
+                [sys.executable, str(BASE_DIR / "ai_agent.py")],
                 timeout=600,
                 check=True,
                 capture_output=True,
