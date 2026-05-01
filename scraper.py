@@ -38,23 +38,37 @@ def scrape_jassar(page) -> list:
         url = base_url.format(page_number)
         print(f"[دخيل الجسار] الصفحة {page_number} ...")
         try:
-            page.goto(url, timeout=30000)
+            page.goto(url, timeout=40000, wait_until="domcontentloaded")
+            page.wait_for_load_state("networkidle", timeout=10000)
         except Exception as e:
             print(f"[دخيل الجسار] فشل تحميل الصفحة {page_number}: {e}")
             break
-        time.sleep(2)
+        time.sleep(3)
 
-        products = page.locator(".product").all()
+        # جرّب selectors متعددة لـ WooCommerce
+        products = (
+            page.locator("li.product").all()
+            or page.locator("article.product").all()
+            or page.locator(".product-item").all()
+            or page.locator(".products .product").all()
+        )
         if not products:
-            print("[دخيل الجسار] لا توجد صفحات إضافية.")
+            print(f"[دخيل الجسار] انتهت الصفحات عند {page_number - 1}.")
             break
 
         for product in products:
             try:
-                name = product.locator("h2").text_content().strip()
-                raw_price = product.locator(".price").text_content().strip()
+                name = (
+                    product.locator(".woocommerce-loop-product__title").first.text_content()
+                    or product.locator("h2").first.text_content()
+                    or product.locator("h3").first.text_content()
+                )
+                name = name.strip() if name else ""
+
+                raw_price = product.locator(".price").first.text_content().strip()
                 price = parse_price(raw_price)
-                link = product.locator("a").first.get_attribute("href")
+                link_el = product.locator("a").first
+                link = link_el.get_attribute("href") if link_el else ""
 
                 if name and price is not None:
                     results.append({
@@ -305,12 +319,19 @@ def update_price_history(new_products: list):
 # ============================================================
 # 7) السكريبر الشامل
 # ============================================================
+UA = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) "
+    "Chrome/124.0.0.0 Safari/537.36"
+)
+
+
 def scrape_all():
     all_results = []
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
+        page = browser.new_page(user_agent=UA, locale="ar-KW")
 
         # دخيل الجسار
         all_results.extend(scrape_jassar(page))
@@ -328,6 +349,10 @@ def scrape_all():
         all_results.extend(scrape_youbi(page))
 
         browser.close()
+
+    if not all_results:
+        print("[السكريبر] ⚠️ لم يُجلب أي منتج — الملف القديم محفوظ كما هو.")
+        return []
 
     with open(PRODUCTS_FILE, "w", encoding="utf-8") as f:
         json.dump(all_results, f, ensure_ascii=False, indent=4)
