@@ -45,13 +45,24 @@ def scrape_jassar(page) -> list:
             break
         time.sleep(3)
 
+        # debug: اطبع عنوان الصفحة وعدد العناصر لمعرفة الـ selectors
+        if page_number == 1:
+            print(f"[دخيل الجسار][DEBUG] عنوان الصفحة: {page.title()}")
+            print(f"[دخيل الجسار][DEBUG] URL الفعلي: {page.url}")
+            for sel in ["li.product", "article.product", ".product", ".product-item",
+                        ".product-card", "[class*='product']", ".wc-block-grid__product"]:
+                count = page.locator(sel).count()
+                if count:
+                    print(f"[دخيل الجسار][DEBUG] selector '{sel}' → {count} عنصر")
+
         # جرّب selectors متعددة لـ WooCommerce
-        products = (
-            page.locator("li.product").all()
-            or page.locator("article.product").all()
-            or page.locator(".product-item").all()
-            or page.locator(".products .product").all()
-        )
+        for sel in ["li.product", "article.product", ".wc-block-grid__product",
+                    ".product-card", ".product-item", ".products > li"]:
+            products = page.locator(sel).all()
+            if products:
+                print(f"[دخيل الجسار] استخدم selector: {sel}")
+                break
+
         if not products:
             print(f"[دخيل الجسار] انتهت الصفحات عند {page_number - 1}.")
             break
@@ -93,31 +104,50 @@ def scrape_jassar(page) -> list:
 # ============================================================
 def scrape_arabian(page) -> list:
     results = []
-    base_url = "https://www.arabian-electrical.com/shop/page/{}/"
-    page_number = 1
+    # جرّب URL بديل — الدومين الأصلي لا يُحلّ DNS
+    candidates = [
+        "https://arabianelectrical.com/shop/page/{}/",
+        "https://www.arabian-electric.com/shop/page/{}/",
+    ]
+    base_url = None
 
-    while True:
-        url = base_url.format(page_number)
-        print(f"[العربية للكهرباء] الصفحة {page_number} ...")
+    for candidate in candidates:
         try:
-            page.goto(url, timeout=30000)
-        except Exception as e:
-            print(f"[العربية للكهرباء] فشل تحميل الصفحة {page_number}: {e}")
-            break
-        time.sleep(2)
+            page.goto(candidate.format(1), timeout=15000, wait_until="domcontentloaded")
+            if "arabian" in page.url.lower() or "electric" in page.url.lower():
+                base_url = candidate
+                print(f"[العربية للكهرباء] URL يعمل: {candidate}")
+                break
+        except Exception:
+            pass
 
-        products = page.locator(".product").all()
+    if not base_url:
+        print("[العربية للكهرباء] ⚠️ الموقع غير متاح حالياً — تجاوز.")
+        return []
+
+    page_number = 2  # الصفحة 1 حُمّلت بالفعل
+    while True:
+        if page_number > 1:
+            url = base_url.format(page_number)
+            print(f"[العربية للكهرباء] الصفحة {page_number} ...")
+            try:
+                page.goto(url, timeout=30000, wait_until="domcontentloaded")
+            except Exception as e:
+                print(f"[العربية للكهرباء] فشل: {e}")
+                break
+            time.sleep(2)
+
+        products = page.locator("li.product, article.product, .product").all()
         if not products:
-            print("[العربية للكهرباء] لا توجد صفحات إضافية.")
             break
 
         for product in products:
             try:
-                name = product.locator("h2").text_content().strip()
-                raw_price = product.locator(".price").text_content().strip()
+                name = product.locator("h2, .woocommerce-loop-product__title").first.text_content().strip()
+                raw_price = product.locator(".price").first.text_content().strip()
                 price = parse_price(raw_price)
-                link = product.locator("a").first.get_attribute("href")
-
+                link_el = product.locator("a").first
+                link = link_el.get_attribute("href") if link_el else ""
                 if name and price is not None:
                     results.append({
                         "store": "العربية للكهرباء",
@@ -141,19 +171,41 @@ def scrape_arabian(page) -> list:
 # ============================================================
 def scrape_extra(page) -> list:
     results = []
-    base_url = "https://www.extra.com/ar-kw/c/electronics/?start={}&sz=48"
-    offset = 0
+    # جرّب روابط متعددة لـ Extra Kuwait
+    candidates = [
+        "https://www.extra.com.kw/ar/category/electronics?start={}&sz=48",
+        "https://www.extra.com/ar-kw/c/electronics/?start={}&sz=48",
+        "https://www.extra.com/en-kw/c/electronics/?start={}&sz=48",
+    ]
+    base_url = None
 
-    while True:
-        url = base_url.format(offset)
-        print(f"[Extra] الصفحة offset={offset} ...")
+    for candidate in candidates:
         try:
-            page.goto(url, timeout=40000)
-            page.wait_for_load_state("networkidle", timeout=15000)
-        except Exception as e:
-            print(f"[Extra] فشل التحميل offset={offset}: {e}")
-            break
-        time.sleep(3)
+            page.goto(candidate.format(0), timeout=20000, wait_until="domcontentloaded")
+            current = page.url
+            if "extra.com" in current and "chrome-error" not in current and "ar-sa" not in current:
+                base_url = candidate
+                print(f"[Extra] URL يعمل: {candidate}")
+                break
+        except Exception:
+            pass
+
+    if not base_url:
+        print("[Extra] ⚠️ الموقع غير متاح أو محجوب — تجاوز.")
+        return []
+
+    offset = 48  # الصفحة 0 حُمّلت بالفعل
+    while True:
+        if offset > 0:
+            url = base_url.format(offset)
+            print(f"[Extra] الصفحة offset={offset} ...")
+            try:
+                page.goto(url, timeout=40000)
+                page.wait_for_load_state("networkidle", timeout=15000)
+            except Exception as e:
+                print(f"[Extra] فشل التحميل offset={offset}: {e}")
+                break
+            time.sleep(3)
 
         products = page.locator(".product-tile").all()
         if not products:
@@ -195,21 +247,28 @@ def scrape_extra(page) -> list:
 # ============================================================
 def scrape_xcite(page) -> list:
     results = []
-    base_url = "https://www.xcite.com/electronics?p={}"
+    # xcite.com أصبح يعيد توجيه إلى extra.com — جرّب xcite.com.kw
+    base_url = "https://www.xcite.com.kw/en/electronics?p={}"
     page_number = 1
 
     while True:
         url = base_url.format(page_number)
         print(f"[اكسايت الغانم] الصفحة {page_number} ...")
         try:
-            page.goto(url, timeout=40000)
+            page.goto(url, timeout=40000, wait_until="domcontentloaded")
             page.wait_for_load_state("networkidle", timeout=15000)
         except Exception as e:
             print(f"[اكسايت الغانم] فشل التحميل الصفحة {page_number}: {e}")
             break
+
+        # تحقق إننا لم نُعاد توجيهنا خارج xcite
+        if "xcite" not in page.url.lower():
+            print(f"[اكسايت الغانم] ⚠️ أُعيد التوجيه إلى {page.url} — تجاوز.")
+            break
+
         time.sleep(3)
 
-        products = page.locator(".product-item-info, [data-product-sku]").all()
+        products = page.locator(".product-item-info, [data-product-sku], .product-item").all()
         if not products:
             print("[اكسايت الغانم] لا توجد منتجات إضافية.")
             break
@@ -249,7 +308,8 @@ def scrape_xcite(page) -> list:
 # ============================================================
 def scrape_youbi(page) -> list:
     results = []
-    base_url = "https://www.ubay.com.kw/shop/page/{}/"
+    # ubay.com.kw لا يُحلّ DNS — جرّب ubay.com
+    base_url = "https://www.ubay.com/shop/page/{}/"
     page_number = 1
 
     while True:
