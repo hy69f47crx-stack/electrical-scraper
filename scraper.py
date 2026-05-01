@@ -3,9 +3,11 @@ import json
 import re
 import time
 from datetime import datetime
+from pathlib import Path
 
-PRODUCTS_FILE = "products_all.json"
-HISTORY_FILE = "price_history.json"
+BASE_DIR = Path(__file__).resolve().parent
+PRODUCTS_FILE = BASE_DIR / "products_all.json"
+HISTORY_FILE = BASE_DIR / "price_history.json"
 
 
 def parse_price(raw: str) -> float | None:
@@ -34,17 +36,17 @@ def scrape_jassar(page) -> list:
 
     while True:
         url = base_url.format(page_number)
-        print(f"[الجسار] الصفحة {page_number} ...")
+        print(f"[دخيل الجسار] الصفحة {page_number} ...")
         try:
             page.goto(url, timeout=30000)
         except Exception as e:
-            print(f"[الجسار] فشل تحميل الصفحة {page_number}: {e}")
+            print(f"[دخيل الجسار] فشل تحميل الصفحة {page_number}: {e}")
             break
         time.sleep(2)
 
         products = page.locator(".product").all()
         if not products:
-            print("[الجسار] لا توجد صفحات إضافية.")
+            print("[دخيل الجسار] لا توجد صفحات إضافية.")
             break
 
         for product in products:
@@ -56,7 +58,7 @@ def scrape_jassar(page) -> list:
 
                 if name and price is not None:
                     results.append({
-                        "store": "الجسار",
+                        "store": "دخيل الجسار",
                         "name": name,
                         "price": price,
                         "url": link or "",
@@ -68,7 +70,7 @@ def scrape_jassar(page) -> list:
 
         page_number += 1
 
-    print(f"[الجسار] تم جلب {len(results)} منتج.")
+    print(f"[دخيل الجسار] تم جلب {len(results)} منتج.")
     return results
 
 
@@ -82,17 +84,17 @@ def scrape_arabian(page) -> list:
 
     while True:
         url = base_url.format(page_number)
-        print(f"[العربية] الصفحة {page_number} ...")
+        print(f"[العربية للكهرباء] الصفحة {page_number} ...")
         try:
             page.goto(url, timeout=30000)
         except Exception as e:
-            print(f"[العربية] فشل تحميل الصفحة {page_number}: {e}")
+            print(f"[العربية للكهرباء] فشل تحميل الصفحة {page_number}: {e}")
             break
         time.sleep(2)
 
         products = page.locator(".product").all()
         if not products:
-            print("[العربية] لا توجد صفحات إضافية.")
+            print("[العربية للكهرباء] لا توجد صفحات إضافية.")
             break
 
         for product in products:
@@ -104,7 +106,7 @@ def scrape_arabian(page) -> list:
 
                 if name and price is not None:
                     results.append({
-                        "store": "العربية",
+                        "store": "العربية للكهرباء",
                         "name": name,
                         "price": price,
                         "url": link or "",
@@ -116,7 +118,7 @@ def scrape_arabian(page) -> list:
 
         page_number += 1
 
-    print(f"[العربية] تم جلب {len(results)} منتج.")
+    print(f"[العربية للكهرباء] تم جلب {len(results)} منتج.")
     return results
 
 
@@ -184,18 +186,18 @@ def scrape_xcite(page) -> list:
 
     while True:
         url = base_url.format(page_number)
-        print(f"[Xcite] الصفحة {page_number} ...")
+        print(f"[اكسايت الغانم] الصفحة {page_number} ...")
         try:
             page.goto(url, timeout=40000)
             page.wait_for_load_state("networkidle", timeout=15000)
         except Exception as e:
-            print(f"[Xcite] فشل التحميل الصفحة {page_number}: {e}")
+            print(f"[اكسايت الغانم] فشل التحميل الصفحة {page_number}: {e}")
             break
         time.sleep(3)
 
         products = page.locator(".product-item-info, [data-product-sku]").all()
         if not products:
-            print("[Xcite] لا توجد منتجات إضافية.")
+            print("[اكسايت الغانم] لا توجد منتجات إضافية.")
             break
 
         for product in products:
@@ -208,7 +210,7 @@ def scrape_xcite(page) -> list:
 
                 if name and price is not None:
                     results.append({
-                        "store": "Xcite",
+                        "store": "اكسايت الغانم",
                         "name": name,
                         "price": price,
                         "url": link or "",
@@ -224,12 +226,65 @@ def scrape_xcite(page) -> list:
         if page_number > 10:
             break
 
-    print(f"[Xcite] تم جلب {len(results)} منتج.")
+    print(f"[اكسايت الغانم] تم جلب {len(results)} منتج.")
     return results
 
 
 # ============================================================
-# 5) تحديث السجل التاريخي للأسعار
+# 5) سكريبر يوبي للكهرباء
+# ============================================================
+def scrape_youbi(page) -> list:
+    results = []
+    base_url = "https://www.ubay.com.kw/shop/page/{}/"
+    page_number = 1
+
+    while True:
+        url = base_url.format(page_number)
+        print(f"[يوبي] الصفحة {page_number} ...")
+        try:
+            page.goto(url, timeout=30000)
+            page.wait_for_load_state("networkidle", timeout=10000)
+        except Exception as e:
+            print(f"[يوبي] فشل تحميل الصفحة {page_number}: {e}")
+            break
+        time.sleep(2)
+
+        products = page.locator(".product, .product-item, li.product").all()
+        if not products:
+            print("[يوبي] لا توجد صفحات إضافية.")
+            break
+
+        for product in products:
+            try:
+                name = product.locator("h2, .woocommerce-loop-product__title, .product-name").first.text_content().strip()
+                raw_price = product.locator(".price, .woocommerce-Price-amount").first.text_content().strip()
+                price = parse_price(raw_price)
+                link_el = product.locator("a").first
+                link = link_el.get_attribute("href") if link_el else ""
+
+                if name and price is not None:
+                    results.append({
+                        "store": "يوبي",
+                        "name": name,
+                        "price": price,
+                        "url": link or "",
+                        "timestamp": now_str(),
+                        "currency": "KD",
+                    })
+            except Exception:
+                pass
+
+        page_number += 1
+
+        if page_number > 15:
+            break
+
+    print(f"[يوبي] تم جلب {len(results)} منتج.")
+    return results
+
+
+# ============================================================
+# 6) تحديث السجل التاريخي للأسعار
 # ============================================================
 def update_price_history(new_products: list):
     """يضيف المنتجات الجديدة إلى سجل الأسعار التاريخي."""
@@ -248,7 +303,7 @@ def update_price_history(new_products: list):
 
 
 # ============================================================
-# 6) السكريبر الشامل
+# 7) السكريبر الشامل
 # ============================================================
 def scrape_all():
     all_results = []
@@ -257,17 +312,20 @@ def scrape_all():
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
 
-        # الجسار
+        # دخيل الجسار
         all_results.extend(scrape_jassar(page))
 
-        # العربية
+        # العربية للكهرباء
         all_results.extend(scrape_arabian(page))
 
         # Extra Kuwait
         all_results.extend(scrape_extra(page))
 
-        # Xcite
+        # اكسايت الغانم
         all_results.extend(scrape_xcite(page))
+
+        # يوبي
+        all_results.extend(scrape_youbi(page))
 
         browser.close()
 

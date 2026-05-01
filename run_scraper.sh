@@ -26,5 +26,13 @@ if [ $MATCHER_EXIT -ne 0 ]; then
     echo "خطأ في عميل المطابقة (exit code: $MATCHER_EXIT)" >> "$LOG_FILE"
 fi
 
+# تشغيل عميل الذكاء الاصطناعي
+python3 ai_agent.py >> "$LOG_FILE" 2>&1
+AI_EXIT=$?
+
+if [ $AI_EXIT -ne 0 ]; then
+    echo "خطأ في عميل الذكاء الاصطناعي (exit code: $AI_EXIT)" >> "$LOG_FILE"
+fi
+
 echo "انتهى التحديث: $(date)" >> "$LOG_FILE"
 echo "=============================" >> "$LOG_FILE"

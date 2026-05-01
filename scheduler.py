@@ -9,8 +9,9 @@ KUWAIT_TZ = pytz.timezone("Asia/Kuwait")
 
 
 def run_daily_update():
-    """يشغّل السكريبر ثم عميل المطابقة."""
+    """يشغّل السكريبر، ثم عميل المطابقة، ثم عميل الذكاء الاصطناعي."""
     logger.info("بدء التحديث اليومي ...")
+
     try:
         from scraper import scrape_all
         scrape_all()
@@ -24,6 +25,13 @@ def run_daily_update():
         logger.info("تم الانتهاء من المطابقة.")
     except Exception as e:
         logger.error(f"خطأ في المطابق: {e}")
+
+    try:
+        from ai_agent import run_ai_agent
+        run_ai_agent()
+        logger.info("تم الانتهاء من توصيف الأعمال بواسطة الذكاء الاصطناعي.")
+    except Exception as e:
+        logger.error(f"خطأ في عميل الذكاء الاصطناعي: {e}")
 
     logger.info("تم التحديث اليومي بنجاح.")
 
