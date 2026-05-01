@@ -290,6 +290,38 @@ section[data-testid="stSidebar"] { background: var(--surface) !important; border
 .sidebar-logo .s-icon { font-size: 2rem; }
 .sidebar-logo .s-title { font-size: 1rem; font-weight: 700; color: var(--text-1); margin: 4px 0 2px; }
 .sidebar-logo .s-sub   { font-size: 0.78rem; color: var(--text-3); }
+
+/* ── إجبار ألوان الـ Sidebar ── */
+section[data-testid="stSidebar"] {
+    background: #ffffff !important;
+}
+section[data-testid="stSidebar"] p,
+section[data-testid="stSidebar"] span,
+section[data-testid="stSidebar"] label,
+section[data-testid="stSidebar"] div[data-testid="stMarkdownContainer"] p {
+    color: #0f172a !important;
+    font-family: 'Cairo', sans-serif !important;
+}
+section[data-testid="stSidebar"] small,
+section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] {
+    color: #475569 !important;
+    font-size: 0.82rem !important;
+}
+section[data-testid="stSidebar"] hr {
+    border-color: #e4e9f0 !important;
+    margin: 12px 0 !important;
+}
+.sidebar-stat {
+    background: #f8fafc;
+    border: 1px solid #e4e9f0;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 8px;
+    font-size: 0.88rem;
+    color: #0f172a;
+}
+.sidebar-stat .stat-label { color: #475569; font-size: 0.78rem; }
+.sidebar-stat .stat-val   { font-weight: 700; font-size: 1rem; color: #2563eb; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -421,16 +453,12 @@ work_data = load_work_descriptions()
 # الشريط الجانبي
 # ---------------------------------------------------------------
 with st.sidebar:
-    st.markdown("""
-    <div class="sidebar-logo">
-        <div class="s-icon">⚡</div>
-        <div class="s-title">مقارنة الأسعار</div>
-        <div class="s-sub">المتاجر الكهربائية — الكويت</div>
-    </div>
-    """, unsafe_allow_html=True)
+    st.markdown("## ⚡ مقارنة الأسعار")
+    st.caption("المتاجر الكهربائية — الكويت")
+    st.divider()
 
     page = st.radio(
-        "",
+        "الصفحات",
         [
             "🏠 الرئيسية",
             "📦 المنتجات",
@@ -443,29 +471,38 @@ with st.sidebar:
         label_visibility="collapsed",
     )
 
-    st.markdown("---")
+    st.divider()
 
-    if st.button("🔄 تحديث البيانات", use_container_width=True, type="secondary"):
+    if st.button("🔄 تحديث البيانات", use_container_width=True):
         run_update(run_ai=False)
 
-    if st.button("🤖 تحديث + توصيف الأعمال", use_container_width=True, type="primary"):
+    if st.button("🤖 تحديث + AI", use_container_width=True, type="primary"):
         run_update(run_ai=True)
 
-    st.markdown("---")
+    if st.button("♻️ مسح الكاش", use_container_width=True):
+        reload_all()
+        st.rerun()
 
+    st.divider()
+
+    # إحصائيات
+    store_count = df["store"].nunique() if not df.empty else 0
+    work_items_count = len(work_data.get("work_items", []))
     scheduler_ok = st.session_state.get("scheduler_started", False)
-    st.markdown(f"**الجدول اليومي:** {'✅ يعمل' if scheduler_ok else '⚠️ متوقف'}")
+
+    col_a, col_b = st.columns(2)
+    with col_a:
+        st.metric("المنتجات", f"{len(df):,}")
+        st.metric("التوصيف", work_items_count)
+    with col_b:
+        st.metric("المتاجر", store_count)
+        st.metric("المطابقة", len(groups))
+
+    st.caption(f"الجدول: {'✅ يعمل' if scheduler_ok else '⚠️ متوقف'}")
 
     if not df.empty and "timestamp" in df.columns:
         last_ts = df["timestamp"].max()
         st.caption(f"آخر تحديث: {last_ts}")
-
-    store_count = df["store"].nunique() if not df.empty else 0
-    st.caption(f"المتاجر: {store_count}  •  المنتجات: {len(df):,}")
-
-    work_items_count = len(work_data.get("work_items", []))
-    if work_items_count:
-        st.caption(f"بنود التوصيف: {work_items_count}")
 
     if work_data:
         gen_at = work_data.get("generated_at", "")
@@ -489,6 +526,15 @@ if page == "🏠 الرئيسية":
         <p>منصة ذكية لمتابعة أسعار المتاجر الكهربائية الكويتية مع توصيف أعمال بالذكاء الاصطناعي</p>
     </div>
     """, unsafe_allow_html=True)
+
+    # تحذير إذا البيانات فاضية
+    if df.empty:
+        st.warning(
+            f"⚠️ لا توجد بيانات محملة. "
+            f"الملف المتوقع: `{BASE_DIR / 'products_all.json'}`\n\n"
+            "**الحل:** اضغط زر **🔄 تحديث البيانات** في الشريط الجانبي، "
+            "أو شغّل: `python3 scraper.py` ثم `python3 matcher.py`"
+        )
 
     work_items_count = len(work_data.get("work_items", []))
     avg_saving = round(sum(g.get("savings_pct", 0) for g in groups) / len(groups), 1) if groups else 0
