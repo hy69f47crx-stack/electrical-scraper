@@ -19,109 +19,277 @@ st.set_page_config(
 )
 
 # ---------------------------------------------------------------
-# CSS — دعم RTL + تصميم عربي احترافي
+# CSS — تصميم احترافي هادئ (Gamma-style)
 # ---------------------------------------------------------------
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;900&display=swap');
 
+/* ── متغيرات التصميم ── */
+:root {
+    --bg:        #f6f8fb;
+    --surface:   #ffffff;
+    --border:    #e4e9f0;
+    --primary:   #2563eb;
+    --primary-d: #1d4ed8;
+    --success:   #059669;
+    --success-l: #d1fae5;
+    --purple:    #7c3aed;
+    --purple-l:  #ede9fe;
+    --amber:     #d97706;
+    --amber-l:   #fef3c7;
+    --text-1:    #0f172a;
+    --text-2:    #475569;
+    --text-3:    #94a3b8;
+    --radius-sm: 8px;
+    --radius:    12px;
+    --radius-lg: 18px;
+    --shadow-sm: 0 1px 3px rgba(15,23,42,.06), 0 1px 2px rgba(15,23,42,.04);
+    --shadow:    0 4px 16px rgba(15,23,42,.08), 0 1px 4px rgba(15,23,42,.04);
+    --shadow-lg: 0 12px 32px rgba(15,23,42,.10), 0 2px 8px rgba(15,23,42,.06);
+}
+
+/* ── القاعدة ── */
 html, body, [class*="css"] {
     font-family: 'Cairo', sans-serif;
     direction: rtl;
+    background: var(--bg);
+    color: var(--text-1);
 }
 
+/* ── إزالة padding افتراضي Streamlit ── */
+.block-container { padding-top: 1.5rem !important; padding-bottom: 2rem !important; }
+section[data-testid="stSidebar"] { background: var(--surface) !important; border-left: 1px solid var(--border); }
+
+/* ══════════════════════════════
+   HEADER
+══════════════════════════════ */
 .main-header {
-    background: linear-gradient(135deg, #0d1b2a 0%, #1b4f72 50%, #0f3460 100%);
-    padding: 28px 36px;
-    border-radius: 18px;
-    color: white;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 32px 40px;
     margin-bottom: 28px;
     text-align: center;
-    box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
 }
-.main-header h1 { font-size: 2.1rem; margin: 0; color: #ffffff; font-weight: 900; }
-.main-header p  { font-size: 1.05rem; margin: 8px 0 0; color: #b2c6e0; }
-
-.kpi-card {
-    background: white;
-    border-radius: 16px;
-    padding: 22px 16px;
-    text-align: center;
-    box-shadow: 0 2px 14px rgba(0,0,0,0.09);
-    border-top: 4px solid #0f3460;
-    transition: transform .15s;
+.main-header::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(37,99,235,.06) 0%, rgba(124,58,237,.04) 100%);
+    pointer-events: none;
 }
-.kpi-card:hover { transform: translateY(-3px); }
-.kpi-card .kpi-value { font-size: 2.1rem; font-weight: 900; color: #0f3460; }
-.kpi-card .kpi-label { font-size: 0.88rem; color: #718096; margin-top: 6px; }
-
-.best-deal-card {
-    background: linear-gradient(135deg, #f0fff4, #c6f6d5);
-    border-radius: 12px;
-    padding: 16px 20px;
-    border-right: 5px solid #38a169;
-    margin-bottom: 10px;
-    box-shadow: 0 1px 6px rgba(56,161,105,0.12);
+.main-header .header-icon {
+    font-size: 2.6rem;
+    display: block;
+    margin-bottom: 8px;
+    line-height: 1;
 }
-
-.work-item-card {
-    background: linear-gradient(135deg, #f0f4ff, #e8eeff);
-    border-radius: 12px;
-    padding: 16px 20px;
-    border-right: 5px solid #4263eb;
-    margin-bottom: 10px;
-    box-shadow: 0 1px 6px rgba(66,99,235,0.10);
+.main-header h1 {
+    font-size: 1.85rem;
+    font-weight: 700;
+    color: var(--text-1);
+    margin: 0 0 6px;
+    letter-spacing: -.02em;
 }
-.work-item-card .item-desc { font-weight: 700; font-size: 1.02rem; color: #2d3748; }
-.work-item-card .item-price { color: #276749; font-weight: 700; font-size: 1rem; }
-.work-item-card .item-category {
-    background: #4263eb;
+.main-header p {
+    font-size: 0.95rem;
+    color: var(--text-2);
+    margin: 0;
+    font-weight: 400;
+}
+.header-tag {
+    display: inline-block;
+    background: var(--primary);
     color: white;
     border-radius: 20px;
-    padding: 2px 10px;
+    padding: 2px 14px;
     font-size: 0.78rem;
-    font-weight: 700;
+    font-weight: 600;
+    margin-bottom: 14px;
 }
 
-.saving-badge {
-    background: #38a169;
+/* ══════════════════════════════
+   KPI CARDS
+══════════════════════════════ */
+.kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 16px 18px;
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow .18s, transform .18s;
+    position: relative;
+    overflow: hidden;
+}
+.kpi-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+.kpi-card::after {
+    content: "";
+    position: absolute;
+    bottom: 0; right: 0; left: 0;
+    height: 3px;
+    background: var(--primary);
+    border-radius: 0 0 var(--radius) var(--radius);
+}
+.kpi-card.green::after  { background: var(--success); }
+.kpi-card.purple::after { background: var(--purple); }
+.kpi-card.amber::after  { background: var(--amber); }
+.kpi-card .kpi-icon  { font-size: 1.5rem; margin-bottom: 6px; line-height: 1; }
+.kpi-card .kpi-value { font-size: 2rem; font-weight: 700; color: var(--text-1); line-height: 1.1; }
+.kpi-card .kpi-label { font-size: 0.82rem; color: var(--text-2); margin-top: 5px; font-weight: 400; }
+
+/* ══════════════════════════════
+   DEAL CARDS
+══════════════════════════════ */
+.deal-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: box-shadow .15s;
+}
+.deal-card:hover { box-shadow: var(--shadow); }
+.deal-card .deal-rank {
+    background: var(--primary);
     color: white;
-    border-radius: 20px;
-    padding: 3px 12px;
-    font-size: 0.82rem;
-    font-weight: 700;
+    border-radius: 50%;
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem; font-weight: 700;
+    flex-shrink: 0;
 }
+.deal-card .deal-rank.gold   { background: #d97706; }
+.deal-card .deal-rank.silver { background: #94a3b8; }
+.deal-card .deal-rank.bronze { background: #b45309; }
+.deal-card .deal-body { flex: 1; }
+.deal-card .deal-name  { font-weight: 600; font-size: 0.95rem; color: var(--text-1); }
+.deal-card .deal-store { font-size: 0.82rem; color: var(--text-2); margin-top: 2px; }
+.deal-card .deal-price { text-align: left; }
+.deal-card .deal-kd    { font-weight: 700; color: var(--primary); font-size: 1rem; }
 
+/* ══════════════════════════════
+   WORK ITEM CARDS
+══════════════════════════════ */
+.work-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow-sm);
+    border-right: 4px solid var(--purple);
+    transition: box-shadow .15s;
+}
+.work-card:hover { box-shadow: var(--shadow); }
+.work-card .work-desc     { font-weight: 600; font-size: 0.97rem; color: var(--text-1); margin: 6px 0 4px; }
+.work-card .work-price    { font-size: 0.88rem; color: var(--text-2); margin-top: 2px; }
+.work-card .work-price strong { color: var(--success); }
+
+/* ══════════════════════════════
+   BADGES
+══════════════════════════════ */
+.badge {
+    display: inline-block;
+    border-radius: 20px;
+    padding: 2px 11px;
+    font-size: 0.76rem;
+    font-weight: 600;
+    line-height: 1.6;
+}
+.badge-green  { background: var(--success-l); color: #065f46; }
+.badge-blue   { background: #dbeafe; color: #1e40af; }
+.badge-purple { background: var(--purple-l); color: #5b21b6; }
+.badge-amber  { background: var(--amber-l);  color: #92400e; }
+.badge-white  { background: rgba(255,255,255,.15); color: white; border: 1px solid rgba(255,255,255,.25); }
+
+/* ══════════════════════════════
+   SECTION TITLE
+══════════════════════════════ */
 .section-title {
-    font-size: 1.3rem;
+    font-size: 1.15rem;
     font-weight: 700;
-    color: #2d3748;
-    border-bottom: 3px solid #0f3460;
-    padding-bottom: 8px;
+    color: var(--text-1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
     margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
 }
 
-.ai-badge {
-    background: linear-gradient(90deg, #6c5ce7, #a855f7);
-    color: white;
-    border-radius: 20px;
-    padding: 3px 12px;
-    font-size: 0.82rem;
-    font-weight: 700;
-}
-
+/* ══════════════════════════════
+   INFO BOX
+══════════════════════════════ */
 .info-box {
-    background: #ebf8ff;
-    border-right: 4px solid #3182ce;
-    border-radius: 8px;
-    padding: 12px 16px;
-    margin-bottom: 12px;
-    color: #2c5282;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-right: 4px solid var(--primary);
+    border-radius: var(--radius-sm);
+    padding: 14px 18px;
+    margin-bottom: 14px;
+    color: #1e3a8a;
+    font-size: 0.9rem;
+    line-height: 1.6;
+}
+
+/* ══════════════════════════════
+   PAGE TITLE
+══════════════════════════════ */
+.page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-1);
+    margin-bottom: 4px;
+}
+.page-subtitle {
+    font-size: 0.9rem;
+    color: var(--text-2);
+    margin-bottom: 24px;
+}
+
+/* ══════════════════════════════
+   STORE TABLE
+══════════════════════════════ */
+.store-table {
+    width: 100%;
+    border-collapse: collapse;
     font-size: 0.92rem;
 }
+.store-table th {
+    background: #f1f5f9 !important;
+    color: var(--text-2) !important;
+    font-weight: 600;
+    padding: 10px 14px;
+    text-align: right;
+    border-bottom: 1px solid var(--border);
+}
+.store-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-1);
+}
+.store-table tr:last-child td { border-bottom: none; }
+.store-table tr:hover td { background: #f8fafc; }
 
-table { width: 100%; }
-th { background: #0f3460 !important; color: white !important; }
+/* ── الـ sidebar ── */
+.sidebar-logo {
+    text-align: center;
+    padding: 8px 0 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+}
+.sidebar-logo .s-icon { font-size: 2rem; }
+.sidebar-logo .s-title { font-size: 1rem; font-weight: 700; color: var(--text-1); margin: 4px 0 2px; }
+.sidebar-logo .s-sub   { font-size: 0.78rem; color: var(--text-3); }
 </style>
 """, unsafe_allow_html=True)
 
@@ -253,7 +421,14 @@ work_data = load_work_descriptions()
 # الشريط الجانبي
 # ---------------------------------------------------------------
 with st.sidebar:
-    st.markdown("## ⚡ القائمة الرئيسية")
+    st.markdown("""
+    <div class="sidebar-logo">
+        <div class="s-icon">⚡</div>
+        <div class="s-title">مقارنة الأسعار</div>
+        <div class="s-sub">المتاجر الكهربائية — الكويت</div>
+    </div>
+    """, unsafe_allow_html=True)
+
     page = st.radio(
         "",
         [
@@ -270,17 +445,27 @@ with st.sidebar:
 
     st.markdown("---")
 
-    if st.button("🔄 تحديث البيانات الآن", use_container_width=True):
+    if st.button("🔄 تحديث البيانات", use_container_width=True, type="secondary"):
         run_update(run_ai=False)
 
-    if st.button("🤖 تحديث + توصيف الأعمال", use_container_width=True):
+    if st.button("🤖 تحديث + توصيف الأعمال", use_container_width=True, type="primary"):
         run_update(run_ai=True)
 
     st.markdown("---")
 
+    scheduler_ok = st.session_state.get("scheduler_started", False)
+    st.markdown(f"**الجدول اليومي:** {'✅ يعمل' if scheduler_ok else '⚠️ متوقف'}")
+
     if not df.empty and "timestamp" in df.columns:
         last_ts = df["timestamp"].max()
-        st.caption(f"آخر تحديث للمنتجات: {last_ts}")
+        st.caption(f"آخر تحديث: {last_ts}")
+
+    store_count = df["store"].nunique() if not df.empty else 0
+    st.caption(f"المتاجر: {store_count}  •  المنتجات: {len(df):,}")
+
+    work_items_count = len(work_data.get("work_items", []))
+    if work_items_count:
+        st.caption(f"بنود التوصيف: {work_items_count}")
 
     if work_data:
         gen_at = work_data.get("generated_at", "")
@@ -289,15 +474,7 @@ with st.sidebar:
                 gen_dt = datetime.fromisoformat(gen_at).strftime("%Y-%m-%d %H:%M")
             except ValueError:
                 gen_dt = gen_at
-            st.caption(f"آخر تحديث للتوصيف: {gen_dt}")
-
-    store_count = df["store"].nunique() if not df.empty else 0
-    st.caption(f"عدد المتاجر: {store_count}")
-    scheduler_ok = st.session_state.get("scheduler_started", False)
-    st.caption(f"الجدول اليومي: {'✅ يعمل' if scheduler_ok else '⚠️ متوقف'}")
-    work_items_count = len(work_data.get("work_items", []))
-    if work_items_count:
-        st.caption(f"بنود التوصيف: {work_items_count}")
+            st.caption(f"توليد AI: {gen_dt}")
 
 
 # ===============================================================
@@ -306,8 +483,10 @@ with st.sidebar:
 if page == "🏠 الرئيسية":
     st.markdown("""
     <div class="main-header">
-        <h1>⚡ مقارنة الأسعار الكهربائية — الكويت</h1>
-        <p>منصة ذكية لمتابعة ومقارنة أسعار المتاجر الكهربائية الكويتية مع توصيف أعمال بالذكاء الاصطناعي</p>
+        <span class="header-icon">⚡</span>
+        <div class="header-tag">الكويت</div>
+        <h1>مقارنة الأسعار الكهربائية</h1>
+        <p>منصة ذكية لمتابعة أسعار المتاجر الكهربائية الكويتية مع توصيف أعمال بالذكاء الاصطناعي</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -319,6 +498,7 @@ if page == "🏠 الرئيسية":
     with col1:
         st.markdown(f"""
         <div class="kpi-card">
+            <div class="kpi-icon">📦</div>
             <div class="kpi-value">{len(df):,}</div>
             <div class="kpi-label">إجمالي المنتجات</div>
         </div>
@@ -326,7 +506,8 @@ if page == "🏠 الرئيسية":
 
     with col2:
         st.markdown(f"""
-        <div class="kpi-card">
+        <div class="kpi-card green">
+            <div class="kpi-icon">🏪</div>
             <div class="kpi-value">{df["store"].nunique() if not df.empty else 0}</div>
             <div class="kpi-label">عدد المتاجر</div>
         </div>
@@ -335,24 +516,27 @@ if page == "🏠 الرئيسية":
     with col3:
         st.markdown(f"""
         <div class="kpi-card">
+            <div class="kpi-icon">⚖️</div>
             <div class="kpi-value">{len(groups)}</div>
-            <div class="kpi-label">منتجات متطابقة عبر المتاجر</div>
+            <div class="kpi-label">منتجات مقارنة</div>
         </div>
         """, unsafe_allow_html=True)
 
     with col4:
         st.markdown(f"""
-        <div class="kpi-card">
+        <div class="kpi-card amber">
+            <div class="kpi-icon">💰</div>
             <div class="kpi-value">{avg_saving}%</div>
-            <div class="kpi-label">متوسط نسبة التوفير</div>
+            <div class="kpi-label">متوسط التوفير</div>
         </div>
         """, unsafe_allow_html=True)
 
     with col5:
         st.markdown(f"""
-        <div class="kpi-card">
+        <div class="kpi-card purple">
+            <div class="kpi-icon">🤖</div>
             <div class="kpi-value">{work_items_count}</div>
-            <div class="kpi-label">بنود توصيف الأعمال</div>
+            <div class="kpi-label">بنود التوصيف</div>
         </div>
         """, unsafe_allow_html=True)
 
@@ -362,30 +546,38 @@ if page == "🏠 الرئيسية":
     if groups:
         st.markdown('<div class="section-title">🏆 أبرز العروض اليوم</div>', unsafe_allow_html=True)
         top5 = sorted(groups, key=lambda g: g.get("savings_pct", 0), reverse=True)[:5]
-        for g in top5:
+        rank_classes = ["gold", "silver", "bronze", "", ""]
+        for i, g in enumerate(top5):
+            rank_cls = rank_classes[i] if i < len(rank_classes) else ""
             st.markdown(f"""
-            <div class="best-deal-card">
-                <strong>{g['canonical_name']}</strong><br>
-                أفضل سعر: <strong>{g['best_price']} KD</strong> — {g['best_store']} &nbsp;
-                <span class="saving-badge">توفير {g['savings_pct']}%</span>
+            <div class="deal-card">
+                <div class="deal-rank {rank_cls}">{i+1}</div>
+                <div class="deal-body">
+                    <div class="deal-name">{g['canonical_name']}</div>
+                    <div class="deal-store">🏪 {g['best_store']}</div>
+                </div>
+                <div class="deal-price">
+                    <div class="deal-kd">{g['best_price']} KD</div>
+                    <span class="badge badge-green">توفير {g['savings_pct']}%</span>
+                </div>
             </div>
             """, unsafe_allow_html=True)
 
     # أبرز بنود التوصيف
     if work_data.get("work_items"):
         st.markdown("<br>", unsafe_allow_html=True)
-        st.markdown('<div class="section-title">🤖 أبرز بنود توصيف الأعمال <span class="ai-badge">AI</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="section-title">🤖 أبرز بنود توصيف الأعمال &nbsp;<span class="badge badge-purple">AI</span></div>', unsafe_allow_html=True)
         items_preview = work_data["work_items"][:5]
         for item in items_preview:
             st.markdown(f"""
-            <div class="work-item-card">
-                <span class="item-category">{item.get("category", "")}</span>
-                <div class="item-desc">{item.get("description", "")}</div>
-                <div class="item-price">
-                    أدنى سعر: {item.get("min_price", "—")} KD &nbsp;|&nbsp;
-                    متوسط: {item.get("avg_price", "—")} KD &nbsp;|&nbsp;
-                    أعلى: {item.get("max_price", "—")} KD
-                    &nbsp;— أفضل متجر: {item.get("best_store", "—")}
+            <div class="work-card">
+                <span class="badge badge-purple">{item.get("category", "")}</span>
+                <div class="work-desc">{item.get("description", "")}</div>
+                <div class="work-price">
+                    أدنى: <strong>{item.get("min_price", "—")} KD</strong> &nbsp;·&nbsp;
+                    متوسط: <strong>{item.get("avg_price", "—")} KD</strong> &nbsp;·&nbsp;
+                    أعلى: <strong>{item.get("max_price", "—")} KD</strong>
+                    &nbsp;&nbsp;<span class="badge badge-blue">🏪 {item.get("best_store", "—")}</span>
                 </div>
             </div>
             """, unsafe_allow_html=True)
@@ -403,7 +595,8 @@ if page == "🏠 الرئيسية":
 # صفحة المنتجات
 # ===============================================================
 elif page == "📦 المنتجات":
-    st.title("📦 قائمة المنتجات")
+    st.markdown('<div class="page-title">📦 قائمة المنتجات</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-subtitle">تصفح وابحث في جميع المنتجات المجلوبة من المتاجر الكهربائية</div>', unsafe_allow_html=True)
 
     if df.empty:
         st.warning("لا توجد بيانات. اضغط 'تحديث البيانات الآن' من الشريط الجانبي.")
@@ -453,7 +646,8 @@ elif page == "📦 المنتجات":
 # صفحة مقارنة الأسعار
 # ===============================================================
 elif page == "⚖️ مقارنة الأسعار":
-    st.title("⚖️ مقارنة الأسعار بين المتاجر")
+    st.markdown('<div class="page-title">⚖️ مقارنة الأسعار بين المتاجر</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-subtitle">منتجات متطابقة من متاجر مختلفة مع تمييز الأرخص</div>', unsafe_allow_html=True)
 
     if not groups:
         st.warning("لا توجد بيانات مقارنة. شغّل التحديث أولاً.")
@@ -499,7 +693,8 @@ elif page == "⚖️ مقارنة الأسعار":
 # صفحة أفضل العروض
 # ===============================================================
 elif page == "🏆 أفضل العروض":
-    st.title("🏆 أفضل العروض — أكبر فرق سعري بين المتاجر")
+    st.markdown('<div class="page-title">🏆 أفضل العروض</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-subtitle">المنتجات ذات أكبر فارق سعري بين المتاجر</div>', unsafe_allow_html=True)
 
     if not groups:
         st.warning("لا توجد بيانات. شغّل التحديث أولاً.")
@@ -553,10 +748,8 @@ elif page == "🏆 أفضل العروض":
 # ===============================================================
 elif page == "🤖 توصيف الأعمال الكهربائية":
     st.markdown("""
-    <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px;">
-        <h1 style="margin:0;">🤖 توصيف الأعمال الكهربائية</h1>
-        <span class="ai-badge">مدعوم بـ Claude AI</span>
-    </div>
+    <div class="page-title">🤖 توصيف الأعمال الكهربائية &nbsp;<span class="badge badge-purple">مدعوم بـ Claude AI</span></div>
+    <div class="page-subtitle">بنود أعمال الكهرباء المولّدة تلقائياً بالذكاء الاصطناعي بناءً على أسعار السوق</div>
     """, unsafe_allow_html=True)
 
     if not work_data or not work_data.get("work_items"):
@@ -684,7 +877,8 @@ elif page == "🤖 توصيف الأعمال الكهربائية":
 # صفحة تاريخ الأسعار
 # ===============================================================
 elif page == "📈 تاريخ الأسعار":
-    st.title("📈 تاريخ الأسعار")
+    st.markdown('<div class="page-title">📈 تاريخ الأسعار</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-subtitle">تتبع تغير سعر أي منتج عبر الزمن</div>', unsafe_allow_html=True)
 
     if history_df.empty:
         st.warning("لا توجد بيانات تاريخية بعد. سيتم تجميعها تلقائياً عند كل تحديث.")
@@ -720,7 +914,8 @@ elif page == "📈 تاريخ الأسعار":
 # صفحة الرسوم البيانية
 # ===============================================================
 elif page == "📊 الرسوم البيانية":
-    st.title("📊 الرسوم البيانية")
+    st.markdown('<div class="page-title">📊 الرسوم البيانية</div>', unsafe_allow_html=True)
+    st.markdown('<div class="page-subtitle">تحليل بصري شامل للأسعار والمتاجر</div>', unsafe_allow_html=True)
 
     if df.empty:
         st.warning("لا توجد بيانات.")
