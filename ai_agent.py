@@ -2,11 +2,23 @@ import json
 import os
 import re
 from datetime import datetime
+from pathlib import Path
 
 from dotenv import load_dotenv
 import anthropic
 
-load_dotenv()
+# تحميل ملف .env من نفس مجلد المشروع
+env_path = Path(__file__).resolve().parent / ".env"
+load_dotenv(dotenv_path=env_path)
+
+# قراءة المفتاح
+API_KEY = os.getenv("ANTHROPIC_API_KEY")
+
+# فحص المفتاح
+if not API_KEY or API_KEY == "PUT_YOUR_KEY_HERE":
+    raise ValueError("❌ لم يتم العثور على ANTHROPIC_API_KEY داخل ملف .env")
+
+print("✔️ تم تحميل المفتاح بنجاح")
 
 PRODUCTS_FILE = "products_all.json"
 WORK_DESCRIPTIONS_FILE = "work_descriptions.json"
@@ -126,11 +138,6 @@ def merge_work_items(chunks_results: list[dict], products_count: int) -> dict:
 
 
 def run_ai_agent() -> dict:
-    api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if not api_key or api_key == "PUT_YOUR_KEY_HERE":
-        print("[AI] تحذير: ANTHROPIC_API_KEY غير محدد. أضفه في ملف .env")
-        return {}
-
     products = load_products()
     if not products:
         print("[AI] لا توجد منتجات للتحليل. شغّل السكريبر أولاً.")
@@ -138,7 +145,7 @@ def run_ai_agent() -> dict:
 
     print(f"[AI] تحليل {len(products)} منتج بواسطة Claude ...")
 
-    client = anthropic.Anthropic(api_key=api_key)
+    client = anthropic.Anthropic(api_key=API_KEY)
     chunks = chunk_products(products, chunk_size=25)
     print(f"[AI] تقسيم المنتجات إلى {len(chunks)} دفعة (25 منتج لكل دفعة)")
     results = []
@@ -153,6 +160,10 @@ def run_ai_agent() -> dict:
             print(f"[AI] ⚠️ الدفعة {i+1}: فشلت")
 
     final = merge_work_items(results, len(products))
+
+    if final["total_work_items"] == 0:
+        print("\n[AI] ⚠️ لم يتم توليد أي بنود — الملف القديم محفوظ كما هو.")
+        return {}
 
     with open(WORK_DESCRIPTIONS_FILE, "w", encoding="utf-8") as f:
         json.dump(final, f, ensure_ascii=False, indent=4)
