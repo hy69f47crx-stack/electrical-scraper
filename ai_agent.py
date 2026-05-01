@@ -4,7 +4,10 @@ import re
 from datetime import datetime
 from pathlib import Path
 
+from dotenv import load_dotenv
 import anthropic
+
+load_dotenv()
 
 PRODUCTS_FILE = "products_all.json"
 WORK_DESCRIPTIONS_FILE = "work_descriptions.json"

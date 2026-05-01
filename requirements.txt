@@ -7,3 +7,4 @@ apscheduler
 pytz
 pyarrow
 anthropic
+python-dotenv
