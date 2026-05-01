@@ -7,8 +7,6 @@ from datetime import datetime
 PRODUCTS_FILE = "products_all.json"
 HISTORY_FILE = "price_history.json"
 
-STORES = ["دخيل الجسار", "العربية للكهرباء", "اكسايت الغانم", "يوبي", "Extra"]
-
 
 def parse_price(raw: str) -> float | None:
     """يحوّل نص السعر إلى رقم (يزيل KD، د.ك، فواصل ...)."""
@@ -284,7 +282,7 @@ def scrape_youbi(page) -> list:
 
 
 # ============================================================
-# 6) تحديث السجل التاريخي للأسعار  (kept as-is)
+# 6) تحديث السجل التاريخي للأسعار
 # ============================================================
 def update_price_history(new_products: list):
     """يضيف المنتجات الجديدة إلى سجل الأسعار التاريخي."""

@@ -795,6 +795,7 @@ elif page == "📊 الرسوم البيانية":
         # 6) درجة استقرار الأسعار
         st.subheader("درجة استقرار الأسعار لكل متجر")
         score_df = df.groupby("store")["price"].var().reset_index()
+        score_df["price"] = score_df["price"].fillna(0)
         score_df["score"] = 1 / (1 + score_df["price"])
         score_chart = (
             alt.Chart(score_df)
