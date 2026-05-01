@@ -458,26 +458,21 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
     # Navigation
-    st.markdown("<div style='padding:10px 8px 6px'>", unsafe_allow_html=True)
     page = st.radio(
         "nav",
         ["🏠  الرئيسية", "📦  المنتجات", "⚖️  مقارنة الأسعار",
          "🏆  أفضل العروض", "🤖  توصيف الأعمال", "📈  تاريخ الأسعار", "📊  الرسوم البيانية"],
         label_visibility="collapsed",
     )
-    st.markdown("</div>", unsafe_allow_html=True)
 
     st.divider()
 
-    # Actions
-    st.markdown("<div style='padding:0 8px'>", unsafe_allow_html=True)
     if st.button("🔄  تحديث البيانات", use_container_width=True):
         run_update(run_ai=False)
     if st.button("🤖  تحديث + توصيف AI", use_container_width=True, type="primary"):
         run_update(run_ai=True)
     if st.button("♻️  مسح الكاش", use_container_width=True):
         reload_all(); st.rerun()
-    st.markdown("</div>", unsafe_allow_html=True)
 
     st.divider()
 
@@ -625,9 +620,19 @@ elif page == "📦  المنتجات":
         filt = filt[(filt["price"] >= price_range[0]) & (filt["price"] <= price_range[1])]
 
         st.caption(f"يُعرض {len(filt):,} منتج")
-        cols = [c for c in ["name", "price", "store", "url", "timestamp"] if c in filt.columns]
-        labels = {"name": "المنتج", "price": "السعر (KD)", "store": "المتجر", "url": "رابط", "timestamp": "وقت الجلب"}
-        st.dataframe(filt[cols].rename(columns=labels), use_container_width=True, hide_index=True)
+        show_cols = [c for c in ["name", "price", "store", "url", "timestamp"] if c in filt.columns]
+        st.dataframe(
+            filt[show_cols],
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "name":      st.column_config.TextColumn("المنتج"),
+                "price":     st.column_config.NumberColumn("السعر (KD)", format="%.3f"),
+                "store":     st.column_config.TextColumn("المتجر"),
+                "url":       st.column_config.LinkColumn("رابط", display_text="🔗 فتح"),
+                "timestamp": st.column_config.TextColumn("وقت الجلب"),
+            },
+        )
         st.download_button("⬇️ تحميل CSV", filt.to_csv(index=False).encode("utf-8-sig"), "products.csv", "text/csv")
 
 
@@ -649,16 +654,23 @@ elif page == "⚖️  مقارنة الأسعار":
                 rows = []
                 for p in g["products"]:
                     rows.append({
+                        "✔": "✅" if p["price"] == g["best_price"] else "",
                         "المتجر": p["store"],
                         "المنتج": p["name"],
                         "السعر (KD)": p["price"],
                         "الرابط": p.get("url", ""),
-                        "": "✅ الأرخص" if p["price"] == g["best_price"] else "",
                     })
                 cdf = pd.DataFrame(rows)
-                def cr(row):
-                    return (["background-color:#d1fae5"] * len(row) if row.get("") == "✅ الأرخص" else [""] * len(row))
-                st.dataframe(cdf.style.apply(cr, axis=1), use_container_width=True, hide_index=True)
+                st.dataframe(
+                    cdf,
+                    use_container_width=True,
+                    hide_index=True,
+                    column_config={
+                        "✔": st.column_config.TextColumn(width="small"),
+                        "السعر (KD)": st.column_config.NumberColumn(format="%.3f KD"),
+                        "الرابط": st.column_config.LinkColumn(display_text="🔗 فتح"),
+                    },
+                )
 
 
 # ───────────────────────────────────────────────────────────────
@@ -681,9 +693,18 @@ elif page == "🏆  أفضل العروض":
                 "أفضل سعر (KD)": g["best_price"],
                 "أغلى سعر (KD)": g["worst_price"],
                 "أفضل متجر": g["best_store"],
-                "التوفير": f"{g['savings_pct']}%",
+                "التوفير %": g["savings_pct"],
             } for g in deals[:100]])
-            st.dataframe(dd, use_container_width=True, hide_index=True)
+            st.dataframe(
+                dd,
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "أفضل سعر (KD)": st.column_config.NumberColumn(format="%.3f KD"),
+                    "أغلى سعر (KD)": st.column_config.NumberColumn(format="%.3f KD"),
+                    "التوفير %":      st.column_config.ProgressColumn(min_value=0, max_value=100, format="%d%%"),
+                },
+            )
             st.download_button("⬇️ CSV", dd.to_csv(index=False).encode("utf-8-sig"), "best_deals.csv", "text/csv")
 
             st.markdown("---")
@@ -769,7 +790,19 @@ elif page == "🤖  توصيف الأعمال":
                 "أفضل متجر": i.get("best_store", ""),
                 "الفئة": i.get("category", ""),
             } for n, i in enumerate(fi)])
-            st.dataframe(td, use_container_width=True, hide_index=True)
+            st.dataframe(
+                td,
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "رقم":          st.column_config.NumberColumn(width="small"),
+                    "وصف العمل":    st.column_config.TextColumn(width="large"),
+                    "الوحدة":       st.column_config.TextColumn(width="small"),
+                    "أدنى (KD)":   st.column_config.NumberColumn(format="%.3f"),
+                    "متوسط (KD)":  st.column_config.NumberColumn(format="%.3f"),
+                    "أعلى (KD)":   st.column_config.NumberColumn(format="%.3f"),
+                },
+            )
             st.download_button("⬇️ تحميل CSV", td.to_csv(index=False).encode("utf-8-sig"), "work_descriptions.csv", "text/csv")
 
         if cats:
