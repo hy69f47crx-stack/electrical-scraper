@@ -3,9 +3,11 @@ import json
 import re
 import time
 from datetime import datetime
+from pathlib import Path
 
-PRODUCTS_FILE = "products_all.json"
-HISTORY_FILE = "price_history.json"
+BASE_DIR = Path(__file__).resolve().parent
+PRODUCTS_FILE = BASE_DIR / "products_all.json"
+HISTORY_FILE = BASE_DIR / "price_history.json"
 
 
 def parse_price(raw: str) -> float | None:

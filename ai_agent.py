@@ -20,8 +20,9 @@ if not API_KEY or API_KEY == "PUT_YOUR_KEY_HERE":
 
 print("✔️ تم تحميل المفتاح بنجاح")
 
-PRODUCTS_FILE = "products_all.json"
-WORK_DESCRIPTIONS_FILE = "work_descriptions.json"
+BASE_DIR = Path(__file__).resolve().parent
+PRODUCTS_FILE = BASE_DIR / "products_all.json"
+WORK_DESCRIPTIONS_FILE = BASE_DIR / "work_descriptions.json"
 
 SYSTEM_PROMPT = """أنت خبير في توصيف أعمال الكهرباء والمشتريات الكهربائية في الكويت.
 

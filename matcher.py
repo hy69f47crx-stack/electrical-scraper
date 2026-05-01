@@ -2,10 +2,12 @@ import json
 import re
 import uuid
 from datetime import date
+from pathlib import Path
 from rapidfuzz import fuzz
 
-PRODUCTS_FILE = "products_all.json"
-MATCHED_FILE = "matched_groups.json"
+BASE_DIR = Path(__file__).resolve().parent
+PRODUCTS_FILE = BASE_DIR / "products_all.json"
+MATCHED_FILE = BASE_DIR / "matched_groups.json"
 
 SIMILARITY_THRESHOLD = 75
 
