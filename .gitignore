@@ -1,11 +1,11 @@
 # متغيرات البيئة — لا ترفع هذا الملف أبداً
 .env
 
-# بيانات مجلوبة (اختياري — احذف السطر إذا أردت رفعها)
-products_all.json
-price_history.json
-matched_groups.json
-work_descriptions.json
+# بيانات مجلوبة — تُرفع مرة واحدة كبيانات أولية
+# products_all.json
+# price_history.json
+# matched_groups.json
+# work_descriptions.json
 
 # Python
 __pycache__/
