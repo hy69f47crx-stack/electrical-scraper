@@ -5,7 +5,16 @@ import altair as alt
 import json
 import subprocess
 import sys
+import numpy as np
 from pathlib import Path
+from analytics import (
+    detect_anomalies,
+    calculate_inflation,
+    calculate_copper_correlation,
+    get_cost_breakdown_chart_data,
+    generate_court_report,
+    export_report_as_json,
+)
 
 BASE_DIR = Path(__file__).resolve().parent
 
@@ -530,7 +539,9 @@ with st.sidebar:
         "nav",
         ["🏠 الرئيسية", "📦 المنتجات", "📂 الفئات والتفريعات",
          "⚖️ مقارنة الأسعار", "🏆 أفضل العروض",
-         "🤖 توصيف الأعمال", "📈 تاريخ الأسعار", "📊 الرسوم البيانية"],
+         "🤖 توصيف الأعمال", "📈 تاريخ الأسعار", "📊 الرسوم البيانية",
+         "🔍 كشف الشذوذ", "📊 ارتباط النحاس", "💰 تقسيم التكاليف",
+         "📈 معدل التضخم", "⚖️ تقرير قانوني"],
         label_visibility="collapsed",
     )
 
@@ -1080,3 +1091,337 @@ elif page == "📊 الرسوم البيانية":
                 .configure_view(stroke=None)
             )
             st.altair_chart(ab, use_container_width=True)
+
+
+# ─────────────────────────────────────────────────────────────────
+# ══ كشف الشذوذ ══════════════════════════════════════════════════
+# ─────────────────────────────────────────────────────────────────
+elif page == "🔍 كشف الشذوذ":
+    st.markdown('<div class="pt">🔍 كشف الشذوذ في الأسعار</div><div class="ps">تحديد الأسعار التي تختلف بشكل كبير عن متوسط السوق</div>', unsafe_allow_html=True)
+
+    if df.empty:
+        st.warning("لا توجد بيانات")
+    else:
+        threshold = st.slider("عتبة الاختلاف (%)", min_value=5, max_value=50, value=20, step=5)
+        anomalies = detect_anomalies(df, threshold_percent=threshold)
+
+        if anomalies:
+            st.success(f"✅ تم اكتشاف {len(anomalies)} حالات شاذة")
+
+            anomaly_df = pd.DataFrame(anomalies)
+            st.dataframe(
+                anomaly_df[["المنتج", "المتجر", "السعر", "متوسط السوق", "الفرق %", "الحالة"]],
+                use_container_width=True,
+                hide_index=True,
+                height=min(500, max(200, len(anomaly_df) * 35 + 50)),
+                column_config={
+                    "المنتج": st.column_config.TextColumn(width="medium"),
+                    "المتجر": st.column_config.TextColumn(width="small"),
+                    "السعر": st.column_config.TextColumn(width="small"),
+                    "متوسط السوق": st.column_config.TextColumn(width="small"),
+                    "الفرق %": st.column_config.TextColumn(width="small"),
+                    "الحالة": st.column_config.TextColumn(width="medium"),
+                }
+            )
+
+            st.markdown('<div class="sec"><span class="sec-icon">📊</span><span class="sec-title">الملخص الإحصائي</span></div>', unsafe_allow_html=True)
+            col1, col2, col3, col4 = st.columns(4)
+            with col1:
+                st.metric("إجمالي الحالات", len(anomalies))
+            with col2:
+                above = len([a for a in anomalies if "أعلى" in a["الحالة"]])
+                st.metric("أعلى من السوق 🔴", above)
+            with col3:
+                below = len([a for a in anomalies if "أقل" in a["الحالة"]])
+                st.metric("أقل من السوق 🟢", below)
+            with col4:
+                avg_diff = np.mean([float(a["الفرق %"].rstrip("%")) for a in anomalies])
+                st.metric("متوسط الاختلاف", f"{avg_diff:.1f}%")
+        else:
+            st.info("✅ لا توجد أسعار شاذة في السوق الحالية")
+
+
+# ─────────────────────────────────────────────────────────────────
+# ══ ارتباط النحاس ══════════════════════════════════════════════
+# ─────────────────────────────────────────────────────────────────
+elif page == "📊 ارتباط النحاس":
+    st.markdown('<div class="pt">📊 ارتباط النحاس اللندني</div><div class="ps">تحليل الارتباط بين أسعار الكيبلات والنحاس العالمي</div>', unsafe_allow_html=True)
+
+    if df.empty:
+        st.warning("لا توجد بيانات")
+    else:
+        corr_result = calculate_copper_correlation(df)
+
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("معامل الارتباط", f"{corr_result['correlation']:.3f}")
+        with col2:
+            st.metric("حالة الارتباط", corr_result.get("interpretation", "—"))
+        with col3:
+            st.metric("سعر النحاس الحالي", corr_result.get("current_copper_price", "—"))
+
+        st.info(f"💡 متوسط سعر الكيبلات: {corr_result.get('cable_avg_price', '—')}")
+
+        # جدول توضيحي
+        st.markdown('<div class="sec"><span class="sec-icon">📈</span><span class="sec-title">جودة الارتباط</span></div>', unsafe_allow_html=True)
+
+        interp_map = {
+            "ارتباط قوي ✅": {"أيقونة": "🔴", "الوصف": "ارتباط مباشر قوي: أسعار الكيبلات تتابع النحاس بقرب شديد"},
+            "ارتباط متوسط ⚠️": {"أيقونة": "🟡", "الوصف": "ارتباط معتدل: هناك عوامل أخرى تؤثر على السعر"},
+            "ارتباط ضعيف ❌": {"أيقونة": "🟢", "الوصف": "ارتباط ضعيف: عوامل السوق تسيطر أكثر من النحاس"},
+        }
+
+        for interp_text, details in interp_map.items():
+            st.markdown(f"""
+            <div style="padding:12px;border-radius:8px;border-left:4px solid #2563eb;background:#f0f4ff;margin:8px 0">
+                <b>{interp_text}</b><br>
+                <span style="color:#475569;font-size:0.9rem">{details['الوصف']}</span>
+            </div>
+            """, unsafe_allow_html=True)
+
+
+# ─────────────────────────────────────────────────────────────────
+# ══ تقسيم التكاليف ═════════════════════════════════════════════
+# ─────────────────────────────────────────────────────────────────
+elif page == "💰 تقسيم التكاليف":
+    st.markdown('<div class="pt">💰 تقسيم التكاليف</div><div class="ps">توزيع المواد والعمالة والمصاريف العامة</div>', unsafe_allow_html=True)
+
+    # Get category list
+    breakdown_data = get_cost_breakdown_chart_data()
+    categories = ["عام (Global)"]
+
+    try:
+        from cost_breakdown import get_cost_breakdown_chart_data as get_breakdown
+        if callable(get_breakdown):
+            try:
+                full_data = get_breakdown()
+                if isinstance(full_data, dict) and "breakdown_by_product_category" in str(full_data):
+                    # Extract categories from the json file
+                    import json
+                    with open(BASE_DIR / "cost_breakdown.json", "r", encoding="utf-8") as f:
+                        cost_data = json.load(f)
+                        categories.extend(list(cost_data.get("breakdown_by_product_category", {}).keys()))
+            except:
+                pass
+    except:
+        # Fallback to reading JSON directly
+        try:
+            import json
+            with open(BASE_DIR / "cost_breakdown.json", "r", encoding="utf-8") as f:
+                cost_data = json.load(f)
+                categories.extend(list(cost_data.get("breakdown_by_product_category", {}).keys()))
+        except:
+            categories = ["عام (Global)"]
+
+    selected_category = st.selectbox("اختر الفئة", categories)
+
+    if selected_category == "عام (Global)":
+        data = get_cost_breakdown_chart_data()
+    else:
+        data = get_cost_breakdown_chart_data(category=selected_category)
+
+    col1, col2, col3 = st.columns(3)
+
+    # Extract percentages
+    if isinstance(data, dict):
+        materials = data.get("materials", data.get("المواد والخامات (Materials)", 45))
+        labor = data.get("labor", data.get("العمالة (Labor)", 35))
+        overhead = data.get("overhead", data.get("المصاريف العامة (Overhead)", 20))
+    else:
+        materials, labor, overhead = 45, 35, 20
+
+    with col1:
+        st.metric("🏭 المواد والخامات", f"{materials}%")
+    with col2:
+        st.metric("👷 العمالة", f"{labor}%")
+    with col3:
+        st.metric("📋 المصاريف العامة", f"{overhead}%")
+
+    # Pie chart
+    pie_data = pd.DataFrame({
+        "النوع": ["المواد والخامات", "العمالة", "المصاريف العامة"],
+        "النسبة": [materials, labor, overhead]
+    })
+
+    pie_chart = (
+        alt.Chart(pie_data)
+        .mark_arc(cornerRadius=5, innerRadius=50)
+        .encode(
+            theta="النسبة:Q",
+            color=alt.Color("النوع:N",
+                          scale=alt.Scale(domain=["المواد والخامات", "العمالة", "المصاريف العامة"],
+                                        range=["#2563eb", "#0d9488", "#f59e0b"]),
+                          legend=alt.Legend(labelFont="Cairo")),
+            tooltip=["النوع:N", "النسبة:Q"]
+        )
+        .properties(height=350, width=350)
+        .configure_arc(stroke=None)
+        .configure_legend(labelFont="Cairo", labelFontSize=11, titleFont="Cairo")
+    )
+
+    st.altair_chart(pie_chart, use_container_width=False)
+
+    st.markdown('<div class="sec"><span class="sec-icon">📝</span><span class="sec-title">الشرح</span></div>', unsafe_allow_html=True)
+    st.markdown(f"""
+    - **المواد والخامات ({materials}%)**: تكلفة الأسلاك والكيبلات والمكونات الكهربائية
+    - **العمالة ({labor}%)**: أجور الفنيين والعمال المتخصصين
+    - **المصاريف العامة ({overhead}%)**: تكاليف إدارية وتشغيلية (إيجار، كهرباء، معدات)
+    """)
+
+
+# ─────────────────────────────────────────────────────────────────
+# ══ معدل التضخم ═════════════════════════════════════════════════
+# ─────────────────────────────────────────────────────────────────
+elif page == "📈 معدل التضخم":
+    st.markdown('<div class="pt">📈 معدل التضخم</div><div class="ps">تتبع التغيرات في الأسعار عبر الزمن</div>', unsafe_allow_html=True)
+
+    if df.empty:
+        st.warning("لا توجد بيانات")
+    else:
+        inflation_data = calculate_inflation(df, days_back=30)
+
+        if inflation_data:
+            st.success(f"✅ تم حساب معدل التضخم لـ {len(inflation_data)} متاجر")
+
+            inflation_rows = []
+            for store, stats in inflation_data.items():
+                inflation_rows.append({
+                    "المتجر": store,
+                    "السعر القديم": stats.get("السعر القديم", "—"),
+                    "السعر الحالي": stats.get("السعر الحالي", "—"),
+                    "معدل التضخم": stats.get("معدل التضخم", "—"),
+                    "الاتجاه": stats.get("الاتجاه", "—")
+                })
+
+            inflation_df = pd.DataFrame(inflation_rows)
+            st.dataframe(
+                inflation_df,
+                use_container_width=True,
+                hide_index=True,
+                height=min(400, max(150, len(inflation_df) * 35 + 50)),
+                column_config={
+                    "المتجر": st.column_config.TextColumn(width="medium"),
+                    "السعر القديم": st.column_config.TextColumn(width="small"),
+                    "السعر الحالي": st.column_config.TextColumn(width="small"),
+                    "معدل التضخم": st.column_config.TextColumn(width="small"),
+                    "الاتجاه": st.column_config.TextColumn(width="small"),
+                }
+            )
+
+            # Summary statistics
+            st.markdown('<div class="sec"><span class="sec-icon">📊</span><span class="sec-title">الملخص الإحصائي</span></div>', unsafe_allow_html=True)
+
+            col1, col2, col3 = st.columns(3)
+
+            # Extract inflation percentages
+            inflation_values = []
+            for store, stats in inflation_data.items():
+                try:
+                    val = float(stats.get("معدل التضخم", "0").rstrip("%"))
+                    inflation_values.append(val)
+                except:
+                    pass
+
+            with col1:
+                avg_inflation = np.mean(inflation_values) if inflation_values else 0
+                st.metric("متوسط التضخم", f"{avg_inflation:+.1f}%")
+
+            with col2:
+                max_inflation = max(inflation_values) if inflation_values else 0
+                st.metric("أعلى تضخم", f"{max_inflation:+.1f}%")
+
+            with col3:
+                min_inflation = min(inflation_values) if inflation_values else 0
+                st.metric("أقل تضخم", f"{min_inflation:+.1f}%")
+        else:
+            st.info("لا توجد بيانات كافية لحساب معدل التضخم")
+
+
+# ─────────────────────────────────────────────────────────────────
+# ══ تقرير قانوني ═══════════════════════════════════════════════
+# ─────────────────────────────────────────────────────────────────
+elif page == "⚖️ تقرير قانوني":
+    st.markdown('<div class="pt">⚖️ تقرير قانوني احترافي</div><div class="ps">تقرير معتمد لأغراض قانونية وقضائية</div>', unsafe_allow_html=True)
+
+    if df.empty:
+        st.warning("لا توجد بيانات")
+    else:
+        # Generate report
+        anomalies = detect_anomalies(df, threshold_percent=20)
+        inflation_data = calculate_inflation(df, days_back=30)
+        report = generate_court_report(df, groups, anomalies, inflation_data)
+
+        # Display report header
+        st.markdown(f"""
+        <div style="padding:24px;background:#f0f4ff;border-radius:12px;border-left:6px solid #2563eb;margin-bottom:20px">
+            <div style="font-size:1.3rem;font-weight:700;color:#1d4ed8;margin-bottom:8px">
+                {report['report_title']}
+            </div>
+            <div style="color:#475569;font-size:0.95rem">
+                <b>التاريخ:</b> {report['summary']['date_generated']} |
+                <b>الوقت:</b> {report['summary']['time_generated']}<br>
+                <b>الطابع:</b> {report['certification']}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Summary statistics
+        st.markdown('<div class="sec"><span class="sec-icon">📊</span><span class="sec-title">ملخص التقرير</span></div>', unsafe_allow_html=True)
+
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("إجمالي المنتجات", report['summary']['total_products'])
+        with col2:
+            st.metric("عدد المتاجر", report['summary']['total_stores'])
+        with col3:
+            st.metric("الحالات الشاذة", report['summary']['total_anomalies'])
+        with col4:
+            st.metric("تقارير التضخم", len(inflation_data))
+
+        # Findings
+        st.markdown('<div class="sec"><span class="sec-icon">🔍</span><span class="sec-title">النتائج</span></div>', unsafe_allow_html=True)
+
+        findings = report['findings']
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            status = "✅ نعم" if findings['anomalies_detected'] else "❌ لا"
+            st.metric("الشذوذ المكتشف", status)
+        with col2:
+            st.metric("عدد الحالات", findings['anomaly_count'])
+        with col3:
+            status = "✅ نعم" if findings['inflation_trends'] else "❌ لا"
+            st.metric("اتجاهات التضخم", status)
+
+        # Legal statement
+        st.markdown(f"""
+        <div style="padding:16px;background:#fff8e6;border-radius:8px;border-left:4px solid #f59e0b;margin:16px 0">
+            <b>📋 البيان القانوني:</b><br>
+            <span style="color:#666;font-size:0.95rem">{report['legal_statement']}</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Export button
+        st.markdown('<div class="sec"><span class="sec-icon">💾</span><span class="sec-title">تصدير التقرير</span></div>', unsafe_allow_html=True)
+
+        # Prepare export data
+        export_data = {
+            "report": report,
+            "anomalies": anomalies,
+            "inflation_data": inflation_data,
+        }
+
+        col1, col2 = st.columns(2)
+        with col1:
+            json_str = json.dumps(export_data, ensure_ascii=False, indent=2)
+            st.download_button(
+                label="📥 تحميل JSON",
+                data=json_str,
+                file_name=f"court_report_{report['timestamp'].replace(':','-')}.json",
+                mime="application/json",
+                use_container_width=True
+            )
+
+        with col2:
+            if st.button("📄 معاينة JSON", use_container_width=True):
+                with st.expander("محتوى الملف"):
+                    st.json(export_data)

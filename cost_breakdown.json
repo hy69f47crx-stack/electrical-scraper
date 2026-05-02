@@ -1,0 +1,72 @@
+{
+  "materials_percentage": 45,
+  "labor_percentage": 35,
+  "overhead_percentage": 20,
+  "notes": {
+    "materials": "خامات وأسلاك وكيبلات",
+    "labor": "أجور العمال والفنيين",
+    "overhead": "مصاريف إدارية وتشغيلية"
+  },
+  "breakdown_by_product_category": {
+    "الكيبلات والأسلاك": {
+      "materials": 50,
+      "labor": 30,
+      "overhead": 20
+    },
+    "المفاتيح والقواطع": {
+      "materials": 40,
+      "labor": 40,
+      "overhead": 20
+    },
+    "المصابيح والإضاءة": {
+      "materials": 55,
+      "labor": 25,
+      "overhead": 20
+    },
+    "المقابس والمنافذ": {
+      "materials": 45,
+      "labor": 35,
+      "overhead": 20
+    },
+    "المحولات": {
+      "materials": 48,
+      "labor": 32,
+      "overhead": 20
+    },
+    "البطاريات": {
+      "materials": 60,
+      "labor": 20,
+      "overhead": 20
+    },
+    "المولدات": {
+      "materials": 50,
+      "labor": 30,
+      "overhead": 20
+    },
+    "المراوح والتهوية": {
+      "materials": 52,
+      "labor": 28,
+      "overhead": 20
+    },
+    "تكييف الهواء": {
+      "materials": 48,
+      "labor": 32,
+      "overhead": 20
+    },
+    "الأجهزة المنزلية": {
+      "materials": 55,
+      "labor": 25,
+      "overhead": 20
+    },
+    "سخانات المياه": {
+      "materials": 50,
+      "labor": 30,
+      "overhead": 20
+    },
+    "أجهزة الشحن": {
+      "materials": 58,
+      "labor": 22,
+      "overhead": 20
+    }
+  }
+}
