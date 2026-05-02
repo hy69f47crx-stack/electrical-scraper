@@ -53,7 +53,7 @@ st.set_page_config(
 )
 
 # ─────────────────────────────────────────────────────────────────
-# CSS — Light Pastel Theme + Responsive + RTL
+# CSS — Minimal Cream Theme (inspired by modern analytics UI)
 # ─────────────────────────────────────────────────────────────────
 st.markdown("""
 <style>
@@ -61,26 +61,29 @@ st.markdown("""
 
 /* ══ Design tokens ══════════════════════════════════════════════ */
 :root {
-    --bg:       #f5f7fb;
+    --bg:       #f5f2ec;
     --surface:  #ffffff;
-    --surface2: #f0f4ff;
-    --border:   #d4dbe8;
-    --blue:     #2563eb;
-    --blue-l:   #60a5fa;
-    --blue-d:   #1d4ed8;
-    --teal:     #0d9488;
-    --teal-l:   #2dd4bf;
-    --violet:   #7c3aed;
-    --amber:    #f59e0b;
-    --green:    #16a34a;
-    --red:      #dc2626;
-    --t1:       #0f172a;
-    --t2:       #475569;
-    --t3:       #94a3b8;
-    --r:        10px;
-    --r-lg:     16px;
-    --sh:       0 4px 16px rgba(15,23,42,.10), 0 1px 4px rgba(15,23,42,.06);
-    --sh-sm:    0 2px 8px  rgba(15,23,42,.08), 0 1px 2px rgba(15,23,42,.04);
+    --surface2: #ede9e1;
+    --surface3: #f0ece4;
+    --border:   #e2ddd5;
+    --border2:  #ccc8c0;
+    --purple:   #8577ce;
+    --purple-l: #b3a9e4;
+    --purple-d: #6658b4;
+    --coral:    #d97561;
+    --coral-l:  #eda897;
+    --sage:     #7a9e7e;
+    --sage-l:   #a8c4aa;
+    --amber:    #c9974a;
+    --amber-l:  #e4bc8a;
+    --t1:       #1a1a1a;
+    --t2:       #6b6560;
+    --t3:       #a09a94;
+    --r:        14px;
+    --r-lg:     20px;
+    --r-pill:   50px;
+    --sh:       0 4px 20px rgba(0,0,0,.07), 0 1px 4px rgba(0,0,0,.04);
+    --sh-sm:    0 2px 10px rgba(0,0,0,.05), 0 1px 2px rgba(0,0,0,.03);
 }
 
 /* ══ Global ═════════════════════════════════════════════════════ */
@@ -99,7 +102,7 @@ html, body, [class*="css"] {
 /* ══ Sidebar ════════════════════════════════════════════════════ */
 section[data-testid="stSidebar"] {
     background: var(--surface) !important;
-    border-left: 2px solid var(--blue) !important;
+    border-left: 1px solid var(--border) !important;
     box-shadow: var(--sh-sm) !important;
 }
 section[data-testid="stSidebar"] * {
@@ -108,22 +111,24 @@ section[data-testid="stSidebar"] * {
 }
 section[data-testid="stSidebar"] hr { border-color: var(--border) !important; margin: 8px 0 !important; }
 section[data-testid="stSidebar"] [data-testid="stMetricLabel"] * { color: var(--t3) !important; font-size: 0.7rem !important; }
-section[data-testid="stSidebar"] [data-testid="stMetricValue"] * { color: var(--blue) !important; font-size: 1.2rem !important; font-weight: 700 !important; }
+section[data-testid="stSidebar"] [data-testid="stMetricValue"] * { color: var(--purple) !important; font-size: 1.2rem !important; font-weight: 700 !important; }
 section[data-testid="stSidebar"] .stRadio label {
-    border-radius: 8px !important; padding: 10px 14px !important;
-    cursor: pointer !important; transition: background .15s !important; color: var(--t2) !important;
+    border-radius: var(--r-pill) !important; padding: 9px 16px !important;
+    cursor: pointer !important; transition: background .2s !important; color: var(--t2) !important;
+    font-size: 0.88rem !important;
 }
-section[data-testid="stSidebar"] .stRadio label:hover { background: rgba(37,99,235,.08) !important; color: var(--blue) !important; }
+section[data-testid="stSidebar"] .stRadio label:hover { background: var(--surface2) !important; color: var(--t1) !important; }
 section[data-testid="stSidebar"] .stRadio input:checked + label {
-    background: rgba(37,99,235,.12) !important; color: var(--blue) !important;
-    font-weight: 600 !important; border-right: 3px solid var(--blue) !important;
+    background: var(--surface2) !important; color: var(--t1) !important;
+    font-weight: 700 !important;
 }
 section[data-testid="stSidebar"] .stButton button {
     background: var(--surface2) !important; border: 1px solid var(--border) !important;
-    color: var(--t1) !important; border-radius: 8px !important;
-    font-family: 'Cairo', sans-serif !important; transition: all .15s !important;
+    color: var(--t1) !important; border-radius: var(--r-pill) !important;
+    font-family: 'Cairo', sans-serif !important; transition: all .2s !important;
+    font-size: 0.86rem !important;
 }
-section[data-testid="stSidebar"] .stButton button:hover { background: var(--border) !important; color: var(--blue) !important; }
+section[data-testid="stSidebar"] .stButton button:hover { background: var(--border) !important; }
 section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] { color: var(--t3) !important; font-size: 0.72rem !important; }
 
 /* ══ Hide collapse buttons ══════════════════════════════════════ */
@@ -134,126 +139,113 @@ button[data-testid="stBaseButton-headerNoPadding"],
 button[aria-label="Expand"],
 button[data-testid*="expanderButton"] { display: none !important; }
 
-/* ══ Sidebar toggle button ══════════════════════════════════════ */
-.sidebar-toggle {
-    position: fixed; top: 16px; right: 16px; z-index: 9999;
-    background: var(--blue) !important; border: none !important;
-    color: white !important; width: 44px !important; height: 44px !important;
-    border-radius: 8px !important; cursor: pointer !important;
-    display: flex !important; align-items: center !important; justify-content: center !important;
-    font-size: 1.4rem !important; box-shadow: var(--sh-sm) !important;
-    transition: all .2s !important; padding: 0 !important; line-height: 1 !important;
-}
-.sidebar-toggle:hover  { background: var(--blue-d) !important; }
-.sidebar-toggle:active { transform: scale(0.95); }
-
 /* ══ Page header ════════════════════════════════════════════════ */
 .ph {
-    background: linear-gradient(135deg, var(--surface2) 0%, rgba(37,99,235,.06) 100%);
-    border: 1px solid rgba(37,99,235,.18); border-radius: var(--r-lg);
-    padding: 28px 36px; margin-bottom: 24px; box-shadow: var(--sh);
-    display: flex; align-items: center; gap: 20px; position: relative; overflow: hidden;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    padding: 28px 36px; margin-bottom: 24px;
+    box-shadow: var(--sh);
+    display: flex; align-items: center; gap: 20px;
 }
-.ph::before {
-    content: ""; position: absolute; inset: 0;
-    background: radial-gradient(circle at top right, rgba(37,99,235,.07), transparent);
-    pointer-events: none;
-}
-.ph-icon { font-size: 2.6rem; line-height: 1; flex-shrink: 0; position: relative; z-index: 1; }
-.ph-text { flex: 1; position: relative; z-index: 1; min-width: 0; }
-.ph-text h1 { font-size: 1.7rem; font-weight: 700; color: var(--t1); margin: 0 0 5px; letter-spacing: -.02em; }
-.ph-text p  { font-size: 0.88rem; color: var(--t2); margin: 0; }
+.ph-icon { font-size: 2.2rem; line-height: 1; flex-shrink: 0; }
+.ph-text { flex: 1; min-width: 0; }
+.ph-text h1 { font-size: 1.55rem; font-weight: 700; color: var(--t1); margin: 0 0 4px; }
+.ph-text p  { font-size: 0.86rem; color: var(--t2); margin: 0; }
 .ph-badge {
     margin-right: auto; flex-shrink: 0;
-    background: rgba(13,148,136,.12); color: var(--teal);
-    border: 1px solid rgba(13,148,136,.25); border-radius: 20px;
-    padding: 5px 14px; font-size: 0.78rem; font-weight: 700;
-    white-space: nowrap; position: relative; z-index: 1;
+    background: var(--surface2); color: var(--t2);
+    border: 1px solid var(--border2); border-radius: var(--r-pill);
+    padding: 6px 16px; font-size: 0.78rem; font-weight: 700;
 }
 
 /* ══ KPI cards ══════════════════════════════════════════════════ */
 .kpi {
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--r); padding: 18px 14px; box-shadow: var(--sh-sm);
-    display: flex; align-items: center; gap: 14px; transition: all .2s;
-    height: 100%; min-height: 80px;
+    border-radius: var(--r-lg); padding: 22px 18px; box-shadow: var(--sh-sm);
+    display: flex; align-items: center; gap: 16px;
+    transition: all .25s; height: 100%; min-height: 90px;
 }
-.kpi:hover { box-shadow: var(--sh); border-color: rgba(37,99,235,.35); transform: translateY(-1px); }
+.kpi:hover { box-shadow: var(--sh); transform: translateY(-2px); }
 .kpi-icon-box {
-    width: 44px; height: 44px; border-radius: 9px;
+    width: 50px; height: 50px; border-radius: 14px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.3rem; flex-shrink: 0;
+    font-size: 1.4rem; flex-shrink: 0;
 }
-.kpi-icon-box.blue   { background: rgba(37,99,235,.12); }
-.kpi-icon-box.teal   { background: rgba(13,148,136,.12); }
-.kpi-icon-box.violet { background: rgba(124,58,237,.12); }
-.kpi-icon-box.amber  { background: rgba(245,158,11,.12); }
+.kpi-icon-box.purple { background: rgba(133,119,206,.14); }
+.kpi-icon-box.coral  { background: rgba(217,117, 97,.14); }
+.kpi-icon-box.sage   { background: rgba(122,158,126,.14); }
+.kpi-icon-box.amber  { background: rgba(201,151, 74,.14); }
+.kpi-icon-box.blue   { background: rgba(133,119,206,.14); }
+.kpi-icon-box.teal   { background: rgba(122,158,126,.14); }
+.kpi-icon-box.violet { background: rgba(133,119,206,.14); }
 .kpi-body { flex: 1; min-width: 0; }
-.kpi-val  { font-size: 1.7rem; font-weight: 700; color: var(--t1); line-height: 1; }
-.kpi-lbl  { font-size: 0.78rem; color: var(--t3); margin-top: 4px; }
+.kpi-val  { font-size: 1.9rem; font-weight: 800; color: var(--t1); line-height: 1; letter-spacing: -0.03em; }
+.kpi-lbl  { font-size: 0.76rem; color: var(--t3); margin-top: 5px; font-weight: 500; }
 
 /* ══ Section header ═════════════════════════════════════════════ */
 .sec {
     display: flex; align-items: center; gap: 10px;
-    margin: 24px 0 14px; padding-bottom: 10px;
-    border-bottom: 2px solid rgba(37,99,235,.12);
+    margin: 24px 0 14px; padding-bottom: 0;
+    border-bottom: none;
 }
-.sec-icon  { font-size: 1.1rem; }
-.sec-title { font-size: 1.05rem; font-weight: 700; color: var(--t1); }
+.sec-icon  { font-size: 1rem; opacity: 0.7; }
+.sec-title { font-size: 0.95rem; font-weight: 700; color: var(--t2); text-transform: uppercase; letter-spacing: 0.06em; }
 .sec-badge {
-    margin-right: auto; background: rgba(124,58,237,.10); color: var(--violet);
-    border: 1px solid rgba(124,58,237,.2); border-radius: 20px;
-    padding: 3px 12px; font-size: 0.74rem; font-weight: 700;
+    margin-right: auto; background: rgba(133,119,206,.12); color: var(--purple);
+    border: 1px solid rgba(133,119,206,.25); border-radius: var(--r-pill);
+    padding: 3px 12px; font-size: 0.72rem; font-weight: 700;
 }
 
 /* ══ Work card ══════════════════════════════════════════════════ */
 .wc {
-    background: var(--surface); border: 1px solid rgba(124,58,237,.15);
-    border-right: 3px solid var(--violet); border-radius: var(--r);
-    padding: 14px 16px; margin-bottom: 10px; box-shadow: var(--sh-sm); transition: all .2s;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 16px 18px;
+    margin-bottom: 10px; box-shadow: var(--sh-sm); transition: all .2s;
 }
-.wc:hover { box-shadow: var(--sh); border-color: rgba(124,58,237,.3); }
+.wc:hover { box-shadow: var(--sh); border-color: var(--border2); }
 .wc-cat {
-    display: inline-block; background: rgba(124,58,237,.10); color: var(--violet);
-    border-radius: 20px; padding: 3px 11px; font-size: 0.73rem; font-weight: 700;
+    display: inline-block; background: var(--surface2); color: var(--t2);
+    border-radius: var(--r-pill); padding: 3px 12px;
+    font-size: 0.72rem; font-weight: 700;
 }
 .wc-desc { font-weight: 600; font-size: 0.9rem; color: var(--t1); margin: 7px 0 5px; line-height: 1.5; }
 .wc-meta { font-size: 0.82rem; color: var(--t2); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.wc-meta .p { color: var(--teal); font-weight: 700; }
+.wc-meta .p { color: var(--sage); font-weight: 700; }
 .wc-meta .s {
-    background: rgba(37,99,235,.10); color: var(--blue);
-    border-radius: 20px; padding: 2px 10px; font-size: 0.73rem; font-weight: 700;
+    background: var(--surface2); color: var(--t2);
+    border-radius: var(--r-pill); padding: 2px 10px;
+    font-size: 0.72rem; font-weight: 700;
 }
 
 /* ══ Page title ═════════════════════════════════════════════════ */
-.pt { font-size: 1.45rem; font-weight: 700; color: var(--t1); margin-bottom: 3px; }
-.ps { font-size: 0.86rem; color: var(--t2); margin-bottom: 20px; }
+.pt { font-size: 1.4rem; font-weight: 800; color: var(--t1); margin-bottom: 2px; letter-spacing: -0.02em; }
+.ps { font-size: 0.85rem; color: var(--t3); margin-bottom: 20px; font-weight: 400; }
 
 /* ══ Store chip ═════════════════════════════════════════════════ */
 .store-chip {
     background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--r); padding: 14px 10px; box-shadow: var(--sh-sm);
+    border-radius: var(--r-lg); padding: 18px 12px; box-shadow: var(--sh-sm);
     text-align: center; transition: all .2s;
 }
-.store-chip:hover { border-color: var(--blue); box-shadow: var(--sh); }
-.store-chip .sc-num  { font-size: 1.5rem; font-weight: 700; color: var(--blue); }
-.store-chip .sc-name { font-weight: 700; font-size: 0.88rem; color: var(--t1); margin-top: 3px; }
-.store-chip .sc-count{ font-size: 0.74rem; color: var(--t3); margin-top: 2px; }
+.store-chip:hover { border-color: var(--border2); box-shadow: var(--sh); }
+.store-chip .sc-num  { font-size: 1.7rem; font-weight: 800; color: var(--purple); letter-spacing: -0.03em; }
+.store-chip .sc-name { font-weight: 600; font-size: 0.86rem; color: var(--t1); margin-top: 4px; }
+.store-chip .sc-count{ font-size: 0.72rem; color: var(--t3); margin-top: 2px; }
 
 /* ══ Cloud banner ═══════════════════════════════════════════════ */
 .cloud-info {
-    background: rgba(37,99,235,.06); border: 1px solid rgba(37,99,235,.2);
-    border-right: 4px solid var(--blue); border-radius: var(--r);
-    padding: 12px 16px; font-size: 0.88rem; color: var(--t2); margin-bottom: 4px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 12px 16px;
+    font-size: 0.86rem; color: var(--t2); margin-bottom: 4px;
 }
-.cloud-info b { color: var(--blue); }
+.cloud-info b { color: var(--t1); }
 
 /* ══ Input controls ═════════════════════════════════════════════ */
-/* Text inputs */
 .stTextInput input, .stSelectbox select {
     font-family: 'Cairo', sans-serif !important;
     font-size: 0.9rem !important;
-    border-radius: 8px !important;
+    border-radius: var(--r) !important;
     border-color: var(--border) !important;
     background: var(--surface) !important;
     color: var(--t1) !important;
@@ -261,72 +253,53 @@ button[data-testid*="expanderButton"] { display: none !important; }
 }
 .stTextInput label, .stSelectbox label, .stSlider label {
     font-family: 'Cairo', sans-serif !important;
-    font-size: 0.88rem !important;
+    font-size: 0.86rem !important;
     color: var(--t2) !important;
     font-weight: 600 !important;
 }
-/* Slider — constrain width, prevent overflow */
+/* Slider */
 .stSlider {
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow: visible !important;
-    padding: 0 !important;
-    margin: 0 !important;
+    width: 100% !important; max-width: 100% !important;
+    overflow: visible !important; padding: 0 !important; margin: 0 !important;
 }
 [data-testid="stSlider"] {
-    width: 100% !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    overflow: visible !important;
+    width: 100% !important; padding: 0 !important;
+    margin: 0 !important; overflow: visible !important;
 }
-[data-testid="stSlider"] canvas {
-    max-width: 100% !important;
-}
+[data-testid="stSlider"] canvas { max-width: 100% !important; }
 /* Selectbox */
-[data-testid="stSelectbox"] {
-    max-width: 100% !important;
-}
+[data-testid="stSelectbox"] { max-width: 100% !important; }
 [data-testid="stSelectbox"] > div > div {
     font-family: 'Cairo', sans-serif !important;
     font-size: 0.88rem !important;
     background: var(--surface) !important;
     border-color: var(--border) !important;
-    border-radius: 8px !important;
+    border-radius: var(--r) !important;
     color: var(--t1) !important;
 }
-/* Filter row container */
+/* Filter row */
 .filter-row {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--r);
-    padding: 16px 18px;
-    margin-bottom: 16px;
-    box-shadow: var(--sh-sm);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 16px 18px;
+    margin-bottom: 16px; box-shadow: var(--sh-sm);
 }
 
 /* ══ Dataframe / Table ══════════════════════════════════════════ */
-/* Outer wrapper — enable scroll, styled card */
 [data-testid="stDataFrame"] {
     border: 1px solid var(--border) !important;
     border-radius: var(--r) !important;
     overflow: hidden !important;
     box-shadow: var(--sh-sm) !important;
     background: var(--surface) !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    display: block !important;
+    width: 100% !important; max-width: 100% !important; display: block !important;
 }
 [data-testid="stDataFrame"] > div {
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow-x: auto !important;
-    overflow-y: auto !important;
+    width: 100% !important; max-width: 100% !important;
+    overflow-x: auto !important; overflow-y: auto !important;
 }
-[data-testid="stDataFrame"] canvas {
-    max-width: 100% !important;
-}
+[data-testid="stDataFrame"] canvas { max-width: 100% !important; }
 
-/* ══ Altair charts — RTL + overflow ════════════════════════════ */
+/* ══ Altair charts ══════════════════════════════════════════════ */
 .vega-embed { direction: ltr !important; max-width: 100% !important; overflow: hidden !important; }
 [data-testid="stVegaLiteChart"] { max-width: 100% !important; overflow: hidden !important; }
 .vega-embed canvas { max-width: 100% !important; }
@@ -341,31 +314,46 @@ button[data-testid*="expanderButton"] { display: none !important; }
 }
 [data-testid="stExpander"] summary {
     font-family: 'Cairo', sans-serif !important;
-    font-size: 0.9rem !important;
-    font-weight: 600 !important;
-    color: var(--t1) !important;
-    padding: 12px 16px !important;
-    background: var(--surface2) !important;
+    font-size: 0.9rem !important; font-weight: 600 !important;
+    color: var(--t1) !important; padding: 12px 16px !important;
+    background: var(--surface3) !important;
 }
-[data-testid="stExpander"] summary:hover {
-    background: rgba(37,99,235,.06) !important;
-    color: var(--blue) !important;
-}
+[data-testid="stExpander"] summary:hover { background: var(--surface2) !important; }
 
 /* ══ Buttons ════════════════════════════════════════════════════ */
 .stButton button {
     font-family: 'Cairo', sans-serif !important;
     font-size: 0.88rem !important;
-    border-radius: 8px !important;
+    border-radius: var(--r-pill) !important;
     font-weight: 600 !important;
-    transition: all .15s !important;
+    transition: all .2s !important;
+    background: var(--surface2) !important;
+    border: 1px solid var(--border) !important;
+    color: var(--t1) !important;
+}
+.stButton button:hover {
+    background: var(--border) !important;
+    border-color: var(--border2) !important;
+}
+.stDownloadButton button {
+    font-family: 'Cairo', sans-serif !important;
+    border-radius: var(--r-pill) !important;
+    font-weight: 600 !important;
+    background: var(--t1) !important;
+    color: var(--bg) !important;
+    border: none !important;
+}
+.stDownloadButton button:hover {
+    background: #333 !important;
+    opacity: 0.9 !important;
 }
 
 /* ══ Metrics ════════════════════════════════════════════════════ */
-[data-testid="stMetricLabel"] { font-family: 'Cairo', sans-serif !important; font-size: 0.78rem !important; }
-[data-testid="stMetricValue"] { font-family: 'Cairo', sans-serif !important; }
+[data-testid="stMetricLabel"] { font-family: 'Cairo', sans-serif !important; font-size: 0.78rem !important; color: var(--t3) !important; }
+[data-testid="stMetricValue"] { font-family: 'Cairo', sans-serif !important; font-weight: 800 !important; letter-spacing: -0.03em !important; }
+[data-testid="stMetricDelta"] { font-family: 'Cairo', sans-serif !important; }
 
-/* ══ Captions / warnings / info ═════════════════════════════════ */
+/* ══ Captions / alerts ══════════════════════════════════════════ */
 [data-testid="stCaptionContainer"], .stMarkdown small {
     font-family: 'Cairo', sans-serif !important;
     direction: rtl !important;
@@ -379,29 +367,28 @@ hr { border-color: var(--border) !important; }
 @media (max-width: 768px) {
     .block-container { padding: 1rem 1rem 2rem !important; }
     .ph { padding: 18px 20px; gap: 14px; }
-    .ph-text h1 { font-size: 1.35rem !important; }
-    .ph-text p  { font-size: 0.82rem !important; }
-    .ph-badge   { display: none; }
-    .kpi { padding: 14px 10px !important; gap: 10px; }
-    .kpi-val { font-size: 1.5rem !important; }
+    .ph-text h1 { font-size: 1.25rem !important; }
+    .ph-badge { display: none; }
+    .kpi { padding: 16px 12px !important; gap: 12px; }
+    .kpi-val { font-size: 1.6rem !important; }
+    .kpi-icon-box { width: 42px !important; height: 42px !important; }
     .sec { margin: 18px 0 12px; }
 }
 
 /* ══ Responsive — Mobile 480px ══════════════════════════════════ */
 @media (max-width: 480px) {
     .block-container { padding: 0.75rem 0.75rem 1.5rem !important; }
-    .ph { padding: 12px 14px; gap: 10px; }
-    .ph-icon { font-size: 1.8rem; }
-    .ph-text h1 { font-size: 1.1rem !important; }
+    .ph { padding: 14px 16px; gap: 10px; }
+    .ph-icon { font-size: 1.7rem; }
+    .ph-text h1 { font-size: 1.05rem !important; }
     .ph-text p  { font-size: 0.74rem !important; }
-    .kpi { padding: 10px 8px !important; gap: 8px; min-height: 60px; }
-    .kpi-icon-box { width: 36px !important; height: 36px !important; font-size: 0.95rem !important; }
-    .kpi-val { font-size: 1.3rem !important; }
+    .kpi { padding: 12px 10px !important; gap: 10px; min-height: 70px; }
+    .kpi-icon-box { width: 38px !important; height: 38px !important; font-size: 1rem !important; }
+    .kpi-val { font-size: 1.4rem !important; }
     .kpi-lbl { font-size: 0.68rem !important; }
-    .wc, .store-chip { padding: 10px 12px !important; }
+    .wc, .store-chip { padding: 12px !important; }
     .pt { font-size: 1.2rem !important; }
-    .ps { font-size: 0.8rem !important; }
-    .sidebar-toggle { width: 38px !important; height: 38px !important; font-size: 1.2rem !important; }
+    .ps { font-size: 0.78rem !important; }
     [data-testid="stSlider"] { padding: 2px !important; }
 }
 </style>
@@ -653,11 +640,11 @@ if page == "🏠 الرئيسية":
         st.warning("⚠️ لا توجد بيانات — " + ("يتم تحديثها تلقائياً" if IS_CLOUD else "استخدم ⚙️ تحديث البيانات"))
 
     kpis_data = [
-        ("📦", "blue",   f"{n_products:,}", "المنتجات"),
-        ("🏪", "teal",   n_stores,          "المتاجر"),
-        ("⚖️", "blue",   n_groups,          "المطابقة"),
+        ("📦", "purple", f"{n_products:,}", "المنتجات"),
+        ("🏪", "sage",   n_stores,          "المتاجر"),
+        ("⚖️", "coral",  n_groups,          "المطابقة"),
         ("💰", "amber",  f"{avg_saving}%",  "التوفير"),
-        ("🤖", "violet", n_ai,              "التوصيف"),
+        ("🤖", "purple", n_ai,              "التوصيف"),
     ]
     kpi_cols = st.columns(5)
     for idx, (icon, color, val, lbl) in enumerate(kpis_data):
@@ -887,7 +874,7 @@ elif page == "🏆 أفضل العروض":
                 } for g in deals[:top_n]])
                 bar = (
                     alt.Chart(cd)
-                    .mark_bar(color="#2563eb", cornerRadiusTopRight=4, cornerRadiusBottomRight=4)
+                    .mark_bar(color="#8577ce", cornerRadiusTopRight=4, cornerRadiusBottomRight=4)
                     .encode(
                         x=alt.X("التوفير:Q",
                                 title="نسبة التوفير %",
@@ -1041,7 +1028,7 @@ elif page == "📊 الرسوم البيانية":
             st.markdown('<div class="sec"><span class="sec-icon">📉</span><span class="sec-title">توزيع الأسعار</span></div>', unsafe_allow_html=True)
             hist = (
                 alt.Chart(df)
-                .mark_bar(color="#2563eb", opacity=0.85, cornerRadiusTopLeft=3, cornerRadiusTopRight=3)
+                .mark_bar(color="#8577ce", opacity=0.85, cornerRadiusTopLeft=3, cornerRadiusTopRight=3)
                 .encode(
                     alt.X("price:Q",
                           bin=alt.Bin(maxbins=28),
@@ -1069,7 +1056,7 @@ elif page == "📊 الرسوم البيانية":
             avg_df = df.groupby("store", as_index=False)["price"].mean().round({"price": 2})
             ab = (
                 alt.Chart(avg_df)
-                .mark_bar(color="#0d9488", cornerRadiusTopRight=5, cornerRadiusBottomRight=5)
+                .mark_bar(color="#7a9e7e", cornerRadiusTopRight=5, cornerRadiusBottomRight=5)
                 .encode(
                     y=alt.Y("store:N",
                             sort="-x",
@@ -1173,9 +1160,9 @@ elif page == "📊 ارتباط النحاس":
 
         for interp_text, details in interp_map.items():
             st.markdown(f"""
-            <div style="padding:12px;border-radius:8px;border-left:4px solid #2563eb;background:#f0f4ff;margin:8px 0">
-                <b>{interp_text}</b><br>
-                <span style="color:#475569;font-size:0.9rem">{details['الوصف']}</span>
+            <div style="padding:14px 16px;border-radius:14px;border-right:4px solid #8577ce;background:#f0ece4;margin:8px 0">
+                <b style="color:#1a1a1a">{interp_text}</b><br>
+                <span style="color:#6b6560;font-size:0.9rem">{details['الوصف']}</span>
             </div>
             """, unsafe_allow_html=True)
 
@@ -1250,7 +1237,7 @@ elif page == "💰 تقسيم التكاليف":
             theta="النسبة:Q",
             color=alt.Color("النوع:N",
                           scale=alt.Scale(domain=["المواد والخامات", "العمالة", "المصاريف العامة"],
-                                        range=["#2563eb", "#0d9488", "#f59e0b"]),
+                                        range=["#8577ce", "#7a9e7e", "#c9974a"]),
                           legend=alt.Legend(labelFont="Cairo")),
             tooltip=["النوع:N", "النسبة:Q"]
         )
@@ -1353,11 +1340,11 @@ elif page == "⚖️ تقرير قانوني":
 
         # Display report header
         st.markdown(f"""
-        <div style="padding:24px;background:#f0f4ff;border-radius:12px;border-left:6px solid #2563eb;margin-bottom:20px">
-            <div style="font-size:1.3rem;font-weight:700;color:#1d4ed8;margin-bottom:8px">
+        <div style="padding:24px;background:#f0ece4;border-radius:16px;border-right:6px solid #8577ce;margin-bottom:20px">
+            <div style="font-size:1.25rem;font-weight:800;color:#1a1a1a;margin-bottom:8px;letter-spacing:-0.02em">
                 {report['report_title']}
             </div>
-            <div style="color:#475569;font-size:0.95rem">
+            <div style="color:#6b6560;font-size:0.92rem">
                 <b>التاريخ:</b> {report['summary']['date_generated']} |
                 <b>الوقت:</b> {report['summary']['time_generated']}<br>
                 <b>الطابع:</b> {report['certification']}
@@ -1394,9 +1381,9 @@ elif page == "⚖️ تقرير قانوني":
 
         # Legal statement
         st.markdown(f"""
-        <div style="padding:16px;background:#fff8e6;border-radius:8px;border-left:4px solid #f59e0b;margin:16px 0">
+        <div style="padding:16px;background:#ede9e1;border-radius:14px;border-right:4px solid #c9974a;margin:16px 0">
             <b>📋 البيان القانوني:</b><br>
-            <span style="color:#666;font-size:0.95rem">{report['legal_statement']}</span>
+            <span style="color:#6b6560;font-size:0.92rem">{report['legal_statement']}</span>
         </div>
         """, unsafe_allow_html=True)
 
