@@ -515,8 +515,8 @@ with st.sidebar:
     st.markdown("""
     <div style="padding:18px 0 14px;text-align:center">
         <div style="font-size:1.9rem;margin-bottom:5px">⚡</div>
-        <div style="font-size:1rem;font-weight:700;color:#0f172a">مقارنة الأسعار</div>
-        <div style="font-size:0.73rem;color:#94a3b8;margin-top:2px">الكويت الكهربائية</div>
+        <div style="font-size:1rem;font-weight:700;color:#1a1a1a">مقارنة الأسعار</div>
+        <div style="font-size:0.73rem;color:#a09a94;margin-top:2px">الكويت الكهربائية</div>
     </div>
     """, unsafe_allow_html=True)
 
