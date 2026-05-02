@@ -22,6 +22,32 @@ st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;900&display=swap');
 
+/* Sidebar toggle button */
+.sidebar-toggle {
+    position: fixed;
+    top: 16px;
+    right: 16px;
+    z-index: 999;
+    background: var(--blue);
+    border: none;
+    color: white;
+    width: 44px;
+    height: 44px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,.3);
+    transition: all .2s;
+}
+
+.sidebar-toggle:hover {
+    background: var(--blue-l);
+    box-shadow: 0 4px 16px rgba(0,0,0,.4);
+}
+
 :root {
     --bg:       #0f172a;
     --surface:  #1a2742;
@@ -160,6 +186,17 @@ button[data-testid="stBaseButton-headerNoPadding"] {
 
 /* Hide expand here */
 [data-testid="stSidebarCollapsedControl"] {
+    display: none !important;
+}
+
+/* Hide expand more button in popover */
+button[kind="tertiary"],
+[role="button"][kind="tertiary"] {
+    display: none !important;
+}
+
+/* Hide popover expand button */
+.stPopover > div > div > button {
     display: none !important;
 }
 
@@ -720,6 +757,14 @@ with st.sidebar:
 # ───────────────────────────────────────────────────────────────
 # PAGES
 # ───────────────────────────────────────────────────────────────
+# Sidebar toggle button (always visible)
+st.markdown("""
+<button class="sidebar-toggle" onclick="document.querySelector('section[data-testid=\"stSidebar\"]').style.display =
+document.querySelector('section[data-testid=\"stSidebar\"]').style.display === 'none' ? 'block' : 'none'" title="فتح/إغلاق الشريط الجانبي">
+☰
+</button>
+""", unsafe_allow_html=True)
+
 if page == "🏠 الرئيسية":
     st.markdown(f"""
     <div class="ph">
@@ -789,15 +834,17 @@ elif page == "📦 المنتجات":
     if df.empty:
         st.warning("لا توجد بيانات")
     else:
-        c1, c2, c3 = st.columns(3)
+        # Search row
+        search = st.text_input("🔍 بحث", placeholder="اكتب اسم المنتج...")
+
+        # Filter row
+        c1, c2 = st.columns(2)
         with c1:
-            search = st.text_input("🔍 بحث")
-        with c2:
             stores = ["الكل"] + sorted(df["store"].unique().tolist())
             sel_store = st.selectbox("🏪 المتجر", stores)
-        with c3:
+        with c2:
             min_p, max_p = float(df["price"].min()), float(df["price"].max())
-            price_range = (min_p, max_p) if min_p == max_p else st.slider("💰 السعر (KD)", min_p, max_p, (min_p, max_p))
+            price_range = st.slider("💰 السعر (KD)", min_p, max_p, (min_p, max_p))
 
         filt = df.copy()
         if search:
