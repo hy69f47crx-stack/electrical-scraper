@@ -369,17 +369,30 @@ button[data-testid*="expanderButton"] {
 /* ══════════════════════════
    DATAFRAME
 ══════════════════════════ */
+[data-testid="stDataFrame"] {
+    font-size: 0.85rem !important;
+    line-height: 1.2 !important;
+}
 [data-testid="stDataFrame"] th {
     background: rgba(37,99,235,.07) !important;
     color: var(--blue) !important;
     border-color: var(--border) !important;
     font-weight: 700 !important;
     font-family: 'Cairo' !important;
+    font-size: 0.8rem !important;
+    padding: 6px 8px !important;
+    height: auto !important;
 }
 [data-testid="stDataFrame"] td {
     color: var(--t1) !important;
     border-color: var(--border) !important;
     font-family: 'Cairo' !important;
+    font-size: 0.8rem !important;
+    padding: 6px 8px !important;
+    height: auto !important;
+}
+[data-testid="stDataFrame"] tbody tr {
+    height: auto !important;
 }
 [data-testid="stDataFrame"] tr:hover td {
     background: rgba(37,99,235,.04) !important;
@@ -416,6 +429,9 @@ button[data-testid*="expanderButton"] {
     .kpi-val { font-size: 1.4rem !important; }
     .kpi-lbl { font-size: 0.7rem !important; }
     .wc, .store-chip { padding: 10px 12px !important; }
+    [data-testid="stDataFrame"] { font-size: 0.75rem !important; }
+    [data-testid="stDataFrame"] th { font-size: 0.7rem !important; padding: 4px 6px !important; }
+    [data-testid="stDataFrame"] td { font-size: 0.75rem !important; padding: 4px 6px !important; }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -748,9 +764,25 @@ elif page == "📦 المنتجات":
         filt = filt[(filt["price"] >= price_range[0]) & (filt["price"] <= price_range[1])]
 
         st.caption(f"**{len(filt):,}** منتج")
-        show = filt[["name", "price", "store"]].copy()
-        show.columns = ["المنتج", "السعر (KD)", "المتجر"]
-        st.dataframe(show, use_container_width=True, hide_index=True)
+        show = filt[["name", "price", "store", "url"]].copy()
+        show.columns = ["المنتج", "السعر (KD)", "المتجر", "رابط"]
+        show["رابط"] = show["رابط"].apply(
+            lambda url: f'<a href="{url}" target="_blank" style="color: var(--blue); text-decoration: none;">🔗</a>'
+            if (url and isinstance(url, str) and url.startswith('http'))
+            else "—"
+        )
+        st.dataframe(
+            show,
+            use_container_width=True,
+            hide_index=True,
+            unsafe_allow_html=True,
+            column_config={
+                "المنتج": st.column_config.TextColumn(width="large"),
+                "السعر (KD)": st.column_config.NumberColumn(width="small", format="%.2f"),
+                "المتجر": st.column_config.TextColumn(width="medium"),
+                "رابط": st.column_config.TextColumn(width="small"),
+            }
+        )
 
 
 # ══════════════════════════════════════════════════════════════════
@@ -788,9 +820,24 @@ elif page == "📂 الفئات والتفريعات":
         for store in sorted(cat_products["store"].unique()):
             store_data = cat_products[cat_products["store"] == store]
             with st.expander(f"🏪 {store[:25]} ({len(store_data)})"):
-                show = store_data[["name", "price"]].copy()
-                show.columns = ["المنتج", "السعر (KD)"]
-                st.dataframe(show, use_container_width=True, hide_index=True)
+                show = store_data[["name", "price", "url"]].copy()
+                show.columns = ["المنتج", "السعر (KD)", "رابط"]
+                show["رابط"] = show["رابط"].apply(
+                    lambda url: f'<a href="{url}" target="_blank" style="color: var(--blue); text-decoration: none;">🔗</a>'
+                    if (url and isinstance(url, str) and url.startswith('http'))
+                    else "—"
+                )
+                st.dataframe(
+                    show,
+                    use_container_width=True,
+                    hide_index=True,
+                    unsafe_allow_html=True,
+                    column_config={
+                        "المنتج": st.column_config.TextColumn(width="large"),
+                        "السعر (KD)": st.column_config.NumberColumn(width="small", format="%.2f"),
+                        "رابط": st.column_config.TextColumn(width="small"),
+                    }
+                )
 
 
 # ══════════════════════════════════════════════════════════════════
@@ -809,12 +856,29 @@ elif page == "⚖️ مقارنة الأسعار":
         for g in filtered_groups[:50]:
             short = g['canonical_name'][:38] + ("..." if len(g['canonical_name']) > 38 else "")
             with st.expander(f"📦 {short} — أفضل: {g['best_price']} KD"):
-                rows = [
-                    {"✔": "✅" if p["price"] == g["best_price"] else "",
-                     "المتجر": p["store"], "السعر (KD)": p["price"]}
-                    for p in g["products"]
-                ]
-                st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+                rows = []
+                for p in g["products"]:
+                    url_link = f'<a href="{p.get("url", "")}" target="_blank" style="color: var(--blue); text-decoration: none;">🔗</a>' \
+                        if (p.get("url", "") and isinstance(p.get("url"), str) and p.get("url", "").startswith('http')) \
+                        else "—"
+                    rows.append({
+                        "✔": "✅" if p["price"] == g["best_price"] else "",
+                        "المتجر": p["store"],
+                        "السعر (KD)": p["price"],
+                        "رابط": url_link,
+                    })
+                st.dataframe(
+                    pd.DataFrame(rows),
+                    use_container_width=True,
+                    hide_index=True,
+                    unsafe_allow_html=True,
+                    column_config={
+                        "✔": st.column_config.TextColumn(width="small"),
+                        "المتجر": st.column_config.TextColumn(width="medium"),
+                        "السعر (KD)": st.column_config.NumberColumn(width="small", format="%.2f"),
+                        "رابط": st.column_config.TextColumn(width="small"),
+                    }
+                )
 
 
 # ══════════════════════════════════════════════════════════════════
@@ -837,7 +901,16 @@ elif page == "🏆 أفضل العروض":
                 "أفضل سعر": f"{g['best_price']} KD",
                 "توفير":     f"{g['savings_pct']}%",
             } for g in deals[:100]])
-            st.dataframe(dd, use_container_width=True, hide_index=True)
+            st.dataframe(
+                dd,
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "المنتج": st.column_config.TextColumn(width="large"),
+                    "أفضل سعر": st.column_config.TextColumn(width="small"),
+                    "توفير": st.column_config.TextColumn(width="small"),
+                }
+            )
 
             if len(deals) >= 3:
                 st.markdown("---")
@@ -914,7 +987,16 @@ elif page == "🤖 توصيف الأعمال":
                 "الوصف": i.get("description", "")[:55],
                 "السعر": f"{i.get('min_price','—')} - {i.get('max_price','—')} KD",
             } for n, i in enumerate(fi)])
-            st.dataframe(td, use_container_width=True, hide_index=True)
+            st.dataframe(
+                td,
+                use_container_width=True,
+                hide_index=True,
+                column_config={
+                    "رقم": st.column_config.TextColumn(width="small"),
+                    "الوصف": st.column_config.TextColumn(width="large"),
+                    "السعر": st.column_config.TextColumn(width="medium"),
+                }
+            )
 
 
 # ══════════════════════════════════════════════════════════════════
