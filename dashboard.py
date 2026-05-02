@@ -592,7 +592,20 @@ button[kind="secondary"] {
     background: rgba(59,130,246,.08) !important;
 }
 
-/* Responsive */
+/* Altair Charts RTL Support */
+.vega-embed {
+    direction: rtl !important;
+}
+
+.vega-embed svg text {
+    direction: rtl !important;
+}
+
+[data-testid="stVegaLiteChart"] {
+    direction: rtl !important;
+}
+
+/* Responsive - Tablet */
 @media (max-width: 768px) {
     .block-container {
         padding: 1rem !important;
@@ -606,6 +619,54 @@ button[kind="secondary"] {
     .ph h1 {
         font-size: 1.4rem !important;
     }
+
+    .kpi { font-size: 0.9rem; }
+    .store-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+/* Responsive - Mobile */
+@media (max-width: 480px) {
+    .block-container {
+        padding: 0.8rem 1rem !important;
+    }
+
+    .ph {
+        padding: 16px 16px;
+        gap: 12px;
+    }
+
+    .ph-icon { font-size: 2rem; }
+
+    .ph h1 {
+        font-size: 1.1rem !important;
+    }
+
+    .ph p {
+        font-size: 0.75rem !important;
+    }
+
+    .kpi {
+        padding: 12px 8px !important;
+        gap: 8px;
+    }
+
+    .kpi-icon-box {
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 1rem !important;
+    }
+
+    .kpi-val { font-size: 1.4rem !important; }
+    .kpi-lbl { font-size: 0.7rem !important; }
+
+    .deal, .wc, .store-chip {
+        margin: 6px 0 !important;
+        padding: 10px 12px !important;
+    }
+
+    .deal-name { font-size: 0.85rem; }
+    .store-grid { grid-template-columns: 1fr !important; gap: 8px !important; }
+    .store-chip { padding: 10px 8px !important; }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -799,17 +860,19 @@ if page == "🏠 الرئيسية":
     if df.empty:
         st.warning("⚠️ لا توجد بيانات — استخدم ⚙️ تحديث البيانات من الشريط الجانبي")
 
-    # KPI Row
-    k1, k2, k3, k4, k5 = st.columns(5)
-    kpis = [
-        (k1, "📦", "blue", f"{n_products:,}", "المنتجات"),
-        (k2, "🏪", "teal", n_stores, "المتاجر"),
-        (k3, "⚖️", "blue", n_groups, "المطابقة"),
-        (k4, "💰", "amber", f"{avg_saving}%", "التوفير"),
-        (k5, "🤖", "violet", n_ai, "التوصيف"),
+    # KPI Row - Responsive
+    kpis_data = [
+        ("📦", "blue", f"{n_products:,}", "المنتجات"),
+        ("🏪", "teal", n_stores, "المتاجر"),
+        ("⚖️", "blue", n_groups, "المطابقة"),
+        ("💰", "amber", f"{avg_saving}%", "التوفير"),
+        ("🤖", "violet", n_ai, "التوصيف"),
     ]
-    for col, icon, color, val, lbl in kpis:
-        with col:
+
+    # Dynamic columns based on screen size
+    kpi_cols = st.columns(min(5, len(kpis_data)))
+    for idx, (icon, color, val, lbl) in enumerate(kpis_data):
+        with kpi_cols[idx % len(kpi_cols)]:
             st.markdown(f"""
             <div class="kpi">
                 <div class="kpi-icon-box {color}">{icon}</div>
@@ -875,7 +938,7 @@ elif page == "📦 المنتجات":
         st.caption(f"**{len(filt):,}** منتج")
         show = filt[["name", "price", "store"]].copy()
         show.columns = ["المنتج", "السعر (KD)", "المتجر"]
-        st.table(show)
+        st.dataframe(show, use_container_width=True, hide_index=True)
 
 
 elif page == "📂 الفئات والتفريعات":
@@ -945,10 +1008,11 @@ elif page == "📂 الفئات والتفريعات":
         # Detailed breakdown by store
         for store in sorted(cat_products["store"].unique()):
             store_data = cat_products[cat_products["store"] == store]
-            with st.expander(f"🏪 {store} ({len(store_data)} منتجات)"):
+            short_store = store[:20] + "..." if len(store) > 20 else store
+            with st.expander(f"🏪 {short_store} ({len(store_data)})"):
                 show = store_data[["name", "price"]].copy()
                 show.columns = ["المنتج", "السعر (KD)"]
-                st.table(show)
+                st.dataframe(show, use_container_width=True, hide_index=True)
 
 
 elif page == "⚖️ مقارنة الأسعار":
@@ -962,7 +1026,8 @@ elif page == "⚖️ مقارنة الأسعار":
         st.caption(f"**{len(filtered_groups)}** منتج مطابق")
 
         for g in filtered_groups[:50]:
-            with st.expander(f"📦 {g['canonical_name']} — {g['best_price']} KD | {g['savings_pct']}% توفير"):
+            short_name = g['canonical_name'][:35] + "..." if len(g['canonical_name']) > 35 else g['canonical_name']
+            with st.expander(f"📦 {short_name} — {g['best_price']} KD"):
                 rows = []
                 for p in g["products"]:
                     rows.append({
@@ -970,7 +1035,7 @@ elif page == "⚖️ مقارنة الأسعار":
                         "المتجر": p["store"],
                         "السعر (KD)": p["price"],
                     })
-                st.table(pd.DataFrame(rows))
+                st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
 
 
 elif page == "🏆 أفضل العروض":
@@ -989,7 +1054,7 @@ elif page == "🏆 أفضل العروض":
                 "أفضل سعر": f"{g['best_price']} KD",
                 "توفير": f"{g['savings_pct']}%",
             } for g in deals[:100]])
-            st.table(dd)
+            st.dataframe(dd, use_container_width=True, hide_index=True)
 
             st.markdown("---")
             st.markdown("**أفضل 20 عرضاً**")
@@ -997,10 +1062,13 @@ elif page == "🏆 أفضل العروض":
             bar = (
                 alt.Chart(cd).mark_bar(color="#3b82f6", cornerRadiusTopLeft=5, cornerRadiusTopRight=5)
                 .encode(
-                    x=alt.X("توفير %:Q"),
-                    y=alt.Y("المنتج:N", sort="-x"),
+                    x=alt.X("توفير %:Q", axis=alt.Axis(labelFont="Cairo", labelFontSize=11)),
+                    y=alt.Y("المنتج:N", sort="-x", axis=alt.Axis(labelFont="Cairo", labelFontSize=10)),
                     tooltip=["المنتج", "توفير %"],
-                ).properties(height=450)
+                )
+                .properties(height=450)
+                .configure_axis(labelFont="Cairo", labelFontSize=11)
+                .configure_title(font="Cairo", fontSize=13)
             )
             st.altair_chart(bar, use_container_width=True)
 
@@ -1052,7 +1120,7 @@ elif page == "🤖 توصيف الأعمال":
                 "الوصف": i.get("description", "")[:50],
                 "السعر": f"{i.get('min_price','—')} - {i.get('max_price','—')} KD",
             } for n, i in enumerate(fi)])
-            st.table(td)
+            st.dataframe(td, use_container_width=True, hide_index=True)
 
 
 elif page == "📈 تاريخ الأسعار":
@@ -1067,11 +1135,14 @@ elif page == "📈 تاريخ الأسعار":
             line = (
                 alt.Chart(ph).mark_line(point=True, strokeWidth=2, color="#3b82f6")
                 .encode(
-                    x=alt.X("timestamp:T", title="التاريخ"),
-                    y=alt.Y("price:Q", title="السعر (KD)"),
-                    color=alt.Color("store:N"),
+                    x=alt.X("timestamp:T", title="التاريخ", axis=alt.Axis(labelFont="Cairo", labelFontSize=10)),
+                    y=alt.Y("price:Q", title="السعر (KD)", axis=alt.Axis(labelFont="Cairo", labelFontSize=10)),
+                    color=alt.Color("store:N", legend=alt.Legend(labelFont="Cairo", labelFontSize=10)),
                     tooltip=["store", "price", "timestamp"],
-                ).properties(height=350)
+                )
+                .properties(height=350)
+                .configure_axis(labelFont="Cairo", labelFontSize=10)
+                .configure_legend(labelFont="Cairo", labelFontSize=10)
             )
             st.altair_chart(line, use_container_width=True)
 
@@ -1087,8 +1158,12 @@ elif page == "📊 الرسوم البيانية":
             st.markdown("**توزيع الأسعار**")
             hist = (
                 alt.Chart(df).mark_bar(color="#3b82f6", opacity=.8)
-                .encode(alt.X("price:Q", bin=alt.Bin(maxbins=35)), alt.Y("count()"))
+                .encode(
+                    alt.X("price:Q", bin=alt.Bin(maxbins=35), axis=alt.Axis(labelFont="Cairo", labelFontSize=10)),
+                    alt.Y("count()", axis=alt.Axis(labelFont="Cairo", labelFontSize=10))
+                )
                 .properties(height=300)
+                .configure_axis(labelFont="Cairo", labelFontSize=10)
             )
             st.altair_chart(hist, use_container_width=True)
 
@@ -1097,7 +1172,11 @@ elif page == "📊 الرسوم البيانية":
             avg_df = df.groupby("store")["price"].mean().reset_index()
             ab = (
                 alt.Chart(avg_df).mark_bar(color="#14b8a6")
-                .encode(x=alt.X("store:N", title=""), y=alt.Y("price:Q"))
+                .encode(
+                    x=alt.X("store:N", title="", axis=alt.Axis(labelFont="Cairo", labelFontSize=10)),
+                    y=alt.Y("price:Q", axis=alt.Axis(labelFont="Cairo", labelFontSize=10))
+                )
                 .properties(height=300)
+                .configure_axis(labelFont="Cairo", labelFontSize=10)
             )
             st.altair_chart(ab, use_container_width=True)
