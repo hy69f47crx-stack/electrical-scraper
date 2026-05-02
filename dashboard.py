@@ -765,22 +765,19 @@ elif page == "📦 المنتجات":
 
         st.caption(f"**{len(filt):,}** منتج")
         show = filt[["name", "price", "store", "url"]].copy()
-        show.columns = ["المنتج", "السعر (KD)", "المتجر", "رابط"]
-        show["رابط"] = show["رابط"].apply(
-            lambda url: f'<a href="{url}" target="_blank" style="color: var(--blue); text-decoration: none;">🔗</a>'
-            if (url and isinstance(url, str) and url.startswith('http'))
-            else "—"
+        show["url"] = show["url"].where(
+            show["url"].str.startswith("http", na=False), other=None
         )
+        show.columns = ["المنتج", "السعر (KD)", "المتجر", "رابط"]
         st.dataframe(
             show,
             use_container_width=True,
             hide_index=True,
-            unsafe_allow_html=True,
             column_config={
                 "المنتج": st.column_config.TextColumn(width="large"),
                 "السعر (KD)": st.column_config.NumberColumn(width="small", format="%.2f"),
                 "المتجر": st.column_config.TextColumn(width="medium"),
-                "رابط": st.column_config.TextColumn(width="small"),
+                "رابط": st.column_config.LinkColumn(width="small", display_text="🔗"),
             }
         )
 
@@ -821,21 +818,18 @@ elif page == "📂 الفئات والتفريعات":
             store_data = cat_products[cat_products["store"] == store]
             with st.expander(f"🏪 {store[:25]} ({len(store_data)})"):
                 show = store_data[["name", "price", "url"]].copy()
-                show.columns = ["المنتج", "السعر (KD)", "رابط"]
-                show["رابط"] = show["رابط"].apply(
-                    lambda url: f'<a href="{url}" target="_blank" style="color: var(--blue); text-decoration: none;">🔗</a>'
-                    if (url and isinstance(url, str) and url.startswith('http'))
-                    else "—"
+                show["url"] = show["url"].where(
+                    show["url"].str.startswith("http", na=False), other=None
                 )
+                show.columns = ["المنتج", "السعر (KD)", "رابط"]
                 st.dataframe(
                     show,
                     use_container_width=True,
                     hide_index=True,
-                    unsafe_allow_html=True,
                     column_config={
                         "المنتج": st.column_config.TextColumn(width="large"),
                         "السعر (KD)": st.column_config.NumberColumn(width="small", format="%.2f"),
-                        "رابط": st.column_config.TextColumn(width="small"),
+                        "رابط": st.column_config.LinkColumn(width="small", display_text="🔗"),
                     }
                 )
 
@@ -858,25 +852,22 @@ elif page == "⚖️ مقارنة الأسعار":
             with st.expander(f"📦 {short} — أفضل: {g['best_price']} KD"):
                 rows = []
                 for p in g["products"]:
-                    url_link = f'<a href="{p.get("url", "")}" target="_blank" style="color: var(--blue); text-decoration: none;">🔗</a>' \
-                        if (p.get("url", "") and isinstance(p.get("url"), str) and p.get("url", "").startswith('http')) \
-                        else "—"
+                    url_val = p.get("url", "") or ""
                     rows.append({
                         "✔": "✅" if p["price"] == g["best_price"] else "",
                         "المتجر": p["store"],
                         "السعر (KD)": p["price"],
-                        "رابط": url_link,
+                        "رابط": url_val if url_val.startswith("http") else None,
                     })
                 st.dataframe(
                     pd.DataFrame(rows),
                     use_container_width=True,
                     hide_index=True,
-                    unsafe_allow_html=True,
                     column_config={
                         "✔": st.column_config.TextColumn(width="small"),
                         "المتجر": st.column_config.TextColumn(width="medium"),
                         "السعر (KD)": st.column_config.NumberColumn(width="small", format="%.2f"),
-                        "رابط": st.column_config.TextColumn(width="small"),
+                        "رابط": st.column_config.LinkColumn(width="small", display_text="🔗"),
                     }
                 )
 
@@ -919,10 +910,10 @@ elif page == "🏆 أفضل العروض":
                                     for g in deals[:20]])
                 bar = (
                     alt.Chart(cd)
-                    .mark_bar(color="#2563eb", cornerRadiusTopLeft=5, cornerRadiusTopRight=5)
+                    .mark_bar(color="#2563eb", cornerRadiusTopRight=5, cornerRadiusBottomRight=5)
                     .encode(
                         x=alt.X("توفير %:Q", axis=alt.Axis(labelFont="Cairo", labelFontSize=11)),
-                        y=alt.Y("المنتج:N", sort="-x", axis=alt.Axis(labelFont="Cairo", labelFontSize=10)),
+                        y=alt.Y("المنتج:N", sort="-x", axis=alt.Axis(labelFont="Cairo", labelFontSize=10, labelLimit=200)),
                         tooltip=["المنتج", "توفير %"],
                     )
                     .properties(height=450)
@@ -1057,10 +1048,10 @@ elif page == "📊 الرسوم البيانية":
             avg_df = df.groupby("store")["price"].mean().reset_index()
             ab = (
                 alt.Chart(avg_df)
-                .mark_bar(color="#0d9488", cornerRadiusTopLeft=4, cornerRadiusTopRight=4)
+                .mark_bar(color="#0d9488", cornerRadiusTopRight=4, cornerRadiusBottomRight=4)
                 .encode(
-                    x=alt.X("store:N", title="", axis=alt.Axis(labelFont="Cairo", labelFontSize=10)),
-                    y=alt.Y("price:Q",           axis=alt.Axis(labelFont="Cairo", labelFontSize=10)),
+                    y=alt.Y("store:N", sort="-x", title="", axis=alt.Axis(labelFont="Cairo", labelFontSize=11, labelLimit=160)),
+                    x=alt.X("price:Q", title="متوسط السعر (KD)", axis=alt.Axis(labelFont="Cairo", labelFontSize=10)),
                     tooltip=["store", "price"],
                 )
                 .properties(height=300)
