@@ -27,25 +27,31 @@ st.markdown("""
     position: fixed;
     top: 16px;
     right: 16px;
-    z-index: 999;
-    background: var(--blue);
-    border: none;
-    color: white;
-    width: 44px;
-    height: 44px;
-    border-radius: 8px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.2rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,.3);
-    transition: all .2s;
+    z-index: 9999;
+    background: var(--blue) !important;
+    border: none !important;
+    color: white !important;
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 1.4rem !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,.3) !important;
+    transition: all .2s !important;
+    padding: 0 !important;
+    line-height: 1 !important;
 }
 
 .sidebar-toggle:hover {
-    background: var(--blue-l);
-    box-shadow: 0 4px 16px rgba(0,0,0,.4);
+    background: var(--blue-l) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,.4) !important;
+}
+
+.sidebar-toggle:active {
+    transform: scale(0.95);
 }
 
 :root {
@@ -189,15 +195,22 @@ button[data-testid="stBaseButton-headerNoPadding"] {
     display: none !important;
 }
 
-/* Hide expand more button in popover */
-button[kind="tertiary"],
-[role="button"][kind="tertiary"] {
+/* Hide all expand more buttons completely */
+[role="button"][aria-label="Expand"],
+button[aria-label="Expand"],
+.stPopover button[kind="tertiary"],
+button[data-testid*="expanderButton"],
+div[data-testid="stExpander"] > button {
     display: none !important;
 }
 
-/* Hide popover expand button */
-.stPopover > div > div > button {
-    display: none !important;
+/* Hide secondary buttons that might be expand */
+button[kind="secondary"] {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
 }
 
 /* ══════════════════════════
@@ -759,10 +772,16 @@ with st.sidebar:
 # ───────────────────────────────────────────────────────────────
 # Sidebar toggle button (always visible)
 st.markdown("""
-<button class="sidebar-toggle" onclick="document.querySelector('section[data-testid=\"stSidebar\"]').style.display =
-document.querySelector('section[data-testid=\"stSidebar\"]').style.display === 'none' ? 'block' : 'none'" title="فتح/إغلاق الشريط الجانبي">
-☰
-</button>
+<script>
+function toggleSidebar() {
+    const sidebar = document.querySelector('section[data-testid="stSidebar"]');
+    if (sidebar) {
+        const isHidden = sidebar.style.display === 'none';
+        sidebar.style.display = isHidden ? 'block' : 'none';
+    }
+}
+</script>
+<button class="sidebar-toggle" onclick="toggleSidebar()" title="فتح/إغلاق الشريط الجانبي">☰</button>
 """, unsafe_allow_html=True)
 
 if page == "🏠 الرئيسية":
