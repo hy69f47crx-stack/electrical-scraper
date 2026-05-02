@@ -1,918 +1,816 @@
 import streamlit as st
 import pandas as pd
-import altair as alt
-import json
-import subprocess
-import sys
-from datetime import datetime
-from pathlib import Path
+import numpy as np
+import plotly.express as px
+from io import BytesIO
 
-BASE_DIR = Path(__file__).resolve().parent
+# ---------------------------
+# SESSION STATE (THEME TOGGLE)
+# ---------------------------
+if "theme" not in st.session_state:
+    st.session_state.theme = "light"
 
-st.set_page_config(
-    page_title="مقارنة الأسعار الكهربائية - الكويت",
-    page_icon="⚡",
-    layout="wide",
-)
+def toggle_theme():
+    st.session_state.theme = "dark" if st.session_state.theme == "light" else "light"
 
-# ───────────────────────────────────────────────────────────────
-# DESIGN SYSTEM
-# ───────────────────────────────────────────────────────────────
+# ---------------------------
+# THEME COLORS
+# ---------------------------
+LIGHT_BG = "#f7f3ef"
+LIGHT_CARD = "rgba(255,255,255,0.55)"
+LIGHT_BORDER = "#e8dcd3"
+LIGHT_TEXT = "#2b2b2b"
+
+DARK_BG = "#1a1a1a"
+DARK_CARD = "rgba(30,30,30,0.55)"
+DARK_BORDER = "#d9a6a0"  # Rose Gold
+DARK_TEXT = "#f2f2f2"
+
+# ---------------------------
+# APPLY THEME
+# ---------------------------
+def apply_theme():
+    if st.session_state.theme == "light":
+        bg = LIGHT_BG
+        card = LIGHT_CARD
+        border = LIGHT_BORDER
+        text = LIGHT_TEXT
+    else:
+        bg = DARK_BG
+        card = DARK_CARD
+        border = DARK_BORDER
+        text = DARK_TEXT
+
+    st.markdown(f"""
+        <style>
+        body {{
+            background-color: {bg};
+            color: {text};
+        }}
+        .glass-card {{
+            background: {card};
+            backdrop-filter: blur(4px);
+            padding: 20px;
+            border-radius: 14px;
+            border: 1px solid {border};
+            margin-bottom: 20px;
+        }}
+        .rose-border {{
+            border-left: 4px solid {border};
+            padding-left: 10px;
+        }}
+        </style>
+    """, unsafe_allow_html=True)
+
+apply_theme()
+
+# ---------------------------
+# SIDEBAR
+# ---------------------------
+with st.sidebar:
+    st.markdown("<h2 style='margin-bottom:10px;'>⚙️ الإعدادات</h2>", unsafe_allow_html=True)
+    if st.button("تبديل الثيم (Light / Dark)"):
+        toggle_theme()
+        st.rerun()
+
+    st.markdown("<hr>", unsafe_allow_html=True)
+
+    st.markdown("""
+        <div class='glass-card'>
+            <h4 style='margin-top:0;'>📁 الصفحات</h4>
+        </div>
+    """, unsafe_allow_html=True)
+
+    page = st.radio(
+        "",
+        ["المنتجات", "مقارنة منتجين", "بحث ذكي", "التحليلات"],
+        index=0
+    )
+
+# ---------------------------
+# HEADER (STICKY)
+# ---------------------------
+st.markdown("""
+    <style>
+    .sticky-header {
+        position: sticky;
+        top: 0;
+        z-index: 999;
+        padding: 18px 10px;
+        background: rgba(0,0,0,0);
+        backdrop-filter: blur(4px);
+        border-bottom: 1px solid rgba(200,200,200,0.15);
+        margin-bottom: 20px;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+def header(title, desc):
+    st.markdown(f"""
+        <div class='sticky-header'>
+            <h2 style='margin-bottom:4px;'>{title}</h2>
+            <p style='margin-top:0; opacity:0.8;'>{desc}</p>
+        </div>
+    """, unsafe_allow_html=True)
+
+# ---------------------------
+# SAMPLE DATA (PLACEHOLDER)
+# ---------------------------
+data = pd.DataFrame({
+    "اسم المنتج": ["منتج A", "منتج B", "منتج C", "منتج D"],
+    "السعر": [10.5, 12.0, 9.75, 15.2],
+    "المتجر": ["متجر 1", "متجر 2", "متجر 1", "متجر 3"],
+    "التصنيف": ["الكترونيات", "منزل", "الكترونيات", "مطبخ"]
+})
+# ---------------------------
+# PAGE: المنتجات
+# ---------------------------
+def page_products():
+    header("📦 المنتجات", "عرض المنتجات مع خيارات البحث والفرز والفلترة")
+
+    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        search = st.text_input("🔍 بحث عن منتج")
+
+    with col2:
+        category = st.selectbox("📂 التصنيف", ["الكل"] + sorted(data["التصنيف"].unique()))
+
+    with col3:
+        sort_by = st.selectbox("↕️ ترتيب حسب", ["اسم المنتج", "السعر", "المتجر"])
+
+    df = data.copy()
+
+    if search:
+        df = df[df["اسم المنتج"].str.contains(search, case=False)]
+
+    if category != "الكل":
+        df = df[df["التصنيف"] == category]
+
+    df = df.sort_values(sort_by)
+
+    st.dataframe(df, use_container_width=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # Download
+    buffer = BytesIO()
+    df.to_excel(buffer, index=False)
+    st.download_button(
+        "⬇️ تحميل Excel",
+        data=buffer.getvalue(),
+        file_name="products.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+# ---------------------------
+# PAGE: مقارنة منتجين
+# ---------------------------
+def page_compare():
+    header("⚖️ مقارنة منتجين", "قارن بين منتجين من حيث السعر والمتجر والتصنيف")
+
+    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        p1 = st.selectbox("اختر المنتج الأول", data["اسم المنتج"].unique())
+
+    with col2:
+        p2 = st.selectbox("اختر المنتج الثاني", data["اسم المنتج"].unique())
+
+    if p1 and p2:
+        d1 = data[data["اسم المنتج"] == p1].iloc[0]
+        d2 = data[data["اسم المنتج"] == p2].iloc[0]
+
+        comp = pd.DataFrame({
+            "الميزة": ["السعر", "المتجر", "التصنيف"],
+            p1: [d1["السعر"], d1["المتجر"], d1["التصنيف"]],
+            p2: [d2["السعر"], d2["المتجر"], d2["التصنيف"]],
+        })
+
+        st.table(comp)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+# ---------------------------
+# PAGE: البحث الذكي
+# ---------------------------
+def page_smart_search():
+    header("🧠 بحث ذكي", "ابحث باستخدام كلمات مفتاحية وسيقوم النظام بتحليل النتائج")
+
+    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+
+    query = st.text_input("اكتب كلمة مفتاحية للبحث")
+
+    if query:
+        df = data.copy()
+        df = df[df["اسم المنتج"].str.contains(query, case=False) |
+                df["التصنيف"].str.contains(query, case=False) |
+                df["المتجر"].str.contains(query, case=False)]
+
+        if len(df) == 0:
+            st.warning("لا توجد نتائج مطابقة")
+        else:
+            st.success(f"تم العثور على {len(df)} نتيجة")
+            st.dataframe(df, use_container_width=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# ---------------------------
+# PAGE: التحليلات
+# ---------------------------
+def page_analytics():
+    header("📊 التحليلات", "رسوم بيانية وتحليل الأسعار")
+
+    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+
+    fig = px.bar(
+        data,
+        x="اسم المنتج",
+        y="السعر",
+        color="التصنيف",
+        title="مقارنة الأسعار حسب المنتج"
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+
+    fig2 = px.pie(
+        data,
+        names="التصنيف",
+        title="توزيع المنتجات حسب التصنيف"
+    )
+    st.plotly_chart(fig2, use_container_width=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+# ---------------------------
+# PAGE ROUTER
+# ---------------------------
+def router():
+    if page == "المنتجات":
+        page_products()
+    elif page == "مقارنة منتجين":
+        page_compare()
+    elif page == "بحث ذكي":
+        page_smart_search()
+    elif page == "التحليلات":
+        page_analytics()
+
+# ---------------------------
+# MAIN EXECUTION
+# ---------------------------
+def main():
+    router()
+
+if __name__ == "__main__":
+    main()
+# ---------------------------
+# EXTRA STYLE (IMPROVED UI)
+# ---------------------------
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;900&display=swap');
-
-:root {
-    --bg:       #f1f5f9;
-    --surface:  #ffffff;
-    --border:   #e2e8f0;
-    --blue:     #2563eb;
-    --blue-l:   #dbeafe;
-    --blue-d:   #1d4ed8;
-    --teal:     #0f766e;
-    --teal-l:   #ccfbf1;
-    --violet:   #7c3aed;
-    --violet-l: #ede9fe;
-    --amber:    #b45309;
-    --amber-l:  #fef3c7;
-    --red:      #dc2626;
-    --t1:       #0f172a;
-    --t2:       #475569;
-    --t3:       #94a3b8;
-    --r:        10px;
-    --r-lg:     16px;
-    --sh:       0 1px 3px rgba(15,23,42,.07), 0 1px 2px rgba(15,23,42,.04);
-    --sh-md:    0 4px 12px rgba(15,23,42,.08), 0 2px 4px rgba(15,23,42,.05);
-}
-
-/* ── Base ── */
-html, body, [class*="css"] {
-    font-family: 'Cairo', sans-serif !important;
-    direction: rtl;
-    background: var(--bg) !important;
-    color: var(--t1);
-}
+/* Remove Streamlit default padding */
 .block-container {
-    padding: 1.25rem 2rem 2rem !important;
-    max-width: 1400px;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
 }
 
-/* ══════════════════════════
-   SIDEBAR — dark navy
-══════════════════════════ */
-section[data-testid="stSidebar"] {
-    background: #0f172a !important;
-    border-left: none !important;
-    width: 230px !important;
-}
-section[data-testid="stSidebar"] > div {
-    padding: 0 !important;
-}
-/* all text in sidebar */
-section[data-testid="stSidebar"] *:not(button) {
-    color: #cbd5e1 !important;
-    font-family: 'Cairo', sans-serif !important;
-}
-section[data-testid="stSidebar"] strong,
-section[data-testid="stSidebar"] b {
-    color: #f1f5f9 !important;
-}
-/* dividers */
-section[data-testid="stSidebar"] hr {
-    border-color: #1e293b !important;
-    margin: 6px 0 !important;
-}
-/* metric labels */
-section[data-testid="stSidebar"] [data-testid="stMetricLabel"] * {
-    color: #94a3b8 !important;
-    font-size: 0.72rem !important;
-}
-section[data-testid="stSidebar"] [data-testid="stMetricValue"] * {
-    color: #f1f5f9 !important;
-    font-size: 1.1rem !important;
-    font-weight: 700 !important;
-}
-/* radio — nav links */
-section[data-testid="stSidebar"] .stRadio > div {
-    gap: 2px !important;
-}
-section[data-testid="stSidebar"] .stRadio label {
-    background: transparent !important;
-    border-radius: 8px !important;
-    padding: 8px 14px !important;
-    cursor: pointer !important;
-    transition: background .15s !important;
-    width: 100% !important;
-    display: flex !important;
-    align-items: center !important;
-}
-section[data-testid="stSidebar"] .stRadio label:hover {
-    background: rgba(255,255,255,.07) !important;
-}
-section[data-testid="stSidebar"] .stRadio label[data-checked="true"],
-section[data-testid="stSidebar"] .stRadio input:checked + div {
-    background: rgba(37,99,235,.25) !important;
-    border-right: 3px solid #2563eb !important;
-}
-section[data-testid="stSidebar"] .stRadio input {
-    display: none !important;
-}
-/* sidebar buttons */
-section[data-testid="stSidebar"] .stButton button {
-    background: #1e293b !important;
-    border: 1px solid #334155 !important;
-    color: #e2e8f0 !important;
-    border-radius: 8px !important;
-    font-family: 'Cairo', sans-serif !important;
-    font-size: 0.85rem !important;
-    padding: 6px 12px !important;
-    transition: background .15s !important;
-}
-section[data-testid="stSidebar"] .stButton button:hover {
-    background: #334155 !important;
-    border-color: #475569 !important;
-}
-section[data-testid="stSidebar"] .stButton [data-testid="baseButton-primary"] {
-    background: #1d4ed8 !important;
-    border-color: #2563eb !important;
-}
-section[data-testid="stSidebar"] .stButton [data-testid="baseButton-primary"]:hover {
-    background: #2563eb !important;
-}
-/* caption */
-section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] p {
-    color: #64748b !important;
-    font-size: 0.74rem !important;
-}
-
-/* ══════════════════════════
-   PAGE HEADER
-══════════════════════════ */
-.ph {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--r-lg);
-    padding: 28px 36px;
-    margin-bottom: 24px;
-    box-shadow: var(--sh);
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-.ph-icon {
-    font-size: 2.4rem;
-    line-height: 1;
-    flex-shrink: 0;
-}
-.ph-text h1 {
-    font-size: 1.6rem;
-    font-weight: 700;
-    color: var(--t1);
-    margin: 0 0 4px;
-    letter-spacing: -.02em;
-}
-.ph-text p {
-    font-size: 0.88rem;
-    color: var(--t2);
-    margin: 0;
-}
-.ph-badge {
-    margin-right: auto;
-    background: var(--blue-l);
-    color: var(--blue-d);
-    border-radius: 20px;
-    padding: 4px 14px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    white-space: nowrap;
-}
-
-/* ══════════════════════════
-   KPI CARDS
-══════════════════════════ */
-.kpi {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--r);
-    padding: 18px 16px 16px;
-    box-shadow: var(--sh);
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    transition: box-shadow .18s, transform .18s;
-}
-.kpi:hover { box-shadow: var(--sh-md); transform: translateY(-2px); }
-.kpi-icon-box {
-    width: 44px; height: 44px;
-    border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.3rem;
-    flex-shrink: 0;
-}
-.kpi-icon-box.blue   { background: var(--blue-l); }
-.kpi-icon-box.teal   { background: var(--teal-l); }
-.kpi-icon-box.violet { background: var(--violet-l); }
-.kpi-icon-box.amber  { background: var(--amber-l); }
-.kpi-body { flex: 1; min-width: 0; }
-.kpi-val   { font-size: 1.7rem; font-weight: 700; color: var(--t1); line-height: 1; }
-.kpi-lbl   { font-size: 0.78rem; color: var(--t2); margin-top: 3px; }
-
-/* ══════════════════════════
-   SECTION HEADER
-══════════════════════════ */
-.sec {
-    display: flex;
-    align-items: center;
+/* Improve radio buttons */
+.stRadio > div {
     gap: 8px;
-    margin: 24px 0 14px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border);
-}
-.sec-icon { font-size: 1.1rem; }
-.sec-title { font-size: 1.05rem; font-weight: 700; color: var(--t1); }
-.sec-badge {
-    margin-right: auto;
-    background: var(--violet-l);
-    color: var(--violet);
-    border-radius: 20px;
-    padding: 2px 10px;
-    font-size: 0.74rem;
-    font-weight: 700;
 }
 
-/* ══════════════════════════
-   DEAL ROW
-══════════════════════════ */
-.deal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--r);
-    padding: 12px 16px;
-    margin-bottom: 8px;
-    box-shadow: var(--sh);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    transition: box-shadow .15s;
+/* Improve table font */
+.dataframe tbody tr td {
+    font-size: 15px;
 }
-.deal:hover { box-shadow: var(--sh-md); }
-.deal-num {
-    width: 26px; height: 26px;
-    border-radius: 8px;
-    background: var(--blue-l);
-    color: var(--blue-d);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.78rem; font-weight: 700;
-    flex-shrink: 0;
-}
-.deal-num.n1 { background: #fef3c7; color: #92400e; }
-.deal-num.n2 { background: #f1f5f9; color: #475569; }
-.deal-num.n3 { background: #fff7ed; color: #9a3412; }
-.deal-info { flex: 1; min-width: 0; }
-.deal-name  { font-weight: 600; font-size: 0.9rem; color: var(--t1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.deal-store { font-size: 0.78rem; color: var(--t2); margin-top: 2px; }
-.deal-right { text-align: left; flex-shrink: 0; }
-.deal-price { font-weight: 700; color: var(--blue); font-size: 0.95rem; }
-.deal-save  { display: inline-block; background: var(--teal-l); color: var(--teal); border-radius: 20px; padding: 1px 8px; font-size: 0.73rem; font-weight: 700; margin-top: 2px; }
 
-/* ══════════════════════════
-   WORK CARD
-══════════════════════════ */
-.wc {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--r);
-    padding: 14px 16px;
-    margin-bottom: 8px;
-    box-shadow: var(--sh);
-    border-right: 3px solid var(--violet);
-    transition: box-shadow .15s;
+/* Improve sidebar width */
+[data-testid="stSidebar"] {
+    width: 280px !important;
 }
-.wc:hover { box-shadow: var(--sh-md); }
-.wc-cat  { display: inline-block; background: var(--violet-l); color: var(--violet); border-radius: 20px; padding: 1px 10px; font-size: 0.73rem; font-weight: 700; }
-.wc-desc { font-weight: 600; font-size: 0.92rem; color: var(--t1); margin: 6px 0 4px; line-height: 1.5; }
-.wc-meta { font-size: 0.82rem; color: var(--t2); display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.wc-meta .p { color: var(--teal); font-weight: 600; }
-.wc-meta .s { background: var(--blue-l); color: var(--blue-d); border-radius: 20px; padding: 1px 9px; font-size: 0.73rem; font-weight: 600; }
 
-/* ══════════════════════════
-   PAGE TITLE (inner pages)
-══════════════════════════ */
-.pt  { font-size: 1.35rem; font-weight: 700; color: var(--t1); margin-bottom: 2px; }
-.ps  { font-size: 0.85rem; color: var(--t2); margin-bottom: 20px; }
-
-/* ══════════════════════════
-   STORES TABLE
-══════════════════════════ */
-.store-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-    gap: 10px;
-    margin-top: 4px;
+/* Smooth transitions */
+* {
+    transition: 0.25s ease-in-out;
 }
-.store-chip {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--r);
-    padding: 12px 14px;
-    box-shadow: var(--sh);
-    text-align: center;
-}
-.store-chip .sc-name { font-weight: 700; font-size: 0.9rem; color: var(--t1); }
-.store-chip .sc-count { font-size: 0.78rem; color: var(--t2); margin-top: 3px; }
-.store-chip .sc-num { font-size: 1.4rem; font-weight: 700; color: var(--blue); }
 </style>
 """, unsafe_allow_html=True)
 
-
-# ───────────────────────────────────────────────────────────────
-# DATA LOADING
-# ───────────────────────────────────────────────────────────────
-@st.cache_data(ttl=300)
-def load_products():
-    try:
-        with open(BASE_DIR / "products_all.json", "r", encoding="utf-8") as f:
-            data = json.load(f)
-        df = pd.DataFrame(data)
-        df["price"] = pd.to_numeric(df["price"], errors="coerce")
-        return df.dropna(subset=["price"])
-    except (FileNotFoundError, ValueError, KeyError):
-        return pd.DataFrame(columns=["name", "price", "store", "url", "timestamp", "currency"])
-
-
-@st.cache_data(ttl=300)
-def load_groups():
-    try:
-        with open(BASE_DIR / "matched_groups.json", "r", encoding="utf-8") as f:
-            return json.load(f)
-    except (FileNotFoundError, ValueError):
-        return []
-
-
-@st.cache_data(ttl=300)
-def load_history():
-    try:
-        with open(BASE_DIR / "price_history.json", "r", encoding="utf-8") as f:
-            data = json.load(f)
-        if not data:
-            return pd.DataFrame(columns=["name", "price", "store", "timestamp"])
-        df = pd.DataFrame(data)
-        if "price" not in df.columns or "timestamp" not in df.columns:
-            return pd.DataFrame(columns=["name", "price", "store", "timestamp"])
-        df["price"] = pd.to_numeric(df["price"], errors="coerce")
-        df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
-        return df.dropna(subset=["price", "timestamp"])
-    except (FileNotFoundError, ValueError):
-        return pd.DataFrame(columns=["name", "price", "store", "timestamp"])
-
-
-@st.cache_data(ttl=300)
-def load_work_descriptions():
-    try:
-        with open(BASE_DIR / "work_descriptions.json", "r", encoding="utf-8") as f:
-            return json.load(f)
-    except (FileNotFoundError, ValueError):
-        return {}
-
-
-def reload_all():
-    load_products.clear()
-    load_groups.clear()
-    load_history.clear()
-    load_work_descriptions.clear()
-
-
-# ───────────────────────────────────────────────────────────────
-# ACTIONS
-# ───────────────────────────────────────────────────────────────
-def run_update(run_ai: bool = False):
-    steps = [BASE_DIR / "scraper.py", BASE_DIR / "matcher.py"]
-    if run_ai:
-        steps.append(BASE_DIR / "ai_agent.py")
-    label = "جاري التحديث" + (" + AI" if run_ai else "") + " ..."
-    with st.spinner(label):
-        try:
-            for script in steps:
-                subprocess.run([sys.executable, str(script)], timeout=600, check=True, capture_output=True)
-            reload_all()
-            st.success("✅ تم التحديث بنجاح")
-            st.rerun()
-        except subprocess.CalledProcessError as e:
-            st.error(f"فشل: {e.stderr.decode() if e.stderr else str(e)}")
-        except subprocess.TimeoutExpired:
-            st.error("انتهت المهلة")
-
-
-def run_ai_only():
-    with st.spinner("عميل AI يحلل المنتجات ..."):
-        try:
-            subprocess.run([sys.executable, str(BASE_DIR / "ai_agent.py")], timeout=600, check=True, capture_output=True)
-            reload_all()
-            st.success("✅ تم توليد التوصيف")
-            st.rerun()
-        except subprocess.CalledProcessError as e:
-            st.error(f"فشل AI: {e.stderr.decode() if e.stderr else str(e)}")
-        except subprocess.TimeoutExpired:
-            st.error("انتهت المهلة")
-
-
-# ───────────────────────────────────────────────────────────────
-# SCHEDULER
-# ───────────────────────────────────────────────────────────────
-if "scheduler_started" not in st.session_state:
-    try:
-        from scheduler import start_scheduler
-        st.session_state["scheduler"] = start_scheduler()
-        st.session_state["scheduler_started"] = True
-    except Exception:
-        st.session_state["scheduler_started"] = False
-
-
-# ───────────────────────────────────────────────────────────────
-# LOAD DATA
-# ───────────────────────────────────────────────────────────────
-df      = load_products()
-groups  = load_groups()
-history_df = load_history()
-work_data  = load_work_descriptions()
-
-n_products  = len(df)
-n_stores    = df["store"].nunique() if not df.empty else 0
-n_groups    = len(groups)
-n_ai        = len(work_data.get("work_items", []))
-avg_saving  = round(sum(g.get("savings_pct", 0) for g in groups) / len(groups), 1) if groups else 0
-sched_ok    = st.session_state.get("scheduler_started", False)
-
-
-# ───────────────────────────────────────────────────────────────
-# SIDEBAR
-# ───────────────────────────────────────────────────────────────
-with st.sidebar:
-    # Brand
-    st.markdown("""
-    <div style="padding:20px 16px 14px;border-bottom:1px solid #1e293b">
-        <div style="font-size:1.6rem;line-height:1;margin-bottom:6px">⚡</div>
-        <div style="font-size:1rem;font-weight:700;color:#f1f5f9">مقارنة الأسعار</div>
-        <div style="font-size:0.75rem;color:#64748b;margin-top:2px">الكويت · الكهرباء</div>
+# ---------------------------
+# FOOTER
+# ---------------------------
+st.markdown("""
+    <br><br>
+    <div style='text-align:center; opacity:0.6; font-size:14px;'>
+        تم الإنشاء بواسطة نظام تحليلي متقدم — Dashboard v1.0
     </div>
+""", unsafe_allow_html=True)
+# ---------------------------
+# ADVANCED CARD COMPONENT
+# ---------------------------
+def glass_card(title, content_html):
+    st.markdown(f"""
+        <div class='glass-card rose-border'>
+            <h4 style='margin-top:0; margin-bottom:10px;'>{title}</h4>
+            <div>{content_html}</div>
+        </div>
     """, unsafe_allow_html=True)
 
-    # Navigation
-    page = st.radio(
-        "nav",
-        ["🏠  الرئيسية", "📦  المنتجات", "⚖️  مقارنة الأسعار",
-         "🏆  أفضل العروض", "🤖  توصيف الأعمال", "📈  تاريخ الأسعار", "📊  الرسوم البيانية"],
-        label_visibility="collapsed",
+# Example usage inside pages (optional future expansion)
+def example_card_usage():
+    glass_card(
+        "مثال على بطاقة زجاجية",
+        """
+        <p>هذه بطاقة زجاجية بتأثير Soft Glass وRose Gold Border.</p>
+        <ul>
+            <li>شفافية 55%</li>
+            <li>Blur بقيمة 4px</li>
+            <li>حدود Rose Gold</li>
+        </ul>
+        """
     )
 
-    st.divider()
+# ---------------------------
+# FUTURE: API INTEGRATION PLACEHOLDER
+# ---------------------------
+def fetch_api_data():
+    # Placeholder for future API integration
+    # Example:
+    # response = requests.get("https://api.example.com/products")
+    # return response.json()
+    return {
+        "status": "ready",
+        "message": "API integration placeholder active"
+    }
 
-    if st.button("🔄  تحديث البيانات", use_container_width=True):
-        run_update(run_ai=False)
-    if st.button("🤖  تحديث + توصيف AI", use_container_width=True, type="primary"):
-        run_update(run_ai=True)
-    if st.button("♻️  مسح الكاش", use_container_width=True):
-        reload_all(); st.rerun()
+# ---------------------------
+# FUTURE: SCRAPER PLACEHOLDER
+# ---------------------------
+def run_scraper():
+    # Placeholder for scraper integration
+    return {
+        "scraper": "ready",
+        "items_found": 0
+    }
+# ---------------------------
+# ADVANCED LAYOUT COMPONENTS
+# ---------------------------
+def two_column_card(title_left, content_left, title_right, content_right):
+    col1, col2 = st.columns(2)
 
-    st.divider()
+    with col1:
+        glass_card(title_left, content_left)
 
-    # Stats grid
-    c1, c2 = st.columns(2)
-    with c1:
-        st.metric("المنتجات",  f"{n_products:,}")
-        st.metric("التوصيف AI", n_ai)
-    with c2:
-        st.metric("المتاجر",   n_stores)
-        st.metric("المطابقة",  n_groups)
+    with col2:
+        glass_card(title_right, content_right)
 
-    st.divider()
+def three_column_card(t1, c1, t2, c2, t3, c3):
+    col1, col2, col3 = st.columns(3)
 
-    # Status
-    st.caption(f"الجدول التلقائي: {'✅ يعمل' if sched_ok else '⚠️ متوقف'}")
-    if not df.empty and "timestamp" in df.columns:
-        st.caption(f"آخر جلب: {df['timestamp'].max()}")
-    if work_data.get("generated_at"):
-        try:
-            gd = datetime.fromisoformat(work_data["generated_at"]).strftime("%Y-%m-%d %H:%M")
-        except ValueError:
-            gd = work_data["generated_at"]
-        st.caption(f"آخر توليد AI: {gd}")
+    with col1:
+        glass_card(t1, c1)
 
+    with col2:
+        glass_card(t2, c2)
 
-# ───────────────────────────────────────────────────────────────
-# PAGE: الرئيسية
-# ───────────────────────────────────────────────────────────────
-if page == "🏠  الرئيسية":
+    with col3:
+        glass_card(t3, c3)
 
-    st.markdown(f"""
-    <div class="ph">
-        <div class="ph-icon">⚡</div>
-        <div class="ph-text">
-            <h1>مقارنة الأسعار الكهربائية</h1>
-            <p>منصة ذكية لمتابعة أسعار المتاجر الكهربائية الكويتية مع توصيف أعمال بالذكاء الاصطناعي</p>
-        </div>
-        <div class="ph-badge">🇰🇼 الكويت</div>
-    </div>
-    """, unsafe_allow_html=True)
+# ---------------------------
+# FUTURE: METRICS PLACEHOLDER
+# ---------------------------
+def metrics_placeholder():
+    col1, col2, col3 = st.columns(3)
 
-    if df.empty:
-        st.warning(f"⚠️ لا توجد بيانات. الملف المتوقع: `{BASE_DIR / 'products_all.json'}` — اضغط **🔄 تحديث البيانات** من الشريط الجانبي.")
+    with col1:
+        st.metric("عدد المنتجات", len(data))
 
-    # KPI row
-    k1, k2, k3, k4, k5 = st.columns(5)
-    kpis = [
-        (k1, "📦", "blue",   f"{n_products:,}", "إجمالي المنتجات"),
-        (k2, "🏪", "teal",   n_stores,          "عدد المتاجر"),
-        (k3, "⚖️", "blue",   n_groups,          "منتجات مقارنة"),
-        (k4, "💰", "amber",  f"{avg_saving}%",  "متوسط التوفير"),
-        (k5, "🤖", "violet", n_ai,              "بنود التوصيف"),
+    with col2:
+        st.metric("أعلى سعر", f"{data['السعر'].max()} د.ك")
+
+    with col3:
+        st.metric("أقل سعر", f"{data['السعر'].min()} د.ك")
+
+# ---------------------------
+# OPTIONAL: DASHBOARD HOME (DISABLED)
+# ---------------------------
+def home_page():
+    header("🏠 الرئيسية", "نظرة عامة على النظام")
+
+    metrics_placeholder()
+
+    three_column_card(
+        "📦 المنتجات",
+        "<p>عرض جميع المنتجات مع خيارات البحث والفرز.</p>",
+        "⚖️ المقارنة",
+        "<p>مقارنة منتجين من حيث السعر والمتجر.</p>",
+        "📊 التحليلات",
+        "<p>رسوم بيانية وتحليل الأسعار.</p>"
+    )
+# ---------------------------
+# ADVANCED SEARCH ENGINE (FUTURE)
+# ---------------------------
+def advanced_search_engine(keyword):
+    keyword = keyword.strip().lower()
+
+    df = data.copy()
+
+    df = df[
+        df["اسم المنتج"].str.lower().str.contains(keyword) |
+        df["التصنيف"].str.lower().str.contains(keyword) |
+        df["المتجر"].str.lower().str.contains(keyword)
     ]
-    for col, icon, color, val, lbl in kpis:
-        with col:
-            st.markdown(f"""
-            <div class="kpi">
-                <div class="kpi-icon-box {color}">{icon}</div>
-                <div class="kpi-body">
-                    <div class="kpi-val">{val}</div>
-                    <div class="kpi-lbl">{lbl}</div>
-                </div>
-            </div>""", unsafe_allow_html=True)
 
-    # Two columns layout
-    left, right = st.columns([1.1, 1], gap="large")
+    score = []
+    for _, row in df.iterrows():
+        s = 0
+        if keyword in row["اسم المنتج"].lower():
+            s += 3
+        if keyword in row["التصنيف"].lower():
+            s += 2
+        if keyword in row["المتجر"].lower():
+            s += 1
+        score.append(s)
 
-    with left:
-        if groups:
-            st.markdown('<div class="sec"><span class="sec-icon">🏆</span><span class="sec-title">أبرز العروض اليوم</span></div>', unsafe_allow_html=True)
-            top5 = sorted(groups, key=lambda g: g.get("savings_pct", 0), reverse=True)[:5]
-            num_cls = ["n1", "n2", "n3", "", ""]
-            for i, g in enumerate(top5):
-                nc = num_cls[i] if i < 3 else ""
-                st.markdown(f"""
-                <div class="deal">
-                    <div class="deal-num {nc}">{i+1}</div>
-                    <div class="deal-info">
-                        <div class="deal-name">{g['canonical_name']}</div>
-                        <div class="deal-store">🏪 {g['best_store']}</div>
-                    </div>
-                    <div class="deal-right">
-                        <div class="deal-price">{g['best_price']} KD</div>
-                        <div class="deal-save">وفّر {g['savings_pct']}%</div>
-                    </div>
-                </div>""", unsafe_allow_html=True)
+    df["درجة التطابق"] = score
+    df = df.sort_values("درجة التطابق", ascending=False)
 
-    with right:
-        if not df.empty:
-            st.markdown('<div class="sec"><span class="sec-icon">🏪</span><span class="sec-title">المتاجر المتاحة</span></div>', unsafe_allow_html=True)
-            sc = df.groupby("store").size().reset_index(name="n")
-            html_chips = '<div class="store-grid">'
-            for _, row in sc.iterrows():
-                html_chips += f"""
-                <div class="store-chip">
-                    <div class="sc-num">{row['n']}</div>
-                    <div class="sc-name">{row['store']}</div>
-                    <div class="sc-count">منتج</div>
-                </div>"""
-            html_chips += "</div>"
-            st.markdown(html_chips, unsafe_allow_html=True)
+    return df
 
-    # AI preview
-    if work_data.get("work_items"):
-        st.markdown('<div class="sec"><span class="sec-icon">🤖</span><span class="sec-title">أبرز بنود التوصيف</span><span class="sec-badge">Claude AI</span></div>', unsafe_allow_html=True)
-        for item in work_data["work_items"][:4]:
-            st.markdown(f"""
-            <div class="wc">
-                <span class="wc-cat">{item.get('category','')}</span>
-                <div class="wc-desc">{item.get('description','')}</div>
-                <div class="wc-meta">
-                    <span>أدنى: <span class="p">{item.get('min_price','—')} KD</span></span>
-                    <span>متوسط: <span class="p">{item.get('avg_price','—')} KD</span></span>
-                    <span>أعلى: <span class="p">{item.get('max_price','—')} KD</span></span>
-                    <span class="s">🏪 {item.get('best_store','—')}</span>
-                </div>
-            </div>""", unsafe_allow_html=True)
+# ---------------------------
+# SMART SEARCH (UPGRADED)
+# ---------------------------
+def page_smart_search_v2():
+    header("🔎 بحث ذكي متقدم", "محرك بحث يعتمد على خوارزمية تطابق الكلمات")
 
+    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
 
-# ───────────────────────────────────────────────────────────────
-# PAGE: المنتجات
-# ───────────────────────────────────────────────────────────────
-elif page == "📦  المنتجات":
-    st.markdown('<div class="pt">📦 قائمة المنتجات</div><div class="ps">تصفح وابحث في جميع المنتجات المجلوبة من المتاجر الكهربائية</div>', unsafe_allow_html=True)
+    query = st.text_input("اكتب كلمة للبحث")
 
-    if df.empty:
-        st.warning("لا توجد بيانات. اضغط تحديث البيانات من الشريط الجانبي.")
-    else:
-        c1, c2, c3 = st.columns(3)
-        with c1:
-            search = st.text_input("🔍 بحث باسم المنتج")
-        with c2:
-            stores = ["الكل"] + sorted(df["store"].unique().tolist())
-            sel_store = st.selectbox("🏪 المتجر", stores)
-        with c3:
-            min_p, max_p = float(df["price"].min()), float(df["price"].max())
-            price_range = (min_p, max_p) if min_p == max_p else st.slider("💰 السعر (KD)", min_p, max_p, (min_p, max_p))
+    if query:
+        results = advanced_search_engine(query)
 
-        filt = df.copy()
-        if search:
-            filt = filt[filt["name"].str.contains(search, case=False, na=False)]
-        if sel_store != "الكل":
-            filt = filt[filt["store"] == sel_store]
-        filt = filt[(filt["price"] >= price_range[0]) & (filt["price"] <= price_range[1])]
+        if len(results) == 0:
+            st.warning("لا توجد نتائج مطابقة")
+        else:
+            st.success(f"تم العثور على {len(results)} نتيجة")
+            st.dataframe(results, use_container_width=True)
 
-        st.caption(f"يُعرض {len(filt):,} منتج")
-        show_cols = [c for c in ["name", "price", "store", "url", "timestamp"] if c in filt.columns]
-        st.dataframe(
-            filt[show_cols],
-            use_container_width=True,
-            hide_index=True,
-            column_config={
-                "name":      st.column_config.TextColumn("المنتج"),
-                "price":     st.column_config.NumberColumn("السعر (KD)", format="%.3f"),
-                "store":     st.column_config.TextColumn("المتجر"),
-                "url":       st.column_config.LinkColumn("رابط", display_text="🔗 فتح"),
-                "timestamp": st.column_config.TextColumn("وقت الجلب"),
-            },
+    st.markdown("</div>", unsafe_allow_html=True)
+# ---------------------------
+# EXPORT UTILITIES
+# ---------------------------
+def export_dataframe(df, filename="export.xlsx"):
+    buffer = BytesIO()
+    df.to_excel(buffer, index=False)
+    return buffer.getvalue(), filename
+
+def export_csv(df, filename="export.csv"):
+    return df.to_csv(index=False).encode("utf-8"), filename
+
+# ---------------------------
+# EXPORT SECTION (OPTIONAL)
+# ---------------------------
+def export_section(df):
+    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+    st.markdown("### 📤 تصدير البيانات")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        excel_data, excel_name = export_dataframe(df)
+        st.download_button(
+            "⬇️ تحميل Excel",
+            data=excel_data,
+            file_name=excel_name,
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-        st.download_button("⬇️ تحميل CSV", filt.to_csv(index=False).encode("utf-8-sig"), "products.csv", "text/csv")
 
-
-# ───────────────────────────────────────────────────────────────
-# PAGE: مقارنة الأسعار
-# ───────────────────────────────────────────────────────────────
-elif page == "⚖️  مقارنة الأسعار":
-    st.markdown('<div class="pt">⚖️ مقارنة الأسعار بين المتاجر</div><div class="ps">منتجات متطابقة من متاجر مختلفة — الأرخص مظلل بالأخضر</div>', unsafe_allow_html=True)
-
-    if not groups:
-        st.warning("لا توجد بيانات مقارنة. شغّل التحديث أولاً.")
-    else:
-        q = st.text_input("🔍 ابحث عن منتج")
-        filtered_groups = [g for g in groups if not q or q.lower() in g["canonical_name"].lower()]
-        st.caption(f"{len(filtered_groups)} منتج مطابق")
-
-        for g in filtered_groups[:50]:
-            with st.expander(f"📦 {g['canonical_name']}  —  {g['best_price']} KD ({g['best_store']})  |  وفّر {g['savings_pct']}%"):
-                rows = []
-                for p in g["products"]:
-                    rows.append({
-                        "✔": "✅" if p["price"] == g["best_price"] else "",
-                        "المتجر": p["store"],
-                        "المنتج": p["name"],
-                        "السعر (KD)": p["price"],
-                        "الرابط": p.get("url", ""),
-                    })
-                cdf = pd.DataFrame(rows)
-                st.dataframe(
-                    cdf,
-                    use_container_width=True,
-                    hide_index=True,
-                    column_config={
-                        "✔": st.column_config.TextColumn(width="small"),
-                        "السعر (KD)": st.column_config.NumberColumn(format="%.3f KD"),
-                        "الرابط": st.column_config.LinkColumn(display_text="🔗 فتح"),
-                    },
-                )
-
-
-# ───────────────────────────────────────────────────────────────
-# PAGE: أفضل العروض
-# ───────────────────────────────────────────────────────────────
-elif page == "🏆  أفضل العروض":
-    st.markdown('<div class="pt">🏆 أفضل العروض</div><div class="ps">المنتجات ذات أكبر فارق سعري بين المتاجر</div>', unsafe_allow_html=True)
-
-    if not groups:
-        st.warning("لا توجد بيانات.")
-    else:
-        sorted_g = sorted(groups, key=lambda g: g.get("savings_pct", 0), reverse=True)
-        min_save = st.slider("الحد الأدنى للتوفير (%)", 0, 100, 10)
-        deals = [g for g in sorted_g if g.get("savings_pct", 0) >= min_save]
-        st.caption(f"{len(deals)} عرض")
-
-        if deals:
-            dd = pd.DataFrame([{
-                "المنتج": g["canonical_name"],
-                "أفضل سعر (KD)": g["best_price"],
-                "أغلى سعر (KD)": g["worst_price"],
-                "أفضل متجر": g["best_store"],
-                "التوفير %": g["savings_pct"],
-            } for g in deals[:100]])
-            st.dataframe(
-                dd,
-                use_container_width=True,
-                hide_index=True,
-                column_config={
-                    "أفضل سعر (KD)": st.column_config.NumberColumn(format="%.3f KD"),
-                    "أغلى سعر (KD)": st.column_config.NumberColumn(format="%.3f KD"),
-                    "التوفير %":      st.column_config.ProgressColumn(min_value=0, max_value=100, format="%d%%"),
-                },
-            )
-            st.download_button("⬇️ CSV", dd.to_csv(index=False).encode("utf-8-sig"), "best_deals.csv", "text/csv")
-
-            st.markdown("---")
-            st.markdown('<div class="pt" style="font-size:1rem">أفضل 20 عرضاً</div>', unsafe_allow_html=True)
-            cd = pd.DataFrame([{"المنتج": g["canonical_name"][:35], "توفير %": g["savings_pct"]} for g in deals[:20]])
-            bar = (
-                alt.Chart(cd).mark_bar(color="#0f766e", cornerRadiusTopLeft=4, cornerRadiusTopRight=4)
-                .encode(
-                    x=alt.X("توفير %:Q", title="نسبة التوفير %"),
-                    y=alt.Y("المنتج:N", sort="-x", title=""),
-                    tooltip=["المنتج", "توفير %"],
-                ).properties(height=480)
-            )
-            st.altair_chart(bar, use_container_width=True)
-
-
-# ───────────────────────────────────────────────────────────────
-# PAGE: توصيف الأعمال
-# ───────────────────────────────────────────────────────────────
-elif page == "🤖  توصيف الأعمال":
-    st.markdown('<div class="pt">🤖 توصيف الأعمال الكهربائية</div><div class="ps">بنود توصيف أعمال الكهرباء المولّدة بالذكاء الاصطناعي بناءً على أسعار السوق الكويتي</div>', unsafe_allow_html=True)
-
-    if not work_data or not work_data.get("work_items"):
-        st.info("لم يتم توليد التوصيف بعد. تأكد من وجود ANTHROPIC_API_KEY ثم اضغط الزر.")
-        if st.button("🚀 توليد توصيف الأعمال الآن", type="primary"):
-            run_ai_only()
-    else:
-        wi   = work_data["work_items"]
-        cats = work_data.get("categories_summary", {})
-        pa   = work_data.get("products_analyzed", 0)
-
-        k1, k2, k3 = st.columns(3)
-        for col, icon, color, val, lbl in [
-            (k1, "📋", "blue",   len(wi),   "بنود التوصيف"),
-            (k2, "📂", "teal",   len(cats), "فئات العمل"),
-            (k3, "📦", "violet", f"{pa:,}", "منتجات حُللت"),
-        ]:
-            with col:
-                st.markdown(f"""
-                <div class="kpi">
-                    <div class="kpi-icon-box {color}">{icon}</div>
-                    <div class="kpi-body">
-                        <div class="kpi-val">{val}</div>
-                        <div class="kpi-lbl">{lbl}</div>
-                    </div>
-                </div>""", unsafe_allow_html=True)
-
-        if work_data.get("generated_at"):
-            try:
-                gs = datetime.fromisoformat(work_data["generated_at"]).strftime("%Y-%m-%d %H:%M")
-            except ValueError:
-                gs = work_data["generated_at"]
-            st.caption(f"تاريخ التوليد: {gs}")
-
-        st.markdown("")
-
-        cf1, cf2, cf3 = st.columns(3)
-        with cf1:
-            sw = st.text_input("🔍 بحث في التوصيف")
-        with cf2:
-            sc = st.selectbox("📂 الفئة", ["الكل"] + sorted(cats.keys()))
-        with cf3:
-            ss = st.selectbox("🏪 أفضل متجر", ["الكل"] + sorted({i.get("best_store","") for i in wi if i.get("best_store")}))
-
-        fi = wi
-        if sw:
-            fi = [i for i in fi if sw.lower() in i.get("description","").lower() or sw.lower() in i.get("category","").lower()]
-        if sc != "الكل":
-            fi = [i for i in fi if i.get("category") == sc]
-        if ss != "الكل":
-            fi = [i for i in fi if i.get("best_store") == ss]
-
-        st.caption(f"يُعرض {len(fi)} بند")
-
-        if fi:
-            td = pd.DataFrame([{
-                "رقم": i.get("item_no", n + 1),
-                "وصف العمل": i.get("description", ""),
-                "الوحدة": i.get("unit", ""),
-                "أدنى (KD)": i.get("min_price", ""),
-                "متوسط (KD)": i.get("avg_price", ""),
-                "أعلى (KD)": i.get("max_price", ""),
-                "أفضل متجر": i.get("best_store", ""),
-                "الفئة": i.get("category", ""),
-            } for n, i in enumerate(fi)])
-            st.dataframe(
-                td,
-                use_container_width=True,
-                hide_index=True,
-                column_config={
-                    "رقم":          st.column_config.NumberColumn(width="small"),
-                    "وصف العمل":    st.column_config.TextColumn(width="large"),
-                    "الوحدة":       st.column_config.TextColumn(width="small"),
-                    "أدنى (KD)":   st.column_config.NumberColumn(format="%.3f"),
-                    "متوسط (KD)":  st.column_config.NumberColumn(format="%.3f"),
-                    "أعلى (KD)":   st.column_config.NumberColumn(format="%.3f"),
-                },
-            )
-            st.download_button("⬇️ تحميل CSV", td.to_csv(index=False).encode("utf-8-sig"), "work_descriptions.csv", "text/csv")
-
-        if cats:
-            st.markdown("---")
-            st.markdown('<div class="pt" style="font-size:1rem">توزيع الفئات</div>', unsafe_allow_html=True)
-            cat_df = pd.DataFrame([{"الفئة": k, "عدد البنود": v} for k, v in cats.items()]).sort_values("عدد البنود", ascending=False)
-            cc = (
-                alt.Chart(cat_df).mark_bar(color="#7c3aed", cornerRadiusTopLeft=4, cornerRadiusTopRight=4)
-                .encode(
-                    x=alt.X("عدد البنود:Q", title=""),
-                    y=alt.Y("الفئة:N", sort="-x", title=""),
-                    tooltip=["الفئة", "عدد البنود"],
-                ).properties(height=320)
-            )
-            st.altair_chart(cc, use_container_width=True)
-
-        st.markdown("---")
-        if st.button("🔄 إعادة التوليد"):
-            run_ai_only()
-
-
-# ───────────────────────────────────────────────────────────────
-# PAGE: تاريخ الأسعار
-# ───────────────────────────────────────────────────────────────
-elif page == "📈  تاريخ الأسعار":
-    st.markdown('<div class="pt">📈 تاريخ الأسعار</div><div class="ps">تتبع تغير سعر أي منتج عبر الزمن ومقارنته بين المتاجر</div>', unsafe_allow_html=True)
-
-    if history_df.empty:
-        st.info("لا توجد بيانات تاريخية بعد. ستُجمع تلقائياً عند كل تحديث.")
-    else:
-        sel = st.selectbox("اختر منتجاً", sorted(history_df["name"].unique().tolist()))
-        if sel:
-            ph = history_df[history_df["name"] == sel].sort_values("timestamp")
-            line = (
-                alt.Chart(ph).mark_line(point=True, strokeWidth=2)
-                .encode(
-                    x=alt.X("timestamp:T", title="التاريخ"),
-                    y=alt.Y("price:Q", title="السعر (KD)"),
-                    color=alt.Color("store:N", title="المتجر"),
-                    tooltip=["store", "price", "timestamp"],
-                ).properties(height=380, title=sel)
-            )
-            st.altair_chart(line, use_container_width=True)
-            sh = ph[["timestamp", "store", "price"]].rename(columns={"timestamp": "التاريخ", "store": "المتجر", "price": "السعر (KD)"})
-            st.dataframe(sh, use_container_width=True, hide_index=True)
-
-
-# ───────────────────────────────────────────────────────────────
-# PAGE: الرسوم البيانية
-# ───────────────────────────────────────────────────────────────
-elif page == "📊  الرسوم البيانية":
-    st.markdown('<div class="pt">📊 الرسوم البيانية</div><div class="ps">تحليل بصري شامل للأسعار والمتاجر</div>', unsafe_allow_html=True)
-
-    if df.empty:
-        st.warning("لا توجد بيانات.")
-    else:
-        BLUE   = "#2563eb"
-        TEAL   = "#0f766e"
-        VIOLET = "#7c3aed"
-        AMBER  = "#b45309"
-
-        r1c1, r1c2 = st.columns(2)
-        with r1c1:
-            st.markdown('<div class="sec"><span class="sec-icon">📊</span><span class="sec-title">توزيع الأسعار</span></div>', unsafe_allow_html=True)
-            hist = (
-                alt.Chart(df).mark_bar(color=BLUE, opacity=.8, cornerRadiusTopLeft=3, cornerRadiusTopRight=3)
-                .encode(alt.X("price:Q", bin=alt.Bin(maxbins=35), title="السعر (KD)"), alt.Y("count()", title="عدد المنتجات"))
-                .properties(height=260)
-            )
-            st.altair_chart(hist, use_container_width=True)
-
-        with r1c2:
-            st.markdown('<div class="sec"><span class="sec-icon">🏪</span><span class="sec-title">متوسط السعر لكل متجر</span></div>', unsafe_allow_html=True)
-            avg_df = df.groupby("store")["price"].mean().reset_index()
-            ab = (
-                alt.Chart(avg_df).mark_bar(color=TEAL, cornerRadiusTopLeft=4, cornerRadiusTopRight=4)
-                .encode(x=alt.X("store:N", title=""), y=alt.Y("price:Q", title="متوسط السعر (KD)"), tooltip=["store", "price"])
-                .properties(height=260)
-            )
-            st.altair_chart(ab, use_container_width=True)
-
-        r2c1, r2c2 = st.columns(2)
-        with r2c1:
-            st.markdown('<div class="sec"><span class="sec-icon">💰</span><span class="sec-title">أرخص 20 منتج</span></div>', unsafe_allow_html=True)
-            top20 = df.sort_values("price").head(20)
-            hb = (
-                alt.Chart(top20).mark_bar(cornerRadiusTopLeft=3, cornerRadiusTopRight=3)
-                .encode(
-                    x=alt.X("price:Q", title="السعر (KD)"),
-                    y=alt.Y("name:N", sort="x", title=""),
-                    color=alt.Color("store:N", title="المتجر", scale=alt.Scale(scheme="tableau10")),
-                    tooltip=["name", "price", "store"],
-                ).properties(height=460)
-            )
-            st.altair_chart(hb, use_container_width=True)
-
-        with r2c2:
-            st.markdown('<div class="sec"><span class="sec-icon">📦</span><span class="sec-title">توزيع الأسعار (Box Plot)</span></div>', unsafe_allow_html=True)
-            box = (
-                alt.Chart(df).mark_boxplot(color=VIOLET)
-                .encode(x=alt.X("store:N", title=""), y=alt.Y("price:Q", title="السعر (KD)"), tooltip=["store", "price"])
-                .properties(height=460)
-            )
-            st.altair_chart(box, use_container_width=True)
-
-        st.markdown('<div class="sec"><span class="sec-icon">📏</span><span class="sec-title">نطاق الأسعار لكل متجر</span></div>', unsafe_allow_html=True)
-        rdf = df.groupby("store")["price"].agg(["min", "max"]).reset_index()
-        rc = (
-            alt.Chart(rdf).mark_rule(strokeWidth=5, color=AMBER)
-            .encode(x="store:N", y="min:Q", y2="max:Q", tooltip=["store", "min", "max"])
-            .properties(height=280)
+    with col2:
+        csv_data, csv_name = export_csv(df)
+        st.download_button(
+            "⬇️ تحميل CSV",
+            data=csv_data,
+            file_name=csv_name,
+            mime="text/csv"
         )
-        st.altair_chart(rc, use_container_width=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+# ---------------------------
+# ENHANCED ANALYTICS (FUTURE)
+# ---------------------------
+def analytics_price_distribution():
+    fig = px.histogram(
+        data,
+        x="السعر",
+        nbins=10,
+        title="توزيع الأسعار"
+    )
+    st.plotly_chart(fig, use_container_width=True)
+# ---------------------------
+# ADVANCED ANALYTICS: CATEGORY COUNT
+# ---------------------------
+def analytics_category_count():
+    cat_count = data["التصنيف"].value_counts().reset_index()
+    cat_count.columns = ["التصنيف", "عدد المنتجات"]
+
+    fig = px.bar(
+        cat_count,
+        x="التصنيف",
+        y="عدد المنتجات",
+        title="عدد المنتجات حسب التصنيف",
+        color="التصنيف"
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+# ---------------------------
+# ADVANCED ANALYTICS: STORE PRICE AVERAGE
+# ---------------------------
+def analytics_store_avg():
+    store_avg = data.groupby("المتجر")["السعر"].mean().reset_index()
+    store_avg.columns = ["المتجر", "متوسط السعر"]
+
+    fig = px.line(
+        store_avg,
+        x="المتجر",
+        y="متوسط السعر",
+        markers=True,
+        title="متوسط السعر حسب المتجر"
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+# ---------------------------
+# ANALYTICS MASTER PAGE (UPGRADED)
+# ---------------------------
+def page_analytics_v2():
+    header("📊 تحليلات متقدمة", "مجموعة من الرسوم البيانية المتقدمة")
+
+    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+    st.subheader("📌 توزيع الأسعار")
+    analytics_price_distribution()
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+    st.subheader("📌 عدد المنتجات حسب التصنيف")
+    analytics_category_count()
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+    st.subheader("📌 متوسط السعر حسب المتجر")
+    analytics_store_avg()
+    st.markdown("</div>", unsafe_allow_html=True)
+# ---------------------------
+# ADVANCED COMPARISON ENGINE (FUTURE)
+# ---------------------------
+def compare_products_advanced(p1, p2):
+    d1 = data[data["اسم المنتج"] == p1].iloc[0]
+    d2 = data[data["اسم المنتج"] == p2].iloc[0]
+
+    score_price = 1 if d1["السعر"] < d2["السعر"] else 0
+    score_store = 1 if d1["المتجر"] != d2["المتجر"] else 0
+    score_category = 1 if d1["التصنيف"] == d2["التصنيف"] else 0
+
+    result = pd.DataFrame({
+        "الميزة": ["السعر الأقل", "اختلاف المتجر", "نفس التصنيف"],
+        p1: [score_price, score_store, score_category],
+        p2: [1 - score_price, 1 - score_store, 1 - score_category]
+    })
+
+    return result
+
+# ---------------------------
+# PAGE: مقارنة متقدمة
+# ---------------------------
+def page_compare_v2():
+    header("⚖️ مقارنة متقدمة", "مقارنة ذكية بين منتجين مع تحليل نقاط القوة")
+
+    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        p1 = st.selectbox("اختر المنتج الأول", data["اسم المنتج"].unique(), key="cmp1")
+
+    with col2:
+        p2 = st.selectbox("اختر المنتج الثاني", data["اسم المنتج"].unique(), key="cmp2")
+
+    if p1 and p2:
+        st.subheader("📌 جدول المقارنة الذكي")
+        comp = compare_products_advanced(p1, p2)
+        st.table(comp)
+
+        st.subheader("📌 مقارنة الأسعار")
+        fig = px.bar(
+            data[data["اسم المنتج"].isin([p1, p2])],
+            x="اسم المنتج",
+           
+# ---------------------------
+# ADVANCED FILTER ENGINE
+# ---------------------------
+def filter_engine(df, price_min=None, price_max=None, store=None, category=None):
+    result = df.copy()
+
+    if price_min is not None:
+        result = result[result["السعر"] >= price_min]
+
+    if price_max is not None:
+        result = result[result["السعر"] <= price_max]
+
+    if store and store != "الكل":
+        result = result[result["المتجر"] == store]
+
+    if category and category != "الكل":
+        result = result[result["التصنيف"] == category]
+
+    return result
+
+# ---------------------------
+# PAGE: فلترة متقدمة
+# ---------------------------
+def page_filter_v2():
+    header("🧪 فلترة متقدمة", "تحكم كامل في نطاق الأسعار والمتاجر والتصنيفات")
+
+    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        price_min = st.number_input("السعر الأدنى", min_value=0.0, value=0.0)
+
+    with col2:
+        price_max = st.number_input("السعر الأعلى", min_value=0.0, value=float(data["السعر"].max()))
+
+    with col3:
+        store = st.selectbox("المتجر", ["الكل"] + sorted(data["المتجر"].unique()))
+
+    with col4:
+        category = st.selectbox("التصنيف", ["الكل"] + sorted(data["التصنيف"].unique()))
+
+    filtered = filter_engine(data, price_min, price_max, store, category)
+
+    st.subheader("📌 النتائج")
+    st.dataframe(filtered, use_container_width=True)
+
+    export_section(filtered)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+# ---------------------------
+# PAGE: لوحة التحكم المتقدمة (DASHBOARD PRO)
+# ---------------------------
+def page_dashboard_pro():
+    header("📈 لوحة التحكم المتقدمة", "نظرة شاملة على أداء المنتجات والمتاجر")
+
+    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+    st.subheader("📌 مؤشرات سريعة")
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        st.metric("عدد المنتجات", len(data))
+
+    with col2:
+        st.metric("أعلى سعر", f"{data['السعر'].max()} د.ك")
+
+    with col3:
+        st.metric("أقل سعر", f"{data['السعر'].min()} د.ك")
+
+    with col4:
+        st.metric("عدد المتاجر", data['المتجر'].nunique())
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+    st.subheader("📌 متوسط الأسعار حسب التصنيف")
+
+    avg_by_cat = data.groupby("التصنيف")["السعر"].mean().reset_index()
+    fig = px.bar(
+        avg_by_cat,
+        x="التصنيف",
+        y="السعر",
+        title="متوسط السعر لكل تصنيف",
+        color="التصنيف"
+    )
+    st.plotly_chart(fig, use_container_width=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+    st.subheader("📌 متوسط الأسعار حسب المتجر")
+
+    avg_by_store = data.groupby("المتجر")["السعر"].mean().reset_index()
+    fig2 = px.line(
+        avg_by_store,
+        x="المتجر",
+        y="السعر",
+        markers=True,
+        title="متوسط السعر لكل متجر"
+    )
+    st.plotly_chart(fig2, use_container_width=True)
+    st.markdown("</div>", unsafe_allow_html=True)
+# ---------------------------
+# PAGE: لوحة التحكم الشاملة (ULTRA DASHBOARD)
+# ---------------------------
+def page_dashboard_ultra():
+    header("🚀 لوحة التحكم الشاملة", "أقوى لوحة تحكم — دمج كامل بين التحليلات والفلترة والمقارنات")
+
+    # --- SECTION 1: METRICS ---
+    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+    st.subheader("📌 مؤشرات عامة")
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    with col1:
+        st.metric("عدد المنتجات", len(data))
+
+    with col2:
+        st.metric("عدد التصنيفات", data["التصنيف"].nunique())
+
+    with col3:
+        st.metric("عدد المتاجر", data["المتجر"].nunique())
+
+    with col4:
+        st.metric("متوسط الأسعار", f"{round(data['السعر'].mean(), 2)} د.ك")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # --- SECTION 2: FILTER + TABLE ---
+    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+    st.subheader("📌 فلترة سريعة")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        cat = st.selectbox("التصنيف", ["الكل"] + sorted(data["التصنيف"].unique()), key="ultra_cat")
+
+    with col2:
+        store = st.selectbox("المتجر", ["الكل"] + sorted(data["المتجر"].unique()), key="ultra_store")
+
+    df = data.copy()
+
+    if cat != "الكل":
+        df = df[df["التصنيف"] == cat]
+
+    if store != "الكل":
+        df = df[df["المتجر"] == store]
+
+    st.dataframe(df, use_container_width=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # --- SECTION 3: CHARTS ---
+    st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
+    st.subheader("📌 تحليل الأسعار")
+
+    fig = px.box(
+        df,
+        x="التصنيف",
+        y="السعر",
+        title="تحليل تشتت الأسعار حسب التصنيف"
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+# ---------------------------
+# FINAL ROUTER (MASTER MENU)
+# ---------------------------
+def master_router():
+    menu = st.sidebar.selectbox(
+        "📁 اختر صفحة متقدمة",
+        [
+            "—",
+            "بحث ذكي متقدم",
+            "مقارنة متقدمة",
+            "فلترة متقدمة",
+            "تحليلات متقدمة",
+            "لوحة التحكم المتقدمة",
+            "لوحة التحكم الشاملة"
+        ]
+    )
+
+    if menu == "بحث ذكي متقدم":
+        page_smart_search_v2()
+
+    elif menu == "مقارنة متقدمة":
+        page_compare_v2()
+
+    elif menu == "فلترة متقدمة":
+        page_filter_v2()
+
+    elif menu == "تحليلات متقدمة":
+        page_analytics_v2()
+
+    elif menu == "لوحة التحكم المتقدمة":
+        page_dashboard_pro()
+
+    elif menu == "لوحة التحكم الشاملة":
+        page_dashboard_ultra()
+
+# ---------------------------
+# ACTIVATE MASTER ROUTER
+# ---------------------------
+master_router()

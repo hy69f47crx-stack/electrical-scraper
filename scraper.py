@@ -10,12 +10,22 @@ PRODUCTS_FILE = BASE_DIR / "products_all.json"
 HISTORY_FILE = BASE_DIR / "price_history.json"
 
 
-def parse_price(raw: str) -> float | None:
-    """يحوّل نص السعر إلى رقم (يزيل KD، د.ك، فواصل ...)."""
+def parse_price(raw: str):
+    """
+    يحوّل نص السعر إلى رقم (يزيل KD، د.ك، فواصل ...).
+
+    🔧 BUG FIX: الكود القديم كان يحوّل كل الفواصل إلى نقاط مما يجعل
+    "1,500 KD" تُقرأ كـ 1.5 بدل 1500.
+    الإصلاح: نحذف فواصل الآلاف (فاصلة + 3 أرقام) أولاً قبل أي تحويل.
+    """
     if not raw:
         return None
-    cleaned = re.sub(r"[^\d\.,]", "", raw.replace(",", "."))
-    # احتفظ بأول رقم عشري صحيح
+    raw = raw.strip()
+    # ① حذف فواصل الآلاف: رقم + فاصلة + 3 أرقام → رقم + 3 أرقام
+    cleaned = re.sub(r"(\d),(\d{3})(?=\D|$)", r"\1\2", raw)
+    # ② إزالة كل الحروف ما عدا الأرقام والنقطة العشرية
+    cleaned = re.sub(r"[^\d.]", "", cleaned)
+    # ③ استخراج أول رقم صحيح (يشمل الكسور العشرية)
     match = re.search(r"\d+(?:\.\d+)?", cleaned)
     if match:
         return float(match.group())
@@ -56,6 +66,7 @@ def scrape_jassar(page) -> list:
                     print(f"[دخيل الجسار][DEBUG] selector '{sel}' → {count} عنصر")
 
         # جرّب selectors متعددة لـ WooCommerce
+        products = []
         for sel in ["li.product", "article.product", ".wc-block-grid__product",
                     ".product-card", ".product-item", ".products > li"]:
             products = page.locator(sel).all()
@@ -104,7 +115,6 @@ def scrape_jassar(page) -> list:
 # ============================================================
 def scrape_arabian(page) -> list:
     results = []
-    # جرّب URL بديل — الدومين الأصلي لا يُحلّ DNS
     candidates = [
         "https://arabianelectrical.com/shop/page/{}/",
         "https://www.arabian-electric.com/shop/page/{}/",
@@ -125,7 +135,10 @@ def scrape_arabian(page) -> list:
         print("[العربية للكهرباء] ⚠️ الموقع غير متاح حالياً — تجاوز.")
         return []
 
-    page_number = 2  # الصفحة 1 حُمّلت بالفعل
+    # 🔧 BUG FIX: كان page_number = 2 فتضيع بيانات الصفحة الأولى تماماً.
+    # الإصلاح: نبدأ من page_number = 1 ونسحب منتجاتها مباشرة
+    # (الصفحة 1 محمّلة بالفعل من خطوة اكتشاف URL).
+    page_number = 1
     while True:
         if page_number > 1:
             url = base_url.format(page_number)
@@ -136,6 +149,7 @@ def scrape_arabian(page) -> list:
                 print(f"[العربية للكهرباء] فشل: {e}")
                 break
             time.sleep(2)
+        # page_number == 1: الصفحة محمّلة مسبقاً، نكمل مباشرة
 
         products = page.locator("li.product, article.product, .product").all()
         if not products:
@@ -171,7 +185,6 @@ def scrape_arabian(page) -> list:
 # ============================================================
 def scrape_extra(page) -> list:
     results = []
-    # جرّب روابط متعددة لـ Extra Kuwait
     candidates = [
         "https://www.extra.com.kw/ar/category/electronics?start={}&sz=48",
         "https://www.extra.com/ar-kw/c/electronics/?start={}&sz=48",
@@ -194,7 +207,9 @@ def scrape_extra(page) -> list:
         print("[Extra] ⚠️ الموقع غير متاح أو محجوب — تجاوز.")
         return []
 
-    offset = 48  # الصفحة 0 حُمّلت بالفعل
+    # 🔧 BUG FIX: كان offset = 48 فتضيع بيانات الصفحة الأولى (offset=0).
+    # الإصلاح: نبدأ من offset = 0 ونسحب منتجاتها مباشرة.
+    offset = 0
     while True:
         if offset > 0:
             url = base_url.format(offset)
@@ -206,6 +221,7 @@ def scrape_extra(page) -> list:
                 print(f"[Extra] فشل التحميل offset={offset}: {e}")
                 break
             time.sleep(3)
+        # offset == 0: الصفحة محمّلة مسبقاً
 
         products = page.locator(".product-tile").all()
         if not products:
@@ -247,7 +263,6 @@ def scrape_extra(page) -> list:
 # ============================================================
 def scrape_xcite(page) -> list:
     results = []
-    # xcite.com أصبح يعيد توجيه إلى extra.com — جرّب xcite.com.kw
     base_url = "https://www.xcite.com.kw/en/electronics?p={}"
     page_number = 1
 
@@ -308,7 +323,6 @@ def scrape_xcite(page) -> list:
 # ============================================================
 def scrape_youbi(page) -> list:
     results = []
-    # ubay.com.kw لا يُحلّ DNS — جرّب ubay.com
     base_url = "https://www.ubay.com/shop/page/{}/"
     page_number = 1
 

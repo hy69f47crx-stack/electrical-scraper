@@ -30,7 +30,6 @@ def normalize_text(text: str) -> str:
 
 def extract_model_tokens(name: str) -> set:
     """استخراج أرقام الموديل والبراندات من اسم المنتج."""
-    # أرقام وحروف مثل LG55UN7300، SAMSUNG، WM1000 ...
     tokens = re.findall(r"[A-Z]{2,}[\w]*|[A-Z0-9]{3,}", name.upper())
     return set(tokens)
 

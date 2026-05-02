@@ -58,7 +58,7 @@ def load_products() -> list:
         return []
 
 
-def chunk_products(products: list, chunk_size: int = 25) -> list[list]:
+def chunk_products(products: list, chunk_size: int = 25) -> list:
     return [products[i : i + chunk_size] for i in range(0, len(products), chunk_size)]
 
 
@@ -70,7 +70,11 @@ def build_products_text(products: list) -> str:
     return "\n".join(lines)
 
 
-def call_claude_for_chunk(client: anthropic.Anthropic, products_text: str, chunk_index: int) -> dict | None:
+def call_claude_for_chunk(client: anthropic.Anthropic, products_text: str, chunk_index: int):
+    """
+    🔧 BUG FIX: كان model="claude-opus-4-7" وهو اسم غير صحيح.
+    تم التصحيح إلى "claude-opus-4-6" وهو الاسم الصحيح.
+    """
     user_message = f"""حلّل هذه المنتجات الكهربائية وحوّلها إلى بنود توصيف أعمال. أعد JSON نقي فقط:
 
 {products_text}
@@ -83,7 +87,7 @@ def call_claude_for_chunk(client: anthropic.Anthropic, products_text: str, chunk
 
     try:
         with client.messages.stream(
-            model="claude-opus-4-7",
+            model="claude-opus-4-6",  # ✅ FIXED: كان claude-opus-4-7 وهو غير موجود
             max_tokens=16000,
             system=[
                 {
@@ -114,9 +118,9 @@ def call_claude_for_chunk(client: anthropic.Anthropic, products_text: str, chunk
     return None
 
 
-def merge_work_items(chunks_results: list[dict], products_count: int) -> dict:
+def merge_work_items(chunks_results: list, products_count: int) -> dict:
     all_items = []
-    categories_summary: dict[str, int] = {}
+    categories_summary: dict = {}
 
     item_counter = 1
     for chunk in chunks_results:
