@@ -258,19 +258,20 @@ button[data-testid*="expanderButton"] { display: none !important; }
 }
 /* Slider — constrain width, prevent overflow */
 .stSlider {
+    width: 100% !important;
     max-width: 100% !important;
-    overflow: hidden !important;
-    padding: 0 4px !important;
-}
-.stSlider > div {
-    max-width: 100% !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
 }
 [data-testid="stSlider"] {
-    padding: 4px 2px !important;
-    overflow: hidden !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
 }
-[data-testid="stSlider"] > div > div {
-    overflow: hidden !important;
+[data-testid="stSlider"] canvas {
+    max-width: 100% !important;
 }
 /* Selectbox */
 [data-testid="stSelectbox"] {
@@ -302,14 +303,18 @@ button[data-testid*="expanderButton"] { display: none !important; }
     overflow: hidden !important;
     box-shadow: var(--sh-sm) !important;
     background: var(--surface) !important;
+    width: 100% !important;
     max-width: 100% !important;
     display: block !important;
 }
-/* The glide-data-grid canvas wrapper */
 [data-testid="stDataFrame"] > div {
+    width: 100% !important;
     max-width: 100% !important;
     overflow-x: auto !important;
     overflow-y: auto !important;
+}
+[data-testid="stDataFrame"] canvas {
+    max-width: 100% !important;
 }
 
 /* ══ Altair charts — RTL + overflow ════════════════════════════ */
@@ -691,20 +696,19 @@ elif page == "📦 المنتجات":
     if df.empty:
         st.warning("لا توجد بيانات")
     else:
-        # ── Filters inside a styled card ───────────────────────────
-        with st.container():
-            search = st.text_input("🔍 بحث باسم المنتج", placeholder="اكتب كلمة للبحث ...")
-            fc1, fc2 = st.columns([1, 2])
-            with fc1:
-                stores = ["الكل"] + sorted(df["store"].unique().tolist())
-                sel_store = st.selectbox("🏪 المتجر", stores)
-            with fc2:
-                mn, mx = float(df["price"].min()), float(df["price"].max())
-                if mn < mx:
-                    price_range = st.slider("💰 نطاق السعر (KD)", mn, mx, (mn, mx), step=0.1)
-                else:
-                    price_range = (mn, mx)
-                    st.info(f"السعر الثابت: {mn} KD")
+        # ── Filters ──────────────────────────────────────────────────
+        search = st.text_input("🔍 بحث باسم المنتج", placeholder="اكتب كلمة للبحث ...")
+        fc1, fc2 = st.columns([1, 1])
+        with fc1:
+            stores = ["الكل"] + sorted(df["store"].unique().tolist())
+            sel_store = st.selectbox("🏪 المتجر", stores)
+        with fc2:
+            mn, mx = float(df["price"].min()), float(df["price"].max())
+            if mn < mx:
+                price_range = st.slider("💰 السعر (KD)", mn, mx, (mn, mx), step=0.1)
+            else:
+                price_range = (mn, mx)
+                st.caption(f"السعر الثابت: {mn} KD")
 
         filt = df.copy()
         if search:
@@ -716,18 +720,19 @@ elif page == "📦 المنتجات":
         st.caption(f"**{len(filt):,}** منتج")
 
         show = filt[["name", "price", "store", "url"]].copy()
+        show["price"] = show["price"].apply(lambda x: f"{x:.2f}")
         show["url"] = show["url"].apply(clean_url)
         show.columns = ["المنتج", "السعر (KD)", "المتجر", "رابط"]
         st.dataframe(
             show,
             use_container_width=True,
             hide_index=True,
-            height=min(400, max(200, len(show) * 35 + 40)),
+            height=min(420, max(150, len(show) * 32 + 50)),
             column_config={
-                "المنتج":    st.column_config.TextColumn("المنتج",    width="large"),
-                "السعر (KD)":st.column_config.NumberColumn("السعر",   width="small", format="%.2f KD"),
-                "المتجر":   st.column_config.TextColumn("المتجر",    width="medium"),
-                "رابط":     st.column_config.LinkColumn("رابط",      width="small",  display_text="🔗 فتح"),
+                "المنتج":    st.column_config.TextColumn(width="large"),
+                "السعر (KD)":st.column_config.TextColumn(width="small"),
+                "المتجر":   st.column_config.TextColumn(width="medium"),
+                "رابط":     st.column_config.LinkColumn(width="small", display_text="🔗"),
             }
         )
 
@@ -765,19 +770,20 @@ elif page == "📂 الفئات والتفريعات":
 
         for store in sorted(cat_products["store"].unique()):
             store_data = cat_products[cat_products["store"] == store]
-            with st.expander(f"🏪 {store[:30]} ({len(store_data)} منتج)"):
+            with st.expander(f"🏪 {store[:30]} ({len(store_data)})"):
                 show = store_data[["name", "price", "url"]].copy()
+                show["price"] = show["price"].apply(lambda x: f"{x:.2f}")
                 show["url"] = show["url"].apply(clean_url)
                 show.columns = ["المنتج", "السعر (KD)", "رابط"]
                 st.dataframe(
                     show,
                     use_container_width=True,
                     hide_index=True,
-                    height=min(350, max(120, len(show) * 35 + 40)),
+                    height=min(320, max(100, len(show) * 32 + 45)),
                     column_config={
-                        "المنتج":    st.column_config.TextColumn("المنتج",    width="large"),
-                        "السعر (KD)":st.column_config.NumberColumn("السعر",   width="small", format="%.2f KD"),
-                        "رابط":     st.column_config.LinkColumn("رابط",      width="small",  display_text="🔗 فتح"),
+                        "المنتج":    st.column_config.TextColumn(width="large"),
+                        "السعر (KD)":st.column_config.TextColumn(width="small"),
+                        "رابط":     st.column_config.LinkColumn(width="small", display_text="🔗"),
                     }
                 )
 
@@ -796,17 +802,16 @@ elif page == "⚖️ مقارنة الأسعار":
         st.caption(f"**{len(filtered_groups)}** مجموعة مطابقة")
 
         for g in filtered_groups[:50]:
-            short = g["canonical_name"][:40] + ("..." if len(g["canonical_name"]) > 40 else "")
+            short = g["canonical_name"][:36] + ("..." if len(g["canonical_name"]) > 36 else "")
             saving = g.get("savings_pct", 0)
-            badge  = f" 💰 توفير {saving}%" if saving > 0 else ""
-            with st.expander(f"📦 {short}  —  أفضل سعر: {g['best_price']} KD{badge}"):
+            with st.expander(f"📦 {short} | أفضل: {g['best_price']} KD | توفير: {saving}%"):
                 rows = []
                 for p in g["products"]:
                     url_val = p.get("url", "") or ""
                     rows.append({
-                        "✔":         "✅" if p["price"] == g["best_price"] else "  ",
+                        "✔":         "✅" if p["price"] == g["best_price"] else "",
                         "المتجر":    p["store"],
-                        "السعر (KD)":p["price"],
+                        "السعر":     f"{p['price']:.2f}",
                         "رابط":      url_val if url_val.startswith("http") else None,
                     })
                 comp_df = pd.DataFrame(rows)
@@ -814,12 +819,12 @@ elif page == "⚖️ مقارنة الأسعار":
                     comp_df,
                     use_container_width=True,
                     hide_index=True,
-                    height=min(250, len(comp_df) * 35 + 40),
+                    height=min(220, max(100, len(comp_df) * 32 + 45)),
                     column_config={
-                        "✔":         st.column_config.TextColumn("",         width="small"),
-                        "المتجر":    st.column_config.TextColumn("المتجر",   width="medium"),
-                        "السعر (KD)":st.column_config.NumberColumn("السعر",  width="small", format="%.2f KD"),
-                        "رابط":     st.column_config.LinkColumn("رابط",     width="small",  display_text="🔗"),
+                        "✔":     st.column_config.TextColumn(width="small"),
+                        "المتجر":st.column_config.TextColumn(width="medium"),
+                        "السعر":  st.column_config.TextColumn(width="small"),
+                        "رابط":  st.column_config.LinkColumn(width="small", display_text="🔗"),
                     }
                 )
 
@@ -844,52 +849,50 @@ elif page == "🏆 أفضل العروض":
 
         if deals:
             dd = pd.DataFrame([{
-                "المنتج":     g["canonical_name"][:48],
-                "أفضل متجر": g.get("best_store", "—"),
-                "أفضل سعر":  g["best_price"],
-                "توفير %":    g["savings_pct"],
+                "المنتج":     g["canonical_name"][:45],
+                "المتجر":    g.get("best_store", "—"),
+                "السعر":     f"{g['best_price']:.2f}",
+                "توفير %":   f"{g['savings_pct']:.0f}%",
             } for g in deals[:100]])
             st.dataframe(
                 dd,
                 use_container_width=True,
                 hide_index=True,
-                height=min(420, max(200, len(dd) * 35 + 40)),
+                height=min(450, max(150, len(dd) * 32 + 50)),
                 column_config={
-                    "المنتج":    st.column_config.TextColumn("المنتج",       width="large"),
-                    "أفضل متجر":st.column_config.TextColumn("أفضل متجر",    width="medium"),
-                    "أفضل سعر": st.column_config.NumberColumn("أفضل سعر",   width="small", format="%.2f KD"),
-                    "توفير %":   st.column_config.NumberColumn("توفير %",    width="small", format="%.0f%%"),
+                    "المنتج":   st.column_config.TextColumn(width="large"),
+                    "المتجر":  st.column_config.TextColumn(width="medium"),
+                    "السعر":   st.column_config.TextColumn(width="small"),
+                    "توفير %": st.column_config.TextColumn(width="small"),
                 }
             )
 
             if len(deals) >= 3:
-                st.markdown('<div class="sec"><span class="sec-icon">📊</span><span class="sec-title">أفضل 15 عرضاً بيانياً</span></div>', unsafe_allow_html=True)
-                top_n = min(15, len(deals))
+                st.markdown('<div class="sec"><span class="sec-icon">📊</span><span class="sec-title">أفضل 12 عرضاً</span></div>', unsafe_allow_html=True)
+                top_n = min(12, len(deals))
                 cd = pd.DataFrame([{
-                    "المنتج":   g["canonical_name"][:32],
-                    "توفير %":  g["savings_pct"],
+                    "المنتج":   g["canonical_name"][:35],
+                    "التوفير":  g["savings_pct"],
                 } for g in deals[:top_n]])
                 bar = (
                     alt.Chart(cd)
-                    .mark_bar(
-                        color="#2563eb",
-                        cornerRadiusTopRight=5,
-                        cornerRadiusBottomRight=5,
-                    )
+                    .mark_bar(color="#2563eb", cornerRadiusTopRight=4, cornerRadiusBottomRight=4)
                     .encode(
-                        x=alt.X("توفير %:Q",
+                        x=alt.X("التوفير:Q",
                                 title="نسبة التوفير %",
-                                axis=alt.Axis(labelFont="Cairo", labelFontSize=11, titleFont="Cairo", titleFontSize=12)),
+                                axis=alt.Axis(labelFont="Cairo", labelFontSize=10,
+                                             titleFont="Cairo", titleFontSize=11, labelPadding=6)),
                         y=alt.Y("المنتج:N",
                                 sort="-x",
                                 axis=alt.Axis(labelFont="Cairo", labelFontSize=10,
-                                              labelLimit=220, labelPadding=6)),
+                                             labelLimit=250, labelPadding=8)),
                         tooltip=[
                             alt.Tooltip("المنتج:N",  title="المنتج"),
-                            alt.Tooltip("توفير %:Q", title="التوفير %", format=".0f"),
+                            alt.Tooltip("التوفير:Q", title="التوفير %", format=".0f"),
                         ],
                     )
-                    .properties(height=max(280, top_n * 28), padding={"left": 10, "right": 20, "top": 10, "bottom": 10})
+                    .properties(height=max(280, top_n * 30),
+                               padding={"left": 10, "right": 20, "top": 10, "bottom": 10})
                     .configure_axis(labelFont="Cairo", labelFontSize=10, titleFont="Cairo")
                     .configure_view(stroke=None)
                 )
@@ -948,21 +951,21 @@ elif page == "🤖 توصيف الأعمال":
         st.caption(f"**{len(fi)}** بند")
         if fi:
             td = pd.DataFrame([{
-                "رقم":   i.get("item_no", n + 1),
-                "الوصف": i.get("description", "")[:60],
+                "#":    n + 1,
+                "الوصف": i.get("description", "")[:58],
                 "الفئة": i.get("category", "—"),
-                "النطاق السعري": f"{i.get('min_price','—')} – {i.get('max_price','—')} KD",
+                "السعر": f"{i.get('min_price','—')} - {i.get('max_price','—')}",
             } for n, i in enumerate(fi)])
             st.dataframe(
                 td,
                 use_container_width=True,
                 hide_index=True,
-                height=min(450, max(200, len(td) * 35 + 40)),
+                height=min(480, max(150, len(td) * 32 + 50)),
                 column_config={
-                    "رقم":           st.column_config.NumberColumn("رقم",       width="small"),
-                    "الوصف":         st.column_config.TextColumn("الوصف",       width="large"),
-                    "الفئة":         st.column_config.TextColumn("الفئة",       width="medium"),
-                    "النطاق السعري": st.column_config.TextColumn("النطاق السعري", width="medium"),
+                    "#":     st.column_config.TextColumn(width="small"),
+                    "الوصف":  st.column_config.TextColumn(width="large"),
+                    "الفئة":  st.column_config.TextColumn(width="medium"),
+                    "السعر":  st.column_config.TextColumn(width="small"),
                 }
             )
 
@@ -985,25 +988,27 @@ elif page == "📈 تاريخ الأسعار":
                 .encode(
                     x=alt.X("timestamp:T",
                             title="التاريخ",
-                            axis=alt.Axis(labelFont="Cairo", labelFontSize=10,
-                                          titleFont="Cairo", format="%Y-%m-%d",
-                                          labelAngle=-30, labelPadding=8)),
+                            axis=alt.Axis(labelFont="Cairo", labelFontSize=9,
+                                          titleFont="Cairo", format="%d/%m",
+                                          labelAngle=-35, labelPadding=8)),
                     y=alt.Y("price:Q",
                             title="السعر (KD)",
                             axis=alt.Axis(labelFont="Cairo", labelFontSize=10,
-                                          titleFont="Cairo")),
+                                          titleFont="Cairo", titlePadding=10)),
                     color=alt.Color("store:N",
-                                    legend=alt.Legend(labelFont="Cairo", labelFontSize=11,
-                                                       titleFont="Cairo", title="المتجر")),
+                                    legend=alt.Legend(labelFont="Cairo", labelFontSize=10,
+                                                       titleFont="Cairo", title="المتجر",
+                                                       labelPadding=6)),
                     tooltip=[
                         alt.Tooltip("store:N",     title="المتجر"),
                         alt.Tooltip("price:Q",     title="السعر", format=".2f"),
                         alt.Tooltip("timestamp:T", title="التاريخ", format="%Y-%m-%d"),
                     ],
                 )
-                .properties(height=380, padding={"left": 10, "right": 20, "top": 10, "bottom": 30})
+                .properties(height=min(420, max(300, len(ph["store"].unique()) * 60)),
+                           padding={"left": 10, "right": 30, "top": 10, "bottom": 40})
                 .configure_axis(labelFont="Cairo", labelFontSize=10, titleFont="Cairo")
-                .configure_legend(labelFont="Cairo", labelFontSize=11)
+                .configure_legend(labelFont="Cairo", labelFontSize=10, titleFont="Cairo")
                 .configure_view(stroke=None)
             )
             st.altair_chart(line, use_container_width=True)
@@ -1028,20 +1033,20 @@ elif page == "📊 الرسوم البيانية":
                 .mark_bar(color="#2563eb", opacity=0.85, cornerRadiusTopLeft=3, cornerRadiusTopRight=3)
                 .encode(
                     alt.X("price:Q",
-                          bin=alt.Bin(maxbins=30),
+                          bin=alt.Bin(maxbins=28),
                           title="السعر (KD)",
-                          axis=alt.Axis(labelFont="Cairo", labelFontSize=10,
-                                        titleFont="Cairo", labelPadding=6)),
+                          axis=alt.Axis(labelFont="Cairo", labelFontSize=9,
+                                        titleFont="Cairo", labelPadding=6, labelAngle=-20)),
                     alt.Y("count()",
                           title="العدد",
                           axis=alt.Axis(labelFont="Cairo", labelFontSize=10,
-                                        titleFont="Cairo")),
+                                        titleFont="Cairo", titlePadding=10)),
                     tooltip=[
                         alt.Tooltip("price:Q",   bin=True, title="النطاق"),
                         alt.Tooltip("count():Q",          title="العدد"),
                     ],
                 )
-                .properties(height=320, padding={"left": 10, "right": 10, "top": 10, "bottom": 20})
+                .properties(height=340, padding={"left": 10, "right": 20, "top": 10, "bottom": 30})
                 .configure_axis(labelFont="Cairo", labelFontSize=10, titleFont="Cairo")
                 .configure_view(stroke=None)
             )
@@ -1058,18 +1063,19 @@ elif page == "📊 الرسوم البيانية":
                     y=alt.Y("store:N",
                             sort="-x",
                             title="",
-                            axis=alt.Axis(labelFont="Cairo", labelFontSize=11,
-                                          labelLimit=180, labelPadding=8)),
+                            axis=alt.Axis(labelFont="Cairo", labelFontSize=10,
+                                          labelLimit=220, labelPadding=12, labelAngle=0)),
                     x=alt.X("price:Q",
                             title="متوسط السعر (KD)",
                             axis=alt.Axis(labelFont="Cairo", labelFontSize=10,
-                                          titleFont="Cairo")),
+                                          titleFont="Cairo", labelPadding=4)),
                     tooltip=[
                         alt.Tooltip("store:N",  title="المتجر"),
                         alt.Tooltip("price:Q",  title="متوسط السعر", format=".2f"),
                     ],
                 )
-                .properties(height=320, padding={"left": 10, "right": 20, "top": 10, "bottom": 20})
+                .properties(height=max(300, len(avg_df) * 35),
+                           padding={"left": 10, "right": 20, "top": 10, "bottom": 20})
                 .configure_axis(labelFont="Cairo", labelFontSize=10, titleFont="Cairo")
                 .configure_view(stroke=None)
             )
