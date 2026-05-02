@@ -150,33 +150,17 @@ section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] {
 }
 
 /* ══════════════════════════
-   SIDEBAR COLLAPSE BUTTON
+   SIDEBAR COLLAPSE BUTTON - HIDDEN
 ══════════════════════════ */
-button[data-testid="stBaseButton-headerNoPadding"],
-[data-testid="stSidebarCollapseButton"] button,
-[data-testid="stSidebarCollapsedControl"] button {
-    background: rgba(59,130,246,.2) !important;
-    border: 1px solid var(--blue) !important;
-    border-radius: 8px !important;
-    color: var(--blue-l) !important;
-    width: 36px !important;
-    height: 36px !important;
-    padding: 0 !important;
+[data-testid="stSidebarCollapseButton"],
+[data-testid="stSidebarCollapsedControl"],
+button[data-testid="stBaseButton-headerNoPadding"] {
+    display: none !important;
 }
 
-button[data-testid="stBaseButton-headerNoPadding"]:hover,
-[data-testid="stSidebarCollapseButton"] button:hover,
-[data-testid="stSidebarCollapsedControl"] button:hover {
-    background: rgba(59,130,246,.3) !important;
-    border-color: var(--blue-l) !important;
-}
-
-[data-testid="stSidebarCollapseButton"] svg,
-[data-testid="stSidebarCollapsedControl"] svg {
-    width: 20px !important;
-    height: 20px !important;
-    color: var(--blue-l) !important;
-    stroke: var(--blue-l) !important;
+/* Hide expand here */
+[data-testid="stSidebarCollapsedControl"] {
+    display: none !important;
 }
 
 /* ══════════════════════════
@@ -699,7 +683,7 @@ with st.sidebar:
 
     page = st.radio(
         "nav",
-        ["🏠 الرئيسية", "📦 المنتجات", "⚖️ مقارنة الأسعار",
+        ["🏠 الرئيسية", "📦 المنتجات", "📂 الفئات والتفريعات", "⚖️ مقارنة الأسعار",
          "🏆 أفضل العروض", "🤖 توصيف الأعمال", "📈 تاريخ الأسعار", "📊 الرسوم البيانية"],
         label_visibility="collapsed",
     )
@@ -771,33 +755,13 @@ if page == "🏠 الرئيسية":
                 </div>
             </div>""", unsafe_allow_html=True)
 
-    # Two columns
-    left, right = st.columns([1.2, 1], gap="large")
-
-    with left:
-        if groups:
-            st.markdown('<div class="sec"><span class="sec-icon">🏆</span><span class="sec-title">أبرز العروض</span></div>', unsafe_allow_html=True)
-            top5 = sorted(groups, key=lambda g: g.get("savings_pct", 0), reverse=True)[:5]
-            for i, g in enumerate(top5):
-                nc = ["n1", "n2", "n3", "", ""][i] if i < 3 else ""
-                st.markdown(f"""
-                <div class="deal">
-                    <div class="deal-num {nc}">{i+1}</div>
-                    <div class="deal-info">
-                        <div class="deal-name">{g['canonical_name'][:35]}</div>
-                        <div class="deal-store">🏪 {g['best_store']}</div>
-                    </div>
-                    <div class="deal-right">
-                        <div class="deal-price">{g['best_price']} KD</div>
-                        <div class="deal-save">+{g['savings_pct']}%</div>
-                    </div>
-                </div>""", unsafe_allow_html=True)
-
-    with right:
-        if not df.empty:
-            st.markdown('<div class="sec"><span class="sec-icon">🏪</span><span class="sec-title">المتاجر</span></div>', unsafe_allow_html=True)
-            sc = df.groupby("store").size().reset_index(name="n")
-            for _, row in sc.iterrows():
+    # Store chips grid
+    if not df.empty:
+        st.markdown('<div class="sec"><span class="sec-icon">🏪</span><span class="sec-title">المتاجر</span></div>', unsafe_allow_html=True)
+        sc = df.groupby("store").size().reset_index(name="n")
+        cols = st.columns(min(3, len(sc)))
+        for idx, (_, row) in enumerate(sc.iterrows()):
+            with cols[idx % len(cols)]:
                 st.markdown(f"""
                 <div class="store-chip">
                     <div class="sc-num">{row['n']}</div>
@@ -846,6 +810,79 @@ elif page == "📦 المنتجات":
         show = filt[["name", "price", "store"]].copy()
         show.columns = ["المنتج", "السعر (KD)", "المتجر"]
         st.table(show)
+
+
+elif page == "📂 الفئات والتفريعات":
+    st.markdown('<div class="pt">📂 الفئات والتفريعات</div><div class="ps">تصنيف المنتجات حسب الفئات والعلامات التجارية</div>', unsafe_allow_html=True)
+
+    if df.empty:
+        st.warning("لا توجد بيانات")
+    else:
+        # Extract categories/brands from product names
+        def extract_category(name):
+            keywords = {
+                "كيبل": "الكيبلات والأسلاك",
+                "مفتاح": "المفاتيح والقواطع",
+                "مصابيح": "المصابيح والإضاءة",
+                "مصباح": "المصابيح والإضاءة",
+                "led": "المصابيح والإضاءة",
+                "لد": "المصابيح والإضاءة",
+                "مقبس": "المقابس والمنافذ",
+                "منفذ": "المقابس والمنافذ",
+                "ترانس": "المحولات",
+                "محول": "المحولات",
+                "بطارية": "البطاريات",
+                "مولد": "المولدات",
+                "مراوح": "المراوح والتهوية",
+                "مروحة": "المراوح والتهوية",
+                "مكيف": "تكييف الهواء",
+                "ثلاجة": "الأجهزة الكهربائية",
+                "غسالة": "الأجهزة الكهربائية",
+                "سخان": "سخانات المياه",
+                "شاحن": "أجهزة الشحن",
+            }
+            name_lower = name.lower()
+            for kw, cat in keywords.items():
+                if kw in name_lower:
+                    return cat
+            return "أخرى"
+
+        df_cat = df.copy()
+        df_cat["category"] = df_cat["name"].apply(extract_category)
+
+        # Category stats
+        cat_counts = df_cat["category"].value_counts()
+        st.markdown('<div class="sec"><span class="sec-icon">📊</span><span class="sec-title">إحصائيات الفئات</span></div>', unsafe_allow_html=True)
+
+        cols = st.columns(min(3, len(cat_counts)))
+        for idx, (cat, count) in enumerate(cat_counts.items()):
+            with cols[idx % len(cols)]:
+                st.markdown(f"""
+                <div class="kpi">
+                    <div class="kpi-icon-box blue">📦</div>
+                    <div class="kpi-body">
+                        <div class="kpi-val">{count}</div>
+                        <div class="kpi-lbl">{cat}</div>
+                    </div>
+                </div>""", unsafe_allow_html=True)
+
+        st.markdown("---")
+
+        # Detailed category breakdown
+        st.markdown('<div class="sec"><span class="sec-icon">📋</span><span class="sec-title">تفصيل المنتجات</span></div>', unsafe_allow_html=True)
+
+        sel_cat = st.selectbox("اختر فئة", sorted(cat_counts.index.tolist()))
+        cat_products = df_cat[df_cat["category"] == sel_cat]
+
+        st.caption(f"**{len(cat_products)}** منتج في فئة: **{sel_cat}**")
+
+        # Detailed breakdown by store
+        for store in sorted(cat_products["store"].unique()):
+            store_data = cat_products[cat_products["store"] == store]
+            with st.expander(f"🏪 {store} ({len(store_data)} منتجات)"):
+                show = store_data[["name", "price"]].copy()
+                show.columns = ["المنتج", "السعر (KD)"]
+                st.table(show)
 
 
 elif page == "⚖️ مقارنة الأسعار":
