@@ -6,6 +6,114 @@ from io import BytesIO
 from pathlib import Path
 
 # ---------------------------
+# USERS & ROLES
+# ---------------------------
+USERS = {
+    "admin":   {"password": "admin123",  "role": "مدير",    "name": "المدير"},
+    "fahad":   {"password": "fahad2024", "role": "مشرف",    "name": "فهد"},
+    "viewer":  {"password": "view123",   "role": "عارض",    "name": "زائر"},
+}
+
+# ---------------------------
+# AUTH: SESSION STATE
+# ---------------------------
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+if "username" not in st.session_state:
+    st.session_state.username = ""
+
+# ---------------------------
+# LOGIN PAGE
+# ---------------------------
+def show_login():
+    st.markdown("""
+        <style>
+        .login-wrap {
+            max-width: 400px;
+            margin: 80px auto 0 auto;
+            padding: 40px;
+            border-radius: 18px;
+            background: rgba(255,255,255,0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid #e8dcd3;
+            text-align: center;
+        }
+        .login-title { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+        .login-sub   { font-size: 14px; opacity: 0.6; margin-bottom: 24px; }
+        </style>
+        <div class='login-wrap'>
+            <div class='login-title'>🔐 تسجيل الدخول</div>
+            <div class='login-sub'>نظام تتبع أسعار المنتجات الكهربائية</div>
+        </div>
+    """, unsafe_allow_html=True)
+
+    with st.form("login_form", clear_on_submit=False):
+        username = st.text_input("👤 اسم المستخدم", placeholder="أدخل اسم المستخدم")
+        password = st.text_input("🔑 كلمة المرور", type="password", placeholder="أدخل كلمة المرور")
+        submitted = st.form_submit_button("دخول ←", use_container_width=True)
+
+        if submitted:
+            user = USERS.get(username.strip())
+            if user and user["password"] == password:
+                st.session_state.authenticated = True
+                st.session_state.username      = username.strip()
+                st.rerun()
+            else:
+                st.error("❌ اسم المستخدم أو كلمة المرور غير صحيحة")
+
+if not st.session_state.authenticated:
+    show_login()
+    st.stop()
+
+# ==============================
+# EVERYTHING BELOW = PROTECTED
+# ==============================
+
+# ---------------------------
+# CURRENT USER INFO
+# ---------------------------
+current_user = USERS[st.session_state.username]
+USER_NAME    = current_user["name"]
+USER_ROLE    = current_user["role"]
+
+# ---------------------------
+# TOP BAR (NAME + LOGOUT)
+# ---------------------------
+st.markdown("""
+    <style>
+    .topbar {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 14px;
+        padding: 8px 16px 0 0;
+        margin-bottom: -10px;
+    }
+    .topbar-user {
+        font-size: 14px;
+        opacity: 0.85;
+        background: rgba(217,166,160,0.18);
+        border: 1px solid #d9a6a0;
+        border-radius: 20px;
+        padding: 4px 14px;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+top_col1, top_col2 = st.columns([8, 2])
+with top_col2:
+    st.markdown(
+        f"<div class='topbar'>"
+        f"<span class='topbar-user'>👤 {USER_NAME} — {USER_ROLE}</span>"
+        f"</div>",
+        unsafe_allow_html=True,
+    )
+    if st.button("تسجيل خروج ↩", use_container_width=True):
+        st.session_state.authenticated = False
+        st.session_state.username      = ""
+        st.rerun()
+
+# ---------------------------
 # SESSION STATE (THEME TOGGLE)
 # ---------------------------
 if "theme" not in st.session_state:
