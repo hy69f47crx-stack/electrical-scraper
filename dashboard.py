@@ -1177,28 +1177,13 @@ elif page == "💰 تقسيم التكاليف":
     breakdown_data = get_cost_breakdown_chart_data()
     categories = ["عام (Global)"]
 
+    # Fallback to reading JSON directly
     try:
-        from cost_breakdown import get_cost_breakdown_chart_data as get_breakdown
-        if callable(get_breakdown):
-            try:
-                full_data = get_breakdown()
-                if isinstance(full_data, dict) and "breakdown_by_product_category" in str(full_data):
-                    # Extract categories from the json file
-                    import json
-                    with open(BASE_DIR / "cost_breakdown.json", "r", encoding="utf-8") as f:
-                        cost_data = json.load(f)
-                        categories.extend(list(cost_data.get("breakdown_by_product_category", {}).keys()))
-            except:
-                pass
+        with open(BASE_DIR / "cost_breakdown.json", "r", encoding="utf-8") as f:
+            cost_data = json.load(f)
+            categories.extend(list(cost_data.get("breakdown_by_product_category", {}).keys()))
     except:
-        # Fallback to reading JSON directly
-        try:
-            import json
-            with open(BASE_DIR / "cost_breakdown.json", "r", encoding="utf-8") as f:
-                cost_data = json.load(f)
-                categories.extend(list(cost_data.get("breakdown_by_product_category", {}).keys()))
-        except:
-            categories = ["عام (Global)"]
+        categories = ["عام (Global)"]
 
     selected_category = st.selectbox("اختر الفئة", categories)
 
