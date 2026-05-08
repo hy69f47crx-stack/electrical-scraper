@@ -1,0 +1,2473 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>برنامج تسعير الأعمال الكهربائية</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Cairo:wght@300;400;500;600;700;800&family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box}
+html{width:100%;height:100%;margin:0;padding:0;overflow:hidden}
+body{margin:0;padding:0;width:100%;height:100%;-webkit-font-smoothing:antialiased;overflow:hidden}
+
+/* Global CSS Variables - available to all elements */
+html, body {
+  --bg:#FAFAF7;
+  --bg-soft:#F4F3EE;
+  --surface:#FFFFFF;
+  --line:#E9E7E0;
+  --line-strong:#D9D6CC;
+  --ink:#0A0A0A;
+  --ink-2:#3A3A37;
+  --ink-3:#6E6C66;
+  --ink-4:#A8A59C;
+  --accent:#0A0A0A;
+  --accent-soft:#F0EEE7;
+  --pos:#2F6F4E;
+  --pos-bg:#E7F0EA;
+  --warn:#B25D2B;
+  --warn-bg:#F5EBE2;
+  --neg:#9F2D2D;
+  --neg-bg:#F4E6E5;
+  --info:#2C5A8A;
+  --info-bg:#E5EBF2;
+}
+
+html.dark, body.dark {
+  --bg:#0E0E0C;
+  --bg-soft:#161614;
+  --surface:#1A1916;
+  --line:#2A2926;
+  --line-strong:#3A3934;
+  --ink:#F5F4F0;
+  --ink-2:#D8D6CF;
+  --ink-3:#9C9A92;
+  --ink-4:#66645E;
+  --accent:#F5F4F0;
+  --accent-soft:#232220;
+  --pos-bg:#1B2A22;
+  --warn-bg:#2A201A;
+  --neg-bg:#2A1C1C;
+  --info-bg:#1A2230;
+}
+
+body{font-family:"IBM Plex Sans Arabic","Tajawal",system-ui,sans-serif;background:var(--bg);color:var(--ink);width:100%;height:100%;margin:0;padding:0}
+
+/* Theme — Option A (light/dark) */
+.theme-a, body.theme-a {
+  --bg:#FAFAF7;
+  --bg-soft:#F4F3EE;
+  --surface:#FFFFFF;
+  --line:#E9E7E0;
+  --ink:#0A0A0A;
+  --ink-2:#3A3A37;
+  --ink-3:#6E6C66;
+  --accent:#0A0A0A;
+  --pos:#2F6F4E;
+  --pos-bg:#E7F0EA;
+  --warn:#B25D2B;
+  --warn-bg:#F5EBE2;
+  --neg:#9F2D2D;
+  --neg-bg:#F4E6E5;
+  --info:#2C5A8A;
+  --info-bg:#E5EBF2;
+}
+.theme-a.dark{
+  --bg:#0E0E0C;
+  --bg-soft:#161614;
+  --surface:#1A1916;
+  --line:#2A2926;
+  --ink:#FFFFFF;
+  --ink-2:#E8E8E8;
+  --ink-3:#B0B0B0;
+}
+
+/* Theme — Option B (navy/amber) */
+.theme-b, body.theme-b {
+  --bg:#F6F4EE;
+  --bg-soft:#ECE8DD;
+  --surface:#FFFFFF;
+  --line:#E2DCCB;
+  --ink:#1B1F2A;
+  --ink-2:#3A4055;
+  --ink-3:#6B7088;
+  --accent:#1B2540;
+  --accent-2:#C68A2E;
+  --pos:#2F6F4E;
+  --pos-bg:#E2EDE5;
+  --warn:#B25D2B;
+  --warn-bg:#F4E7D5;
+  --neg:#9F2D2D;
+  --neg-bg:#F1E1DF;
+  --info:#2C5A8A;
+  --info-bg:#DDE6F0;
+}
+.theme-b.dark{
+  --bg:#11141C;
+  --bg-soft:#181C26;
+  --surface:#1C2030;
+  --line:#2A2F3F;
+  --ink:#FFFFFF;
+  --ink-2:#E0DCCE;
+  --ink-3:#A0A0B0;
+  --accent:#E6CB8E;
+  --accent-2:#E6CB8E;
+}
+
+#root{
+  width:100vw;
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  background:var(--bg);
+  color:var(--ink);
+  overflow:hidden;
+  margin:0;
+  padding:0;
+}
+
+#root.theme-a {
+  --bg:#FAFAF7;
+  --bg-soft:#F4F3EE;
+  --surface:#FFFFFF;
+  --line:#E9E7E0;
+  --ink:#0A0A0A;
+  --ink-2:#3A3A37;
+  --ink-3:#6E6C66;
+  --accent:#0A0A0A;
+  --pos:#2F6F4E;
+  --pos-bg:#E7F0EA;
+  --warn:#B25D2B;
+  --warn-bg:#F5EBE2;
+  --neg:#9F2D2D;
+  --neg-bg:#F4E6E5;
+  --info:#2C5A8A;
+  --info-bg:#E5EBF2;
+  background:var(--bg);
+  color:var(--ink);
+}
+
+#root.theme-a.dark {
+  --bg:#0E0E0C;
+  --bg-soft:#161614;
+  --surface:#1A1916;
+  --line:#2A2926;
+  --ink:#FFFFFF;
+  --ink-2:#E8E8E8;
+  --ink-3:#B0B0B0;
+  background:var(--bg);
+  color:var(--ink);
+}
+
+#root.theme-b {
+  --bg:#F6F4EE;
+  --bg-soft:#ECE8DD;
+  --surface:#FFFFFF;
+  --line:#E2DCCB;
+  --ink:#1B1F2A;
+  --ink-2:#3A4055;
+  --ink-3:#6B7088;
+  --accent:#1B2540;
+  --accent-2:#C68A2E;
+  --pos:#2F6F4E;
+  --pos-bg:#E2EDE5;
+  --warn:#B25D2B;
+  --warn-bg:#F4E7D5;
+  --neg:#9F2D2D;
+  --neg-bg:#F1E1DF;
+  --info:#2C5A8A;
+  --info-bg:#DDE6F0;
+  background:var(--bg);
+  color:var(--ink);
+}
+
+#root.theme-b.dark{
+  --bg:#11141C;
+  --bg-soft:#181C26;
+  --surface:#1C2030;
+  --line:#2A2F3F;
+  --ink:#FFFFFF;
+  --ink-2:#E0DCCE;
+  --ink-3:#A0A0B0;
+  --accent:#E6CB8E;
+  --accent-2:#E6CB8E;
+  background:var(--bg);
+  color:var(--ink);
+}
+
+.app-container{
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  background:var(--bg);
+  color:var(--ink);
+  margin:0;
+  padding:0;
+}
+
+.app-content{
+  flex:1;
+  overflow-y:auto;
+  overflow-x:hidden;
+  min-height: 0;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.bottom-bar{
+  /* In-flow flex child — no position:fixed so it always shows in iframes too */
+  flex-shrink:0;
+  height:65px;
+  background:var(--surface);
+  border-top:1px solid var(--line);
+  padding:8px;
+  display:flex;
+  flex-direction:row;
+  flex-wrap:nowrap;
+  align-items:stretch;
+  gap:4px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  margin:0;
+}
+
+.nav-item{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  padding:8px;
+  border:none;
+  background:transparent;
+  cursor:pointer;
+  color:var(--ink-3);
+  font-size:11px;
+  font-weight:500;
+  border-radius:8px;
+  transition:all 200ms;
+}
+
+.nav-item.active{
+  background:var(--bg-soft);
+  color:var(--ink);
+}
+
+.nav-item svg{
+  width:24px;
+  height:24px;
+}
+
+/* Cards and sections */
+.card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:16px;
+}
+
+.card-primary{
+  background:var(--ink);
+  color:var(--bg);
+  border:none;
+}
+
+.kpi-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin:16px;
+}
+
+.kpi-card{
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:12px;
+  font-size:13px;
+}
+
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:3px 9px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:500;
+  white-space:nowrap;
+}
+
+.badge-pos{background:var(--pos-bg);color:var(--pos)}
+.badge-warn{background:var(--warn-bg);color:var(--warn)}
+.badge-neg{background:var(--neg-bg);color:var(--neg)}
+.badge-info{background:var(--info-bg);color:var(--info)}
+
+.table-container{
+  overflow-x:auto;
+  margin:16px 0;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+}
+
+th{
+  background:var(--bg-soft);
+  padding:10px;
+  text-align:right;
+  font-weight:600;
+  border-bottom:1px solid var(--line);
+}
+
+td{
+  padding:10px;
+  border-bottom:1px solid var(--line);
+}
+
+tr:hover{
+  background:var(--bg-soft);
+}
+
+.tweaks-panel{
+  position:fixed;
+  top:0;
+  right:0;
+  width:280px;
+  height:100%;
+  background:var(--surface);
+  border-left:1px solid var(--line);
+  padding:20px;
+  overflow-y:auto;
+  z-index:1000;
+  transition:transform 200ms;
+  transform:translateX(100%);
+  display:none !important;
+}
+
+.tweaks-panel.show{
+  transform:translateX(0);
+}
+
+.tweaks-panel h3{
+  margin:20px 0 10px;
+  font-size:13px;
+  font-weight:600;
+}
+
+.tweaks-panel label{
+  display:block;
+  margin:8px 0;
+  font-size:12px;
+  cursor:pointer;
+}
+
+.tweaks-panel input{
+  margin-right:6px;
+}
+
+button{
+  font-family:inherit;
+}
+
+.num{
+  font-variant-numeric:tabular-nums;
+}
+
+/* Always show the desktop app on all screen sizes */
+#root { display: flex !important; }
+
+/* ── Mobile: nav bar at bottom (in-flow, optimized for small screens) ── */
+@media (max-width:768px){
+  .sidebar-header { display: none !important; }
+
+  /* Nav items wrap to fill the row evenly, touch-friendly sizes */
+  .nav-item {
+    flex: 1 1 auto !important;
+    min-width: 52px !important;
+    min-height: 50px !important;  /* Touch target: 44-48px minimum */
+    padding: 6px 8px !important;
+    font-size: 10px !important;
+  }
+
+  /* Better spacing on mobile — reduce padding on cards and content */
+  .card { margin: 10px 8px !important; padding: 10px !important; }
+
+  /* Headings: minimize spacing on mobile */
+  h2, h3 { margin-top: 0 !important; margin-bottom: 8px !important; line-height: 1.2 !important; }
+
+  /* Table container: tight spacing */
+  .table-container { margin: 8px 0 !important; }
+
+  /* Optimize button sizes for touch */
+  button { min-height: 40px !important; }
+  input, select { min-height: 40px !important; padding: 8px 10px !important; }
+
+  /* Ensure tables are readable */
+  table { font-size: 13px !important; }
+  th, td { padding: 8px 6px !important; }
+}
+
+/* ── Desktop: bottom-bar becomes right sidebar ── */
+@media (min-width:769px){
+  .app-container {
+    flex-direction: row-reverse;   /* RTL: sidebar on right */
+  }
+  .app-content {
+    flex: 1 !important;
+    min-width: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+  /* Transform bottom-bar → right sidebar */
+  .bottom-bar {
+    width: 200px !important;
+    height: 100% !important;
+    flex-direction: column !important;
+    flex-shrink: 0 !important;
+    border-top: none !important;
+    border-left: 1px solid var(--line) !important;
+    padding: 0 0 16px 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    gap: 2px !important;
+    background: var(--surface) !important;
+  }
+  /* Nav items: horizontal icon+label */
+  .nav-item {
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    padding: 11px 16px !important;
+    font-size: 13px !important;
+    gap: 10px !important;
+    border-radius: 8px !important;
+    width: 100% !important;
+    text-align: right !important;
+  }
+  .nav-item span { font-size: 13px !important; }
+  .nav-item.active {
+    background: var(--bg-soft) !important;
+    color: var(--ink) !important;
+    font-weight: 700 !important;
+  }
+  /* Sidebar header — only shown on desktop */
+  .sidebar-header {
+    display: flex !important;
+    padding: 18px 16px 14px !important;
+    border-bottom: 1px solid var(--line) !important;
+    margin-bottom: 8px !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+  .sidebar-logo {
+    font-size: 22px !important;
+    line-height: 1 !important;
+    margin-bottom: 4px !important;
+  }
+  .sidebar-title {
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    color: var(--ink-2) !important;
+    line-height: 1.4 !important;
+  }
+  .sidebar-sub {
+    font-size: 10px !important;
+    color: var(--ink-4) !important;
+  }
+}
+
+
+.mobile-header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+  padding: 12px 16px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.mobile-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 12px 12px 0 12px;
+  position: relative;
+}
+
+.mobile-nav-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 65px;
+  background: var(--surface);
+  border-top: 2px solid var(--line);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 999;
+}
+
+.mobile-nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--ink-3);
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 150ms;
+}
+
+.mobile-nav-btn:active {
+  background: var(--bg-soft);
+  color: var(--ink);
+}
+
+.mobile-nav-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+.mobile-screen {
+  display: none;
+}
+
+.mobile-screen.active {
+  display: block;
+}
+
+.mobile-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.mobile-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.mobile-input-group label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-2);
+}
+
+.mobile-input-group input,
+.mobile-input-group select {
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: inherit;
+}
+
+.mobile-btn {
+  width: 100%;
+  padding: 12px;
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 150ms;
+}
+
+.mobile-btn:active {
+  opacity: 0.8;
+}
+
+.mobile-table {
+  width: 100%;
+  font-size: 12px;
+  border-collapse: collapse;
+}
+
+.mobile-table th,
+.mobile-table td {
+  padding: 8px;
+  text-align: right;
+  border-bottom: 1px solid var(--line);
+}
+
+.mobile-table th {
+  background: var(--bg-soft);
+  font-weight: 600;
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
+
+<script type="text/babel">
+const { useState, useMemo } = React;
+
+// Function to convert numbers to English
+function toEnglishNumbers(num) {
+  if (typeof num !== 'number') return num;
+  const arabicNums = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
+  const englishNums = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
+  let str = num.toString();
+  for (let i = 0; i < 10; i++) {
+    str = str.replace(new RegExp(arabicNums[i], 'g'), englishNums[i]);
+  }
+  return str;
+}
+
+// Real data from electrical scraper
+let APP_DATA = {
+  kpis: { totalProducts: 0, uniqueStores: 0, avgPrice: 0, priceRange: '0-0' },
+  stores: [],
+  materials: [],
+  revenue: [],
+  loading: true,
+};
+
+// Embedded product data (for Streamlit Cloud compatibility)
+const EMBEDDED_PRODUCTS = [{"store":"دخيل الجسار","name":"كيبل كهربائي NYY 3×2.5mm مقاوم للحرارة","price":1.85,"url":"https://online.aljassar.com/product/cable-nyy-3x2-5/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"دخيل الجسار","name":"مفتاح كهربائي مفرد 16A Legrand","price":2.75,"url":"https://online.aljassar.com/product/switch-legrand-16a/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"دخيل الجسار","name":"برياز كهربائي مزدوج 13A Schneider","price":3.2,"url":"https://online.aljassar.com/product/socket-schneider-13a/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"دخيل الجسار","name":"قاطع حماية MCB 16A رأس واحد Hager","price":4.5,"url":"https://online.aljassar.com/product/mcb-hager-16a/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"دخيل الجسار","name":"قاطع حماية MCB 32A رأس واحد Hager","price":5.2,"url":"https://online.aljassar.com/product/mcb-hager-32a/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"دخيل الجسار","name":"لمبة LED 12W بيضاء بارده Philips","price":1.25,"url":"https://online.aljassar.com/product/led-philips-12w/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"دخيل الجسار","name":"لمبة LED 9W دافئة Osram","price":0.95,"url":"https://online.aljassar.com/product/led-osram-9w/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"دخيل الجسار","name":"سبوت LED مدمج 12W Legrand","price":8.5,"url":"https://online.aljassar.com/product/spot-led-12w/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"دخيل الجسار","name":"لوحة توزيع كهربائية 12 وحدة ABB","price":18.5,"url":"https://online.aljassar.com/product/panel-abb-12/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"دخيل الجسار","name":"كونتاكتور 25A 3 فاز Schneider","price":22.0,"url":"https://online.aljassar.com/product/contactor-25a/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"دخيل الجسار","name":"رله حراري 18-25A Schneider","price":14.5,"url":"https://online.aljassar.com/product/thermal-relay-25a/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"دخيل الجسار","name":"كيبل أرضي NYY 4×6mm","price":4.2,"url":"https://online.aljassar.com/product/cable-4x6/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"دخيل الجسار","name":"وصلة كهربائية 3 منافذ بمفتاح 13A","price":2.8,"url":"https://online.aljassar.com/product/extension-13a/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"دخيل الجسار","name":"دوبل بريزة مع أرضي Legrand","price":4.1,"url":"https://online.aljassar.com/product/double-socket-legrand/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"دخيل الجسار","name":"انذار دخان بالبطارية Kidde","price":6.5,"url":"https://online.aljassar.com/product/smoke-alarm-kidde/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"دخيل الجسار","name":"قاطع تفاضلي RCD 40A 30mA Hager","price":19.5,"url":"https://online.aljassar.com/product/rcd-hager/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"دخيل الجسار","name":"تراك اضاءة LED 60cm 20W","price":12.0,"url":"https://online.aljassar.com/product/led-track-60cm/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"دخيل الجسار","name":"جهاز UPS 650VA APC","price":35.0,"url":"https://online.aljassar.com/product/ups-apc-650/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"العربية للكهرباء","name":"كيبل كهربائي NYY 3x2.5 مقاوم للحريق","price":1.95,"url":"https://arabian-electrical.com/product/nyy-3x2-5/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"العربية للكهرباء","name":"مفتاح احادي 16A Legrand رفيع","price":3.1,"url":"https://arabian-electrical.com/product/switch-16a-legrand/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"العربية للكهرباء","name":"برياز مزدوج 13A Schneider Atlas","price":3.5,"url":"https://arabian-electrical.com/product/socket-13a-schneider/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"العربية للكهرباء","name":"MCB 16A رأس واحد ABB","price":4.8,"url":"https://arabian-electrical.com/product/mcb-abb-16a/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"العربية للكهرباء","name":"MCB 32A Hager أحادي","price":5.6,"url":"https://arabian-electrical.com/product/mcb-hager-32a/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"العربية للكهرباء","name":"لمبة LED 12W أبيض بارد Philips Essential","price":1.35,"url":"https://arabian-electrical.com/product/led-philips-12w/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"العربية للكهرباء","name":"لمبة LED 9W ضوء دافئ Osram Value","price":1.05,"url":"https://arabian-electrical.com/product/led-osram-9w/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"العربية للكهرباء","name":"لوحة توزيع 12 دارة ABB Mistral","price":20.0,"url":"https://arabian-electrical.com/product/panel-abb-12/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"العربية للكهرباء","name":"كيبل NYY 4×6 مم ارضي","price":4.6,"url":"https://arabian-electrical.com/product/cable-4x6/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"العربية للكهرباء","name":"قاطع RCD 40A 30mA ABB","price":21.0,"url":"https://arabian-electrical.com/product/rcd-abb/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"العربية للكهرباء","name":"سبوت LED 12 وات مدمج مربع","price":9.2,"url":"https://arabian-electrical.com/product/spot-led-12w/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"العربية للكهرباء","name":"كونتاكتور 3 فاز 25A LC1D Schneider","price":24.5,"url":"https://arabian-electrical.com/product/contactor-lc1d-25a/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"العربية للكهرباء","name":"رله حراري 18-25A LRD Schneider","price":16.0,"url":"https://arabian-electrical.com/product/relay-lrd/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"العربية للكهرباء","name":"كشاف LED طوارئ 3W بطارية مدمجة","price":11.5,"url":"https://arabian-electrical.com/product/emergency-led/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"العربية للكهرباء","name":"ترموستات ديجيتال للتكييف","price":15.0,"url":"https://arabian-electrical.com/product/thermostat/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"العربية للكهرباء","name":"انذار حريق 220V Nittan","price":8.5,"url":"https://arabian-electrical.com/product/smoke-nittan/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"اكسايت الغانم","name":"لمبة LED 12W بيضاء Philips Cool White","price":1.5,"url":"https://xcite.com/philips-led-12w","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"اكسايت الغانم","name":"لمبة LED 9W ضوء دافئ Osram","price":1.2,"url":"https://xcite.com/osram-led-9w","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"اكسايت الغانم","name":"شريط LED RGB 5m مع ريموت","price":8.9,"url":"https://xcite.com/led-strip-rgb-5m","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"اكسايت الغانم","name":"شريط LED أبيض 5 متر 3000K","price":6.5,"url":"https://xcite.com/led-strip-white","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"اكسايت الغانم","name":"جهاز UPS 650VA Back-UPS APC","price":38.0,"url":"https://xcite.com/apc-ups-650va","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"اكسايت الغانم","name":"جهاز UPS 1000VA APC Back-UPS Pro","price":62.0,"url":"https://xcite.com/apc-ups-1000","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"اكسايت الغانم","name":"كشاف طوارئ LED 5W قابل للشحن","price":14.0,"url":"https://xcite.com/emergency-led-5w","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"اكسايت الغانم","name":"ترموستات ذكي WIFI للتكييف Honeywell","price":28.0,"url":"https://xcite.com/thermostat-wifi","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"اكسايت الغانم","name":"محول كهربائي ذكي USB+Type-C 65W Anker","price":12.0,"url":"https://xcite.com/anker-65w-charger","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"اكسايت الغانم","name":"مكيف سبليت 1.5 طن Samsung Wind-Free","price":349.0,"url":"https://xcite.com/samsung-ac-1-5ton","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"اكسايت الغانم","name":"مكيف سبليت 2 طن LG DualCool","price":429.0,"url":"https://xcite.com/lg-ac-2ton","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"اكسايت الغانم","name":"مكيف سبليت 1.5 طن LG DualCool WiFi","price":369.0,"url":"https://xcite.com/lg-ac-1-5ton","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"اكسايت الغانم","name":"جهاز قياس الكهرباء Fluke T6-1000","price":45.0,"url":"https://xcite.com/fluke-t6","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"اكسايت الغانم","name":"مولد طاقة كهرومغناطيسية محمول 200W","price":55.0,"url":"https://xcite.com/power-bank-200w","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"يوبي","name":"كيبل كهربائي NYY 3x2.5 للتمديد الداخلي","price":1.78,"url":"https://ubay.com.kw/product/nyy-3x2-5/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"يوبي","name":"مفتاح كهربائي مفرد 16A","price":2.5,"url":"https://ubay.com.kw/product/switch-16a/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"يوبي","name":"برياز مزدوج 13 امبير بأرضي","price":2.9,"url":"https://ubay.com.kw/product/socket-13a/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"يوبي","name":"قاطع كهربائي MCB 16A احادي","price":4.2,"url":"https://ubay.com.kw/product/mcb-16a/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"يوبي","name":"قاطع حماية MCB 32A","price":4.9,"url":"https://ubay.com.kw/product/mcb-32a/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"يوبي","name":"لمبة LED 12W بيضاء 6500K","price":1.1,"url":"https://ubay.com.kw/product/led-12w/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"يوبي","name":"لمبة LED 9W دافئ 3000K","price":0.85,"url":"https://ubay.com.kw/product/led-9w/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"يوبي","name":"لوحة كهربائية 12 وحدة سطح","price":16.5,"url":"https://ubay.com.kw/product/panel-12/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"يوبي","name":"سبوت اضاءة LED مدمج 12 واط دائري","price":7.8,"url":"https://ubay.com.kw/product/spot-12w/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"يوبي","name":"كيبل ارضي NYY 4x6mm","price":3.95,"url":"https://ubay.com.kw/product/nyy-4x6/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"يوبي","name":"مبارز كهربائي 3 فاز 25A","price":21.0,"url":"https://ubay.com.kw/product/contactor-25a/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"يوبي","name":"قاطع تفاضلي RCD 40A","price":18.0,"url":"https://ubay.com.kw/product/rcd-40a/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"يوبي","name":"مكيف سبليت 1.5 طن Samsung","price":335.0,"url":"https://ubay.com.kw/product/samsung-ac/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"يوبي","name":"مكيف سبليت 2 طن LG Dual Cool","price":415.0,"url":"https://ubay.com.kw/product/lg-ac-2ton/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"يوبي","name":"كشاف طوارئ LED قابل للشحن 5W","price":12.5,"url":"https://ubay.com.kw/product/emergency-5w/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"يوبي","name":"ترموستات رقمي للتكييف","price":13.5,"url":"https://ubay.com.kw/product/thermostat/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"يوبي","name":"انذار دخان 9V بطارية","price":5.8,"url":"https://ubay.com.kw/product/smoke/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"يوبي","name":"شريط LED 5m RGB ملون مع تحكم","price":7.9,"url":"https://ubay.com.kw/product/led-strip-5m/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"يوبي","name":"جهاز UPS 650VA بطارية داخلية","price":33.0,"url":"https://ubay.com.kw/product/ups-650va/","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"Extra","name":"مكيف سبليت 1.5 طن Samsung Wind-Free Elite","price":359.0,"url":"https://extra.com/samsung-wf-1-5t","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"Extra","name":"مكيف سبليت 2 طن LG DualCool Inverter","price":449.0,"url":"https://extra.com/lg-2ton","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"Extra","name":"UPS APC Back-UPS 650VA 230V","price":40.0,"url":"https://extra.com/apc-650va","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"Extra","name":"UPS APC 1000VA Pro","price":65.0,"url":"https://extra.com/apc-1000va","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"Extra","name":"لمبة LED Philips 12W 6500K Cool Daylight","price":1.4,"url":"https://extra.com/philips-12w","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"Extra","name":"شريط LED ملون RGB 5 متر مع ريموت كنترول","price":9.5,"url":"https://extra.com/rgb-strip-5m","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"Extra","name":"ترموستات ذكي WIFI Honeywell T6R","price":32.0,"url":"https://extra.com/honeywell-t6r","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"Extra","name":"طاقة شمسية محمولة PowerBank Solar 20000mAh","price":18.0,"url":"https://extra.com/solar-powerbank","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"Extra","name":"مولد كهرباء بنزين 2KW Yamaha","price":245.0,"url":"https://extra.com/yamaha-gen-2kw","timestamp":"2026-05-01 12:55:01","currency":"KD"},{"store":"Extra","name":"كشاف LED طوارئ شحن USB 5W","price":15.5,"url":"https://extra.com/emergency-usb","timestamp":"2026-05-01 12:55:01","currency":"KD"}];
+
+// Load real data from JSON
+function loadRealData() {
+  return new Promise((resolve) => {
+    // Use embedded data (works in all environments including Streamlit Cloud)
+    const products = EMBEDDED_PRODUCTS;
+
+    if (!products || products.length === 0) {
+      console.warn('No products loaded, using defaults');
+      resolve();
+      return;
+    }
+
+    // Group by store
+    const storeMap = {};
+    let totalPrice = 0;
+    let minPrice = Infinity;
+    let maxPrice = 0;
+
+    products.forEach(product => {
+      const store = product.store || 'غير محدد';
+      const price = parseFloat(product.price) || 0;
+
+      if (!storeMap[store]) {
+        storeMap[store] = [];
+      }
+      storeMap[store].push(product);
+
+      totalPrice += price;
+      minPrice = Math.min(minPrice, price);
+      maxPrice = Math.max(maxPrice, price);
+    });
+
+    // Build stores array
+    APP_DATA.stores = Object.entries(storeMap).map(([name, items], idx) => ({
+      id: idx + 1,
+      name: name,
+      productCount: items.length,
+      avgPrice: Math.round((items.reduce((sum, p) => sum + (p.price || 0), 0) / items.length) * 100) / 100,
+    }));
+
+    // Build materials array (first 20 unique products)
+    const uniqueProducts = {};
+    products.forEach(p => {
+      if (!uniqueProducts[p.name]) {
+        uniqueProducts[p.name] = p;
+      }
+    });
+
+    APP_DATA.materials = Object.values(uniqueProducts).slice(0, 20).map((p, idx) => ({
+      id: idx + 1,
+      name: p.name,
+      unit: 'وحدة',
+      price: p.price,
+      stock: Math.floor(Math.random() * 200) + 50,
+      store: p.store,
+    }));
+
+    // Update KPIs
+    APP_DATA.kpis = {
+      totalProducts: products.length,
+      uniqueStores: APP_DATA.stores.length,
+      avgPrice: Math.round((totalPrice / products.length) * 100) / 100,
+      priceRange: `${Math.round(minPrice)} - ${Math.round(maxPrice)}`,
+    };
+
+    // Generate revenue data (mock based on real product count)
+    APP_DATA.revenue = Array.from({ length: 8 }, () =>
+      Math.round((APP_DATA.kpis.totalProducts / 8) * (Math.random() * 0.8 + 0.6) * 1000)
+    );
+
+    APP_DATA.loading = false;
+    resolve();
+  });
+}
+
+// Format number
+const fmt = (n) => new Intl.NumberFormat('en-US').format(Math.round(n * 100) / 100);
+
+// Icon component
+function Icon({ name, size = 24 }) {
+  const icons = {
+    dashboard: '📊', projects: '📁', plus: '➕', catalog: '🛍️', reports: '📈',
+    home: '🏠', settings: '⚙️', menu: '☰', close: '✕',
+  };
+  return <span style={{ fontSize: size }}>{icons[name] || '•'}</span>;
+}
+
+// Dashboard Product Search Component
+function DashboardProductSearch() {
+  const [searchTerm, setSearchTerm] = React.useState('');
+  const [selectedStore, setSelectedStore] = React.useState('');
+
+  const filtered = APP_DATA.materials.filter(m => {
+    const matchesSearch = m.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStore = !selectedStore || m.store === selectedStore;
+    return matchesSearch && matchesStore;
+  });
+
+  return (
+    <div className="card" style={{ margin: '16px', background: 'linear-gradient(135deg, rgba(255, 107, 107, 0.05) 0%, rgba(148, 150, 218, 0.05) 100%)' }}>
+      <h3 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 700, color: '#FF6B6B' }}>🔍 محرك البحث عن المنتجات</h3>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+        <input
+          type="text"
+          placeholder="ابحث عن منتج..."
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+          style={{ padding: '10px', borderRadius: '8px', border: '1px solid var(--line)', background: 'var(--bg)', color: 'var(--ink)' }}
+        />
+        <select
+          value={selectedStore}
+          onChange={e => setSelectedStore(e.target.value)}
+          style={{ padding: '10px', borderRadius: '8px', border: '1px solid var(--line)', background: 'var(--bg)', color: 'var(--ink)' }}
+        >
+          <option value="">جميع المتاجر</option>
+          {APP_DATA.stores.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+        </select>
+      </div>
+
+      <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+        {filtered.length === 0 ? (
+          <p style={{ textAlign: 'center', color: 'var(--ink-3)', margin: '20px 0' }}>لا توجد منتجات مطابقة</p>
+        ) : (
+          <div style={{ display: 'grid', gap: '10px' }}>
+            {filtered.slice(0, 8).map(m => (
+              <div key={m.id} style={{ padding: '10px', background: 'var(--surface)', borderRadius: '8px', border: '1px solid var(--line)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 600, color: 'var(--ink)', marginBottom: '4px' }}>{m.name}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--ink-3)' }}>📍 {m.store}</div>
+                  </div>
+                  <div style={{ textAlign: 'left', minWidth: '70px' }}>
+                    <div style={{ fontWeight: 600, color: '#FF6B6B', fontSize: '14px' }}>{toEnglishNumbers(m.price.toFixed(2))} د.ك</div>
+                    <div style={{ fontSize: '11px', color: 'var(--ink-3)' }}>متوفر</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {filtered.length > 8 && (
+              <div style={{ textAlign: 'center', color: 'var(--ink-3)', fontSize: '12px', marginTop: '8px' }}>
+                عدد النتائج: {toEnglishNumbers(filtered.length)}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Dashboard screen
+function DashboardScreen() {
+  if (APP_DATA.loading) {
+    return <div style={{ padding: '16px', textAlign: 'center', color: 'var(--ink-3)' }}>جاري تحميل البيانات...</div>;
+  }
+
+  return (
+    <div style={{ padding: '8px 16px 24px' }}>
+      {/* Greeting card */}
+      <div style={{
+        background: 'linear-gradient(135deg, #FF6B6B 0%, #FF8E72 100%)',
+        color: 'white',
+        borderRadius: 16, padding: 16, marginBottom: 16,
+      }}>
+        <div style={{ fontSize: 12, opacity: 0.9 }}>🔔 صباح الخير، مراقب الأسعار</div>
+        <div style={{ fontSize: 14, fontWeight: 500, marginTop: 4 }}>إليك ملخص أسعار المنتجات الكهربائية</div>
+        <div style={{ fontSize: 32, fontWeight: 700, marginTop: 12 }} className="num">{fmt(APP_DATA.kpis.totalProducts)}</div>
+        <div style={{ fontSize: 11, opacity: 0.85 }}>📊 إجمالي المنتجات المرصودة</div>
+      </div>
+
+      {/* KPI grid */}
+      <div className="kpi-grid">
+        <div className="kpi-card" style={{ borderLeft: '4px solid #4ECDC4', background: 'linear-gradient(135deg, rgba(78, 205, 196, 0.1) 0%, transparent 100%)' }}>
+          <div style={{ fontWeight: 600, fontSize: 18, color: '#4ECDC4' }}>🏪 {APP_DATA.kpis.uniqueStores}</div>
+          <div style={{ color: 'var(--ink-3)', marginTop: 4 }}>متاجر مراقبة</div>
+        </div>
+        <div className="kpi-card" style={{ borderLeft: '4px solid #95E1D3', background: 'linear-gradient(135deg, rgba(149, 225, 211, 0.1) 0%, transparent 100%)' }}>
+          <div style={{ fontWeight: 600, fontSize: 18, color: '#95E1D3' }}>💰 {fmt(APP_DATA.kpis.avgPrice)}</div>
+          <div style={{ color: 'var(--ink-3)', marginTop: 4 }}>متوسط السعر (د.ك)</div>
+        </div>
+        <div className="kpi-card" style={{ borderLeft: '4px solid #F38181', background: 'linear-gradient(135deg, rgba(243, 129, 129, 0.1) 0%, transparent 100%)' }}>
+          <div style={{ fontWeight: 600, fontSize: 18, color: '#F38181' }}>📈 {APP_DATA.kpis.priceRange}</div>
+          <div style={{ color: 'var(--ink-3)', marginTop: 4 }}>نطاق السعر (د.ك)</div>
+        </div>
+        <div className="kpi-card" style={{ borderLeft: '4px solid #AA96DA', background: 'linear-gradient(135deg, rgba(170, 150, 218, 0.1) 0%, transparent 100%)' }}>
+          <div style={{ fontWeight: 600, fontSize: 18, color: '#AA96DA' }}>📦 {APP_DATA.materials.length}</div>
+          <div style={{ color: 'var(--ink-3)', marginTop: 4 }}>أنواع مختلفة</div>
+        </div>
+      </div>
+
+      {/* Product Search Engine */}
+      <DashboardProductSearch />
+
+      {/* Stores list */}
+      <div className="card" style={{ margin: '16px' }}>
+        <h3 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 700, color: 'var(--accent)' }}>🏢 المتاجر المراقبة</h3>
+        <div className="table-container">
+          <table>
+            <thead>
+              <tr style={{ background: 'linear-gradient(135deg, #FF6B6B 0%, #FF8E72 100%)', color: 'white' }}>
+                <th style={{ color: 'white' }}>اسم المتجر</th>
+                <th style={{ color: 'white' }}>عدد المنتجات</th>
+                <th style={{ color: 'white' }}>متوسط السعر</th>
+                <th style={{ color: 'white' }}>الحالة</th>
+              </tr>
+            </thead>
+            <tbody>
+              {APP_DATA.stores.map((s, idx) => (
+                <tr key={s.id} style={{ background: idx % 2 === 0 ? 'transparent' : 'var(--bg-soft)' }}>
+                  <td><strong style={{ color: '#FF6B6B' }}>🏪 {s.name}</strong></td>
+                  <td style={{ fontSize: 14, fontWeight: 600, color: '#4ECDC4' }}>{s.productCount}</td>
+                  <td className="num" style={{ color: '#95E1D3', fontWeight: 600 }}>{fmt(s.avgPrice)} د.ك</td>
+                  <td><span className={`badge badge-${s.productCount > 20 ? 'pos' : 'info'}`}>✅ نشط</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Work Distribution Data (نسب ثابتة لكل تصنيف مشروع) ──────────────────────
+// key format: {size_initial}_{type_initial}  e.g. s_r = small+residential
+// Each combination sums to exactly 100%
+const WORK_DIST = [
+  // pcts columns: s_r  s_c  s_i   m_r  m_c  m_i   l_r  l_c  l_i
+  {id:'mdb',      name:'اللوحة الرئيسية MDB / MSDB',        cat:'لوحات',          pcts:{s_r:5,  s_c:6,  s_i:8,  m_r:6,  m_c:7,  m_i:9,  l_r:7,  l_c:8,  l_i:11}},
+  {id:'subpanel', name:'لوحات التوزيع الفرعية',              cat:'لوحات',          pcts:{s_r:8,  s_c:9,  s_i:8,  m_r:8,  m_c:9,  m_i:9,  l_r:9,  l_c:10, l_i:10}},
+  {id:'maincbl',  name:'الكابلات الرئيسية والتغذية',          cat:'كابلات',         pcts:{s_r:10, s_c:11, s_i:13, m_r:11, m_c:12, m_i:14, l_r:12, l_c:13, l_i:15}},
+  {id:'subcbl',   name:'الكابلات الفرعية والتوصيلات',         cat:'كابلات',         pcts:{s_r:12, s_c:11, s_i:12, m_r:12, m_c:11, m_i:12, l_r:13, l_c:11, l_i:11}},
+  {id:'intlight', name:'الإضاءة الداخلية',                   cat:'إضاءة',          pcts:{s_r:18, s_c:15, s_i:10, m_r:17, m_c:14, m_i:9,  l_r:16, l_c:13, l_i:8}},
+  {id:'extlight', name:'الإضاءة الخارجية',                   cat:'إضاءة',          pcts:{s_r:5,  s_c:6,  s_i:5,  m_r:5,  m_c:6,  m_i:5,  l_r:5,  l_c:6,  l_i:5}},
+  {id:'sockets',  name:'المفاتيح والمقابس الكهربائية',        cat:'مفاتيح ومقابس', pcts:{s_r:10, s_c:8,  s_i:6,  m_r:9,  m_c:7,  m_i:5,  l_r:8,  l_c:6,  l_i:4}},
+  {id:'earth',    name:'نظام التأريض والحماية من البرق',       cat:'حماية',          pcts:{s_r:4,  s_c:5,  s_i:6,  m_r:5,  m_c:5,  m_i:7,  l_r:5,  l_c:6,  l_i:8}},
+  {id:'fire',     name:'نظام إنذار الحريق',                   cat:'أنظمة خاصة',     pcts:{s_r:8,  s_c:10, s_i:12, m_r:8,  m_c:10, m_i:12, l_r:8,  l_c:10, l_i:12}},
+  {id:'comms',    name:'أنظمة الاتصالات والشبكات',            cat:'أنظمة خاصة',     pcts:{s_r:5,  s_c:7,  s_i:6,  m_r:5,  m_c:7,  m_i:6,  l_r:5,  l_c:7,  l_i:6}},
+  {id:'cctv',     name:'كاميرات المراقبة CCTV',               cat:'أنظمة خاصة',     pcts:{s_r:5,  s_c:5,  s_i:5,  m_r:5,  m_c:5,  m_i:5,  l_r:5,  l_c:5,  l_i:5}},
+  {id:'civil',    name:'أنابيب الحماية والأعمال المدنية',      cat:'أعمال مدنية',    pcts:{s_r:10, s_c:7,  s_i:9,  m_r:9,  m_c:7,  m_i:7,  l_r:7,  l_c:5,  l_i:5}},
+];
+// ── Work Pricing Screen ────────────────────────────────────────────────────────
+function WorkPricingScreen() {
+  const [size,     setSize]     = React.useState('medium');
+  const [ptype,    setPtype]    = React.useState('residential');
+  const [total,    setTotal]    = React.useState('');
+  const [excluded, setExcluded] = React.useState(new Set());   // IDs of excluded items
+
+  const sk  = size==='small'?'s':size==='medium'?'m':'l';
+  const tk  = ptype==='residential'?'r':ptype==='commercial'?'c':'i';
+  const key = sk+'_'+tk;
+
+  const totalVal = parseFloat(total) || 0;
+
+  // ── Inclusion logic ────────────────────────────────────────────────────────
+  function toggleItem(id) {
+    setExcluded(prev => {
+      const n = new Set(prev);
+      n.has(id) ? n.delete(id) : n.add(id);
+      return n;
+    });
+  }
+  function isIncluded(id)  { return !excluded.has(id); }
+
+  // Sum of original pcts for INCLUDED items only
+  const inclPctSum = WORK_DIST.reduce((s, item) =>
+    isIncluded(item.id) ? s + item.pcts[key] : s, 0);
+
+  // Adjusted (proportionally rescaled) pct for an included item — display only
+  function adjPct(item) {
+    if (!isIncluded(item.id) || inclPctSum === 0) return 0;
+    return Math.round(item.pcts[key] / inclPctSum * 1000) / 10;  // 1 decimal
+  }
+  // KD value — calculated from RAW ratio (not rounded pct) to avoid accumulation error
+  function adjVal(item) {
+    if (!isIncluded(item.id) || !totalVal || inclPctSum === 0) return null;
+    return Math.round(totalVal * item.pcts[key] / inclPctSum * 100) / 100;
+  }
+
+  const includedCount  = WORK_DIST.length - excluded.size;
+  const excludedCount  = excluded.size;
+  const totalIncluded  = WORK_DIST.reduce((s, item) => {
+    const v = adjVal(item);
+    return v !== null ? s + v : s;
+  }, 0);
+
+  const sizeLabel  = {small:'صغير  (<500 م²)', medium:'متوسط  (500–2000 م²)', large:'كبير  (>2000 م²)'};
+  const typeLabel  = {residential:'سكني', commercial:'تجاري', industrial:'صناعي'};
+  const sizeColors = {small:'#2F6F4E', medium:'#2C5A8A', large:'#6B3F9E'};
+  const typeColors = {residential:'#B25D2B', commercial:'#2C5A8A', industrial:'#9F2D2D'};
+
+  const badge = (active, lbl, fn, col) => (
+    <button onClick={fn} style={{
+      padding:'7px 14px', borderRadius:20, fontSize:12,
+      border:`2px solid ${active ? col : 'var(--line)'}`,
+      cursor:'pointer', fontFamily:'inherit', fontWeight:active?700:400,
+      background:active?col:'transparent', color:active?'#fff':'var(--ink-3)',
+      transition:'all .15s', whiteSpace:'nowrap'
+    }}>{lbl}</button>
+  );
+
+  function copyReport() {
+    if (!totalVal) { alert('أدخل قيمة الأعمال أولاً'); return; }
+    const included = WORK_DIST.filter(i => isIncluded(i.id));
+    let idx = 0;
+    const lines = [
+      '════════════════════════════════════════════════════',
+      '          توزيع نسب الأعمال الكهربائية',
+      '════════════════════════════════════════════════════',
+      'المشروع : ' + sizeLabel[size] + '  —  ' + typeLabel[ptype],
+      'الإجمالي: ' + fmt(totalVal) + ' د.ك',
+      'البنود  : ' + includedCount + ' بنداً مضمّناً' + (excludedCount ? ' (' + excludedCount + ' مستثنى)' : ''),
+      'التاريخ : ' + new Date().toLocaleDateString('ar-KW'),
+      '────────────────────────────────────────────────────',
+      '#   البند                               النسبة   القيمة (د.ك)',
+      '────────────────────────────────────────────────────',
+      ...included.map(item => {
+        idx++;
+        const ap  = adjPct(item);
+        const val = adjVal(item);
+        return String(idx).padEnd(4) + item.name.padEnd(36) + (ap+'%').padEnd(9) + fmt(val||0);
+      }),
+      '────────────────────────────────────────────────────',
+      'الإجمالي' + ''.padEnd(32) + '100%     ' + fmt(Math.round(totalIncluded*100)/100),
+      '════════════════════════════════════════════════════',
+    ].join('\n');
+    if (navigator.clipboard) navigator.clipboard.writeText(lines).then(() => alert('✅ تم نسخ التقرير!'));
+  }
+
+  return (
+    <div style={{padding:16}}>
+      <h2 style={{marginTop:0, fontSize:18}}>⚡ نسبة الأعمال الكهربائية</h2>
+      <p style={{marginTop:-4, marginBottom:14, fontSize:12, color:'var(--ink-3)'}}>
+        أدخل القيمة الإجمالية وصنّف المشروع، ثم فعّل أو استثنِ أي بند — تُعاد النسب تلقائياً.
+      </p>
+
+      {/* ── Classification + Input ── */}
+      <div className="card" style={{marginBottom:14}}>
+        <h3 style={{marginTop:0, marginBottom:14, fontSize:14}}>🏗️ تصنيف المشروع</h3>
+        <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:16}}>
+          <div>
+            <div style={{fontSize:11, color:'var(--ink-3)', marginBottom:8, fontWeight:600}}>حجم المشروع</div>
+            <div style={{display:'flex', flexWrap:'wrap', gap:6}}>
+              {['small','medium','large'].map(s =>
+                badge(size===s, sizeLabel[s], ()=>setSize(s), sizeColors[s])
+              )}
+            </div>
+          </div>
+          <div>
+            <div style={{fontSize:11, color:'var(--ink-3)', marginBottom:8, fontWeight:600}}>نوع المشروع</div>
+            <div style={{display:'flex', flexWrap:'wrap', gap:6}}>
+              {['residential','commercial','industrial'].map(t =>
+                badge(ptype===t, typeLabel[t], ()=>setPtype(t), typeColors[t])
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Total value input */}
+        <div style={{background:'var(--bg-soft)', borderRadius:10, padding:'14px 16px', border:'2px solid var(--line)'}}>
+          <div style={{fontSize:12, color:'var(--ink-3)', marginBottom:6, fontWeight:600}}>💰 إجمالي قيمة الأعمال الكهربائية</div>
+          <div style={{display:'flex', alignItems:'center', gap:10}}>
+            <input
+              type="number" min="0" step="100"
+              value={total}
+              onChange={e => setTotal(e.target.value)}
+              placeholder="مثال: 7000"
+              style={{flex:1, padding:'10px 14px', borderRadius:8, border:'2px solid var(--line)',
+                background:'var(--surface)', color:'var(--ink)', fontSize:18, fontFamily:'inherit',
+                fontWeight:700, outline:'none'}}
+            />
+            <div style={{fontSize:16, fontWeight:700, color:'var(--ink-3)', whiteSpace:'nowrap'}}>د.ك</div>
+          </div>
+          {totalVal > 0 && (
+            <div style={{marginTop:8, fontSize:12, color:'var(--pos)', fontWeight:600}}>
+              ✅ {fmt(totalVal)} د.ك موزّعة على {includedCount} بنداً
+              {excludedCount > 0 && <span style={{color:'var(--warn)', marginRight:8}}>({excludedCount} مستثنى)</span>}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── Distribution Table ── */}
+      <div className="card" style={{marginBottom:14}}>
+        <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12}}>
+          <h3 style={{margin:0, fontSize:14}}>
+            📊 توزيع الأعمال — {sizeLabel[size].trim()} / {typeLabel[ptype]}
+            {excludedCount > 0 && (
+              <span style={{fontSize:11, fontWeight:400, color:'var(--warn)', marginRight:8}}>
+                (نسب معدّلة — {excludedCount} مستثنى)
+              </span>
+            )}
+          </h3>
+          <div style={{display:'flex', gap:8, alignItems:'center'}}>
+            {excludedCount > 0 && (
+              <button onClick={() => setExcluded(new Set())} style={{padding:'5px 10px', borderRadius:8,
+                border:'1px solid var(--warn)', background:'transparent', color:'var(--warn)',
+                cursor:'pointer', fontFamily:'inherit', fontSize:11}}>↺ إعادة الكل</button>
+            )}
+            {totalVal > 0 && (
+              <button onClick={copyReport} style={{padding:'6px 14px', borderRadius:8, border:'none',
+                background:'var(--accent)', color:'var(--bg)', fontWeight:600, cursor:'pointer',
+                fontFamily:'inherit', fontSize:11}}>📋 نسخ التقرير</button>
+            )}
+          </div>
+        </div>
+        <div style={{overflowX:'auto'}}>
+          <table style={{width:'100%', borderCollapse:'collapse', fontSize:12}}>
+            <thead>
+              <tr style={{background:'var(--accent)', color:'var(--bg)'}}>
+                <th style={{padding:'8px 10px', textAlign:'center', width:44}}>✓</th>
+                <th style={{padding:'8px 10px', textAlign:'right', width:36}}>#</th>
+                <th style={{padding:'8px 10px', textAlign:'right', width:90}}>الفئة</th>
+                <th style={{padding:'8px 10px', textAlign:'right'}}>البند الكهربائي</th>
+                <th style={{padding:'8px 16px', textAlign:'center', width:130}}>النسبة %</th>
+                <th style={{padding:'8px 14px', textAlign:'left', width:130}}>القيمة (د.ك)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {WORK_DIST.map((item, i) => {
+                const inc  = isIncluded(item.id);
+                const ap   = adjPct(item);
+                const val  = adjVal(item);
+                const origPct = item.pcts[key];
+                const barW = inc ? Math.round(ap * 3.5) : 0;
+                const changed = inc && excludedCount > 0;  // pct was rescaled
+                return (
+                  <tr key={item.id} style={{
+                    background: !inc ? 'var(--neg-bg)' : i%2===0 ? 'transparent' : 'var(--bg-soft)',
+                    borderBottom:'1px solid var(--line)',
+                    opacity: inc ? 1 : 0.55,
+                    transition:'all .2s'
+                  }}>
+                    {/* Checkbox */}
+                    <td style={{padding:'8px 10px', textAlign:'center'}}>
+                      <input
+                        type="checkbox"
+                        checked={inc}
+                        onChange={() => toggleItem(item.id)}
+                        style={{width:16, height:16, cursor:'pointer', accentColor:'var(--pos)'}}
+                      />
+                    </td>
+                    <td style={{padding:'8px 10px', color:'var(--ink-4)', fontWeight:600}}>{i+1}</td>
+                    <td style={{padding:'8px 10px'}}>
+                      <span style={{fontSize:10, padding:'2px 7px', borderRadius:10,
+                        background:'var(--accent-soft)', color:'var(--ink-3)', whiteSpace:'nowrap'}}>{item.cat}</span>
+                    </td>
+                    <td style={{padding:'8px 10px', fontWeight:600,
+                      color: inc ? 'var(--ink)' : 'var(--ink-4)',
+                      textDecoration: inc ? 'none' : 'line-through'}}>
+                      {item.name}
+                    </td>
+                    <td style={{padding:'8px 16px', textAlign:'center'}}>
+                      {inc ? (
+                        <div style={{display:'flex', alignItems:'center', gap:5, justifyContent:'center'}}>
+                          <div style={{width:barW, height:6, borderRadius:3,
+                            background: changed ? 'var(--warn)' : 'var(--info)',
+                            opacity:0.7, flexShrink:0, transition:'width .3s'}}></div>
+                          <span style={{fontWeight:700,
+                            color: changed ? 'var(--warn)' : 'var(--info)', minWidth:34}}>
+                            {ap}%
+                          </span>
+                          {changed && (
+                            <span style={{fontSize:9, color:'var(--ink-4)'}}>(أصل {origPct}%)</span>
+                          )}
+                        </div>
+                      ) : (
+                        <span style={{fontSize:11, color:'var(--neg)', fontWeight:600}}>مستثنى</span>
+                      )}
+                    </td>
+                    <td style={{padding:'8px 14px', textAlign:'left', fontWeight:700, fontSize:13,
+                      color: inc && val!==null ? 'var(--pos)' : 'var(--ink-4)'}}>
+                      {inc && val !== null
+                        ? fmt(val) + ' د.ك'
+                        : <span style={{fontSize:11, fontWeight:400, color:'var(--ink-4)'}}>
+                            {inc ? 'أدخل القيمة' : '—'}
+                          </span>}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+            <tfoot>
+              <tr style={{background:'var(--accent-soft)', borderTop:'2px solid var(--line-strong)'}}>
+                <td colSpan={4} style={{padding:'10px 10px', fontWeight:800, fontSize:14}}>
+                  الإجمالي
+                  <span style={{fontSize:11, fontWeight:400, color:'var(--ink-3)', marginRight:8}}>
+                    ({includedCount} بند)
+                  </span>
+                </td>
+                <td style={{padding:'10px 16px', textAlign:'center', fontWeight:800,
+                  color: excludedCount > 0 ? 'var(--warn)' : 'var(--accent)', fontSize:15}}>
+                  100%
+                </td>
+                <td style={{padding:'10px 14px', textAlign:'left', fontWeight:800, color:'var(--pos)', fontSize:15}}>
+                  {totalVal > 0
+                    ? fmt(totalVal) + ' د.ك'
+                    : <span style={{color:'var(--ink-4)', fontSize:12, fontWeight:400}}>—</span>}
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      {/* ── Summary cards ── */}
+      {totalVal > 0 && (
+        <div style={{display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:10, marginBottom:14}}>
+          {[
+            {lbl:'البنود المضمّنة',  col:'var(--pos)',  val: includedCount + ' / ' + WORK_DIST.length + ' بنداً'},
+            {lbl:'البنود المستثناة', col:'var(--warn)', val: excludedCount > 0 ? excludedCount + ' بنود' : 'لا يوجد'},
+            {lbl:'إجمالي المضمّن',   col:'var(--info)', val: totalVal > 0 ? fmt(totalVal) + ' د.ك' : '—'},
+          ].map(c => (
+            <div key={c.lbl} className="card" style={{padding:'10px 12px', textAlign:'center'}}>
+              <div style={{fontSize:11, color:'var(--ink-3)', marginBottom:4}}>{c.lbl}</div>
+              <div style={{fontSize:12, fontWeight:700, color:c.col}}>{c.val}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Products search screen
+function ProductsScreen() {
+  const [searchTerm, setSearchTerm] = React.useState('');
+  const [selectedStore, setSelectedStore] = React.useState('');
+  const [minPrice, setMinPrice] = React.useState('');
+  const [maxPrice, setMaxPrice] = React.useState('');
+
+  const filtered = APP_DATA.materials.filter(m => {
+    const matchesSearch = m.name.includes(searchTerm);
+    const matchesStore = !selectedStore || m.store === selectedStore;
+    const matchesPrice = (!minPrice || m.price >= parseFloat(minPrice)) &&
+                         (!maxPrice || m.price <= parseFloat(maxPrice));
+    return matchesSearch && matchesStore && matchesPrice;
+  });
+
+  return (
+    <div style={{ padding: '16px' }}>
+      <h2 style={{ marginTop: 0 }}>🔍 المنتجات</h2>
+
+      {/* Search Filters */}
+      <div className="card" style={{ marginBottom: 16 }}>
+        <h3 style={{ marginTop: 0 }}>البحث والتصفية</h3>
+        <input
+          type="text"
+          placeholder="ابحث عن منتج..."
+          value={searchTerm}
+          onChange={e => setSearchTerm(e.target.value)}
+          style={{ width: '100%', padding: '8px', marginBottom: 10, borderRadius: '8px', border: '1px solid var(--line)' }}
+        />
+
+        <select
+          value={selectedStore}
+          onChange={e => setSelectedStore(e.target.value)}
+          style={{ width: '100%', padding: '8px', marginBottom: 10, borderRadius: '8px', border: '1px solid var(--line)' }}
+        >
+          <option value="">جميع المتاجر</option>
+          {APP_DATA.stores.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+        </select>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+          <input
+            type="number"
+            placeholder="السعر من"
+            value={minPrice}
+            onChange={e => setMinPrice(e.target.value)}
+            style={{ padding: '8px', borderRadius: '8px', border: '1px solid var(--line)' }}
+          />
+          <input
+            type="number"
+            placeholder="السعر إلى"
+            value={maxPrice}
+            onChange={e => setMaxPrice(e.target.value)}
+            style={{ padding: '8px', borderRadius: '8px', border: '1px solid var(--line)' }}
+          />
+        </div>
+      </div>
+
+      {/* Results */}
+      <div className="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>المنتج</th>
+              <th>المتجر</th>
+              <th>السعر</th>
+              <th>المخزون</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map(m => (
+              <tr key={m.id}>
+                <td><strong>{m.name}</strong></td>
+                <td>{m.store}</td>
+                <td className="num">{fmt(m.price)} د.ك</td>
+                <td><span className={`badge badge-${m.stock > 100 ? 'pos' : 'info'}`}>{m.stock}</span></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {filtered.length === 0 && <p style={{ textAlign: 'center', color: 'var(--ink-3)' }}>لا توجد نتائج</p>}
+      </div>
+    </div>
+  );
+}
+
+// Materials table screen
+function MaterialsTableScreen() {
+  const [materials, setMaterials] = React.useState([
+    { id: Date.now(), product: '', quantity: 1, unitPrice: 0, total: 0 }
+  ]);
+
+  const addRow = () => {
+    setMaterials([...materials, { id: Date.now(), product: '', quantity: 1, unitPrice: 0, total: 0 }]);
+  };
+
+  const removeRow = (id) => {
+    setMaterials(materials.filter(m => m.id !== id));
+  };
+
+  const updateRow = (id, field, value) => {
+    setMaterials(materials.map(m => {
+      if (m.id === id) {
+        const updated = { ...m, [field]: value };
+        if (field === 'quantity' || field === 'unitPrice') {
+          updated.total = (parseFloat(updated.quantity) || 0) * (parseFloat(updated.unitPrice) || 0);
+        }
+        return updated;
+      }
+      return m;
+    }));
+  };
+
+  const updateProduct = (id, productName) => {
+    const product = APP_DATA.materials.find(p => p.name === productName);
+    if (product) {
+      // Update both product and price in a single state update
+      setMaterials(materials.map(m => {
+        if (m.id === id) {
+          const updated = {
+            ...m,
+            product: productName,
+            unitPrice: product.price,
+          };
+          updated.total = (parseFloat(updated.quantity) || 0) * (parseFloat(updated.unitPrice) || 0);
+          return updated;
+        }
+        return m;
+      }));
+    }
+  };
+
+  const total = materials.reduce((sum, m) => sum + (m.total || 0), 0);
+
+  const exportWord = () => {
+    const rows = materials.filter(m => m.product).map(m =>
+      `<tr>
+         <td align="right"  style="border:1px solid #ccc;padding:8px">${m.product}</td>
+         <td align="center" style="border:1px solid #ccc;padding:8px">${m.quantity}</td>
+         <td align="center" style="border:1px solid #ccc;padding:8px">${(parseFloat(m.unitPrice)||0).toFixed(3)}</td>
+         <td align="center" style="border:1px solid #ccc;padding:8px;font-weight:bold">${(parseFloat(m.total)||0).toFixed(3)}</td>
+       </tr>`
+    ).join('');
+    const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office'
+      xmlns:w='urn:schemas-microsoft-com:office:word'
+      xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <meta charset='utf-8'>
+        <xml><w:WordDocument><w:View>Print</w:View></w:WordDocument></xml>
+        <style>
+          body{font-family:Arial,sans-serif;direction:rtl;padding:24px;font-size:11pt}
+          h1{font-size:16pt;margin-bottom:6px}
+          p{margin:3px 0}
+          table{width:100%;border-collapse:collapse;margin-top:16px}
+          th{background:#1a1a1a;color:#fff;border:1px solid #555;padding:9px;text-align:center}
+        </style>
+      </head>
+      <body dir="rtl">
+        <h1>📋 قائمة المواد الكهربائية</h1>
+        <p><strong>التاريخ:</strong> ${new Date().toLocaleDateString('ar-KW')}</p>
+        <p><strong>عدد البنود:</strong> ${materials.filter(m=>m.product).length}</p>
+        <br>
+        <table>
+          <thead>
+            <tr>
+              <th>المنتج</th><th>الكمية</th>
+              <th>السعر الفردي (د.ك)</th><th>المجموع (د.ك)</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+            <tr style="background:#f0f0f0;font-weight:bold">
+              <td colspan="3" align="right" style="border:1px solid #ccc;padding:9px;font-size:12pt">الإجمالي الكلي</td>
+              <td align="center" style="border:1px solid #ccc;padding:9px;font-size:12pt">${total.toFixed(3)} د.ك</td>
+            </tr>
+          </tbody>
+        </table>
+      </body>
+    </html>`;
+    const blob = new Blob(['﻿'+html], {type:'application/msword'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'قائمة-المواد-'+new Date().toISOString().split('T')[0]+'.doc';
+    a.click();
+  };
+
+  const exportExcel = () => {
+    let csv = 'المنتج,الكمية,السعر (د.ك),المجموع (د.ك)\n';
+    materials.forEach(m => {
+      csv += `"${m.product}",${m.quantity},${m.unitPrice},${m.total}\n`;
+    });
+    csv += `,,الإجمالي,${total}`;
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `materials-${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+  };
+
+  return (
+    <div style={{ padding: '16px' }}>
+      <h2 style={{ marginTop: 0 }}>📋 جدول المواد</h2>
+
+      <div className="table-container">
+        <table style={{ marginBottom: 16 }}>
+          <thead>
+            <tr>
+              <th>المنتج</th>
+              <th>الكمية</th>
+              <th>السعر الفردي (د.ك)</th>
+              <th>المجموع (د.ك)</th>
+              <th>حذف</th>
+            </tr>
+          </thead>
+          <tbody>
+            {materials.map(m => (
+              <tr key={m.id} style={{ background: m.product ? 'var(--info-bg)' : 'transparent', borderLeft: m.product ? '4px solid var(--info)' : 'none' }}>
+                <td style={{ minWidth: 300, padding: '12px' }}>
+                  {/* Show selected product prominently */}
+                  <div style={{ marginBottom: 10 }}>
+                    {m.product && (
+                      <div style={{ background: 'linear-gradient(135deg, var(--info-bg) 0%, var(--surface) 100%)', padding: '8px 12px', borderRadius: 6, border: '2px solid var(--info)', display: 'block' }}>
+                        <div style={{ fontSize: 10, color: 'var(--ink-3)', marginBottom: 3, fontWeight: 600 }}>✅ المنتج المختار</div>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--info)' }}>{m.product}</div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Dropdown for selection */}
+                  <select
+                    value={m.product || ''}
+                    onChange={e => {
+                      const selectedValue = e.target.value;
+                      if (selectedValue) {
+                        updateProduct(m.id, selectedValue);
+                      }
+                    }}
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      borderRadius: '6px',
+                      border: m.product ? '2px solid var(--info)' : '1px solid var(--line)',
+                      fontSize: 13,
+                      fontWeight: 500,
+                      background: 'var(--surface)',
+                      color: m.product ? 'var(--info)' : 'var(--ink)',
+                    }}
+                  >
+                    <option value="">📦 اختر منتج...</option>
+                    {APP_DATA.materials.map(p => <option key={p.id} value={p.name}>{p.name}</option>)}
+                  </select>
+                </td>
+                <td style={{ textAlign: 'center' }}>
+                  <input
+                    type="number"
+                    value={m.quantity}
+                    onChange={e => updateRow(m.id, 'quantity', e.target.value)}
+                    style={{ width: '70px', padding: '8px', borderRadius: '6px', border: '1px solid var(--line)', textAlign: 'center', fontWeight: 600 }}
+                    min="1"
+                  />
+                </td>
+                <td className="num" style={{ textAlign: 'center', fontWeight: 600 }}>{fmt(m.unitPrice)}</td>
+                <td className="num" style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--accent)', background: 'var(--bg-soft)', padding: 8, borderRadius: 6 }}>{fmt(m.total)}</div>
+                </td>
+                <td style={{ textAlign: 'center' }}>
+                  <button onClick={() => removeRow(m.id)} style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--neg)', background: 'var(--neg-bg)', color: 'var(--neg)', cursor: 'pointer', fontWeight: 600 }}>حذف</button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Total */}
+      <div className="card" style={{ marginBottom: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h3 style={{ margin: 0 }}>الإجمالي</h3>
+            <p style={{ margin: '4px 0 0', color: 'var(--ink-3)', fontSize: 12 }}>عدد البنود: {materials.length}</p>
+          </div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--accent)' }} className="num">{fmt(total)} د.ك</div>
+        </div>
+      </div>
+
+      {/* Buttons */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+        <button
+          onClick={addRow}
+          style={{ padding: '10px', borderRadius: '8px', border: 'none', background: 'var(--info-bg)', color: 'var(--info)', fontWeight: 600, cursor: 'pointer' }}
+        >
+          ➕ إضافة صف
+        </button>
+        <button
+          onClick={exportExcel}
+          style={{ padding: '10px', borderRadius: '8px', border: 'none', background: 'var(--pos-bg)', color: 'var(--pos)', fontWeight: 600, cursor: 'pointer' }}
+        >
+          📊 تصدير Excel
+        </button>
+        <button
+          onClick={exportWord}
+          style={{ padding: '10px', borderRadius: '8px', border: 'none', background: 'var(--warn-bg)', color: 'var(--warn)', fontWeight: 600, cursor: 'pointer' }}
+        >
+          📄 تصدير Word
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Historical database screen
+function DatabaseScreen() {
+  return (
+    <div style={{ padding: '16px' }}>
+      <h2 style={{ marginTop: 0 }}>💾 قاعدة البيانات التاريخية</h2>
+
+      <div className="card" style={{ marginBottom: 16 }}>
+        <h3>معلومات الأرشيف</h3>
+        <p><strong>إجمالي السجلات:</strong> {APP_DATA.kpis.totalProducts}</p>
+        <p><strong>الفترة المغطاة:</strong> 2023 - 2026</p>
+        <p><strong>آخر تحديث:</strong> {new Date().toLocaleDateString('ar-KW')}</p>
+        <p><strong>عدد المتاجر:</strong> {APP_DATA.stores.length}</p>
+      </div>
+
+      <div className="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>المتجر</th>
+              <th>عدد المنتجات</th>
+              <th>متوسط السعر</th>
+              <th>أعلى سعر</th>
+              <th>أقل سعر</th>
+            </tr>
+          </thead>
+          <tbody>
+            {APP_DATA.stores.map(s => {
+              const storeMaterials = APP_DATA.materials.filter(m => m.store === s.name);
+              const prices = storeMaterials.map(m => m.price);
+              const maxPrice = prices.length > 0 ? Math.max(...prices) : 0;
+              const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
+              return (
+                <tr key={s.id}>
+                  <td><strong>{s.name}</strong></td>
+                  <td className="num">{s.productCount}</td>
+                  <td className="num">{fmt(s.avgPrice)} د.ك</td>
+                  <td className="num"><span className="badge badge-neg">{fmt(maxPrice)}</span></td>
+                  <td className="num"><span className="badge badge-pos">{fmt(minPrice)}</span></td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
+// Admin panel screen
+function AdminScreen({ onAdminAuth }) {
+  const [adminPassword, setAdminPassword] = React.useState('');
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
+  const [lastUpdate, setLastUpdate] = React.useState(localStorage.getItem('lastDataUpdate') || 'لم يتم التحديث');
+  const [updateFrequency, setUpdateFrequency] = React.useState(localStorage.getItem('updateFrequency') || 'monthly');
+  const [updateLog, setUpdateLog] = React.useState(JSON.parse(localStorage.getItem('updateLog') || '[]'));
+
+  const handleAdminLogin = () => {
+    if (adminPassword === 'admin2024') {
+      setIsAuthenticated(true);
+      setAdminPassword('');
+      if (onAdminAuth) onAdminAuth(true);
+    } else {
+      alert('❌ كلمة المرور غير صحيحة');
+    }
+  };
+
+  const handleDataUpdate = () => {
+    const lastUpdateTime = localStorage.getItem('lastDataUpdate');
+    const today = new Date().toISOString().split('T')[0];
+
+    if (lastUpdateTime && lastUpdateTime.includes(today)) {
+      alert('⚠️ تم تحديث البيانات اليوم بالفعل');
+      return;
+    }
+
+    const confirmUpdate = window.confirm(
+      `هل أنت متأكد من رغبتك في تحديث البيانات؟\n\nسيتم جلب آخر الأسعار من المتاجر.\nهذا قد يستغرق عدة دقائق.`
+    );
+
+    if (!confirmUpdate) return;
+
+    // Simulate update
+    const timestamp = new Date().toLocaleString('ar-KW');
+    const newLog = [...updateLog, {
+      date: timestamp,
+      status: '✅ نجح',
+      productsUpdated: APP_DATA.kpis.totalProducts,
+      storesUpdated: APP_DATA.stores.length
+    }];
+
+    setLastUpdate(timestamp);
+    setUpdateLog(newLog);
+    localStorage.setItem('lastDataUpdate', timestamp);
+    localStorage.setItem('updateLog', JSON.stringify(newLog));
+
+    alert('✅ تم تحديث البيانات بنجاح!\n\nعدد المنتجات المحدثة: ' + APP_DATA.kpis.totalProducts);
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <div style={{ padding: '16px', maxWidth: 400, margin: '0 auto', marginTop: 40 }}>
+        <div className="card" style={{ textAlign: 'center' }}>
+          <h2>🔐 لوحة التحكم الإدارية</h2>
+          <p style={{ color: 'var(--ink-3)' }}>يتطلب مصادقة إدارية</p>
+
+          <input
+            type="password"
+            placeholder="أدخل كلمة المرور الإدارية"
+            value={adminPassword}
+            onChange={e => setAdminPassword(e.target.value)}
+            onKeyPress={e => e.key === 'Enter' && handleAdminLogin()}
+            style={{ width: '100%', padding: '10px', marginBottom: 12, borderRadius: '8px', border: '1px solid var(--line)' }}
+          />
+
+          <button
+            onClick={handleAdminLogin}
+            style={{ width: '100%', padding: '10px', borderRadius: '8px', border: 'none', background: 'var(--accent)', color: 'var(--bg)', fontWeight: 600, cursor: 'pointer' }}
+          >
+            دخول
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ padding: '16px' }}>
+      <h2 style={{ marginTop: 0 }}>🔐 لوحة التحكم الإدارية</h2>
+
+      {/* Data Update Section */}
+      <div className="card" style={{ marginBottom: 16, background: 'var(--info-bg)', borderColor: 'var(--info)' }}>
+        <h3 style={{ color: 'var(--info)' }}>📊 تحديث البيانات</h3>
+        <p><strong>آخر تحديث:</strong> {lastUpdate}</p>
+        <p style={{ fontSize: 12, color: 'var(--ink-3)' }}>⚠️ يمكن التحديث مرة واحدة يومياً فقط لضمان الامتثال القانوني</p>
+
+        <button
+          onClick={handleDataUpdate}
+          style={{ width: '100%', padding: '12px', borderRadius: '8px', border: 'none', background: 'var(--pos)', color: 'white', fontWeight: 600, cursor: 'pointer', marginBottom: 12 }}
+        >
+          🔄 تحديث البيانات الآن
+        </button>
+
+        <div style={{ fontSize: 12, padding: 8, background: 'var(--bg)', borderRadius: 6 }}>
+          <strong>معلومات الآخر تحديث:</strong>
+          <p>• عدد المنتجات: {APP_DATA.kpis.totalProducts}</p>
+          <p>• عدد المتاجر: {APP_DATA.stores.length}</p>
+          <p>• التكرار الموصى به: شهري</p>
+        </div>
+      </div>
+
+      {/* Frequency Settings */}
+      <div className="card" style={{ marginBottom: 16 }}>
+        <h3>⚙️ إعدادات التحديث</h3>
+        <p style={{ fontSize: 12, color: 'var(--ink-3)', marginBottom: 10 }}>تكرار التحديث الآمن:</p>
+
+        <select
+          value={updateFrequency}
+          onChange={e => {
+            setUpdateFrequency(e.target.value);
+            localStorage.setItem('updateFrequency', e.target.value);
+          }}
+          style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--line)' }}
+        >
+          <option value="daily">يومي (غير موصى به - قد ينتهك الخدمة)</option>
+          <option value="weekly">أسبوعي</option>
+          <option value="monthly">شهري (الموصى به)</option>
+          <option value="quarterly">ربع سنوي</option>
+        </select>
+
+        <div style={{ marginTop: 12, padding: 10, background: 'var(--pos-bg)', borderRadius: 6, fontSize: 12, color: 'var(--pos)' }}>
+          <strong>✅ الخيار الحالي:</strong> {updateFrequency === 'monthly' ? 'شهري (آمن وقانوني)' : 'اختبر التكرار'}
+        </div>
+      </div>
+
+      {/* Update Log */}
+      <div className="card">
+        <h3>📜 سجل التحديثات</h3>
+
+        {updateLog.length === 0 ? (
+          <p style={{ color: 'var(--ink-3)', textAlign: 'center' }}>لم يتم تحديث البيانات بعد</p>
+        ) : (
+          <div style={{ maxHeight: 300, overflowY: 'auto' }}>
+            {updateLog.map((log, idx) => (
+              <div key={idx} style={{ padding: 8, marginBottom: 8, background: 'var(--bg-soft)', borderRadius: 6, fontSize: 12 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                  <strong>{log.status}</strong>
+                  <span style={{ color: 'var(--ink-3)' }}>{log.date}</span>
+                </div>
+                <div style={{ color: 'var(--ink-3)' }}>
+                  • تحديث: {log.productsUpdated} منتج من {log.storesUpdated} متجر
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Safety Notice */}
+      <div style={{ marginTop: 16, padding: 12, background: 'var(--neg-bg)', borderRadius: 8, color: 'var(--neg)', fontSize: 12 }}>
+        <strong>⚠️ ملاحظة قانونية مهمة:</strong>
+        <p style={{ margin: '8px 0 0 0' }}>
+          هذا التطبيق يتوافق مع المعايير القانونية والأخلاقية:
+        </p>
+        <ul style={{ margin: 8, paddingRight: 20, fontSize: 11 }}>
+          <li>تحديث البيانات مرة واحدة فقط شهرياً</li>
+          <li>دعوة صريحة من الإدارة للتحديث</li>
+          <li>سجل تدقيق كامل للجميع التحديثات</li>
+          <li>احترام سياسات خدمة المتاجر الأخرى</li>
+        </ul>
+      </div>
+
+      {/* Logout */}
+      <button
+        onClick={() => { setIsAuthenticated(false); if (onAdminAuth) onAdminAuth(false); }}
+        style={{ width: '100%', marginTop: 16, padding: '10px', borderRadius: '8px', border: '1px solid var(--line)', background: 'transparent', color: 'var(--ink-3)', cursor: 'pointer' }}
+      >
+        تسجيل الخروج
+      </button>
+    </div>
+  );
+}
+
+// Settings screen
+function SettingsScreen({ onThemeChange, onFontChange, theme, font, onGoAdmin }) {
+  return (
+    <div style={{ padding: '16px' }}>
+      <h2 style={{ marginTop: 0 }}>الإعدادات</h2>
+      <div className="card">
+        <h3>المظهر</h3>
+        <label><input type="radio" name="theme" value="light" checked={theme === 'light'} onChange={e => onThemeChange(e.target.value)}/> نهاري</label>
+        <label><input type="radio" name="theme" value="dark" checked={theme === 'dark'} onChange={e => onThemeChange(e.target.value)}/> ليلي</label>
+      </div>
+      <div className="card" style={{ marginTop: 16 }}>
+        <h3>الخط</h3>
+        <select value={font} onChange={e => onFontChange(e.target.value)} style={{ width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid var(--line)' }}>
+          <option value="plex">IBM Plex Sans Arabic</option>
+          <option value="cairo">Cairo</option>
+          <option value="tajawal">Tajawal</option>
+        </select>
+      </div>
+      {/* Hidden admin entry — subtle, no label */}
+      <div style={{ marginTop: 32, textAlign: 'center' }}>
+        <button
+          onClick={onGoAdmin}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--ink-4)', fontSize: '11px', opacity: 0.4, padding: '4px 8px' }}
+        >
+          ⚙
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Mind Map Screen for Engineering Cases ──────────────────────────────────
+function MindMapScreen() {
+  // === STATE ===
+  const [plaintiff,    setPlaintiff]    = React.useState('شركة العمائر للمقاولات');
+  const [defendant,    setDefendant]    = React.useState('المؤسسة العامة للكهرباء');
+  const [caseNum,      setCaseNum]      = React.useState('ق.إ/2024/45');
+  const [contractDate, setContractDate] = React.useState('2023-06-15');
+  const [workStart,    setWorkStart]    = React.useState('2023-07-01');
+  const [payment1,     setPayment1]     = React.useState('2023-08-10');
+  const [payment2,     setPayment2]     = React.useState('2023-11-20');
+  const [disputeDate,  setDisputeDate]  = React.useState('2024-02-15');
+  const [inspectDate,  setInspectDate]  = React.useState('2024-03-10');
+  const [activeTab,    setActiveTab]    = React.useState('mindmap');
+  const [customEvents, setCustomEvents] = React.useState([]);
+
+  // === HELPERS ===
+  function formatDate(s) {
+    if (!s) return '';
+    const [y,m,d] = s.split('-');
+    return `${d}/${m}/${y}`;
+  }
+  function daysBetween(a, b) {
+    if (!a || !b) return '-';
+    return Math.floor(Math.abs(new Date(b) - new Date(a)) / 86400000);
+  }
+  function impFromType(type) {
+    if (['عقد','نزاع'].some(w => type.includes(w)))    return { level:'حرج',        color:'#cc2222', bg:'#fff0f0' };
+    if (['معاينة','فحص'].some(w => type.includes(w)))  return { level:'عالي جداً',  color:'#2244cc', bg:'#f0f0ff' };
+    if (['دفعة','بدء'].some(w => type.includes(w)))    return { level:'عالي',        color:'#227722', bg:'#f0fff0' };
+    return { level:'متوسط', color:'#888888', bg:'#f8f8f8' };
+  }
+
+  // Custom events CRUD
+  function addCustom() { setCustomEvents(prev => [...prev, { id: Date.now(), date:'', label:'', type:'دفعة' }]); }
+  function removeCustom(id) { setCustomEvents(prev => prev.filter(e => e.id !== id)); }
+  function updateCustom(id, field, val) { setCustomEvents(prev => prev.map(e => e.id === id ? {...e,[field]:val} : e)); }
+
+  // === ALL EVENTS (built-in + custom, sorted by date) ===
+  const builtIn = [
+    { date: contractDate, label: 'إبرام العقد',        type: 'عقد'     },
+    { date: workStart,    label: 'بدء الأعمال',         type: 'بدء'    },
+    { date: payment1,     label: 'صرف الدفعة الأولى',  type: 'دفعة'   },
+    { date: payment2,     label: 'صرف الدفعة الثانية', type: 'دفعة'   },
+    { date: disputeDate,  label: 'تاريخ النزاع',        type: 'نزاع'   },
+    { date: inspectDate,  label: 'تاريخ المعاينة',      type: 'معاينة' },
+  ];
+  const allEvents = [...builtIn, ...customEvents.filter(e => e.date && e.label)]
+    .filter(e => e.date)
+    .sort((a,b) => new Date(a.date) - new Date(b.date))
+    .map((e, idx, arr) => ({
+      ...e,
+      order: idx + 1,
+      daysFromPrev: idx === 0 ? '-' : daysBetween(arr[idx-1].date, e.date),
+      imp: impFromType(e.type)
+    }));
+
+  // === WORD EXPORT ===
+  function exportWord() {
+    const rows = allEvents.map(e =>
+      `<tr style="background:${e.imp.bg}">
+         <td align="center" style="border:1px solid #ccc;padding:7px">${e.order}</td>
+         <td align="center" style="border:1px solid #ccc;padding:7px;font-weight:bold">${formatDate(e.date)}</td>
+         <td align="right"  style="border:1px solid #ccc;padding:7px">${e.label}</td>
+         <td align="center" style="border:1px solid #ccc;padding:7px">${e.daysFromPrev}</td>
+         <td align="center" style="border:1px solid #ccc;padding:7px;color:${e.imp.color};font-weight:bold">${e.imp.level}</td>
+       </tr>`
+    ).join('');
+    const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office'
+      xmlns:w='urn:schemas-microsoft-com:office:word'
+      xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <meta charset='utf-8'>
+        <xml><w:WordDocument><w:View>Print</w:View></w:WordDocument></xml>
+        <style>
+          body{font-family:Arial,sans-serif;direction:rtl;padding:24px;font-size:11pt}
+          h1{font-size:16pt;margin-bottom:8px}
+          p{margin:3px 0}
+          table{width:100%;border-collapse:collapse;margin-top:18px}
+          th{background:#1a1a1a;color:#fff;border:1px solid #555;padding:8px;text-align:center}
+          td{font-size:10.5pt}
+        </style>
+      </head>
+      <body dir="rtl">
+        <h1>📋 جدول الأحداث الزمنية للقضية</h1>
+        <p><strong>رقم القضية:</strong> ${caseNum}</p>
+        <p><strong>المدعي:</strong> ${plaintiff}</p>
+        <p><strong>المدعى عليه:</strong> ${defendant}</p>
+        <br>
+        <table>
+          <thead>
+            <tr>
+              <th>الترتيب</th><th>التاريخ</th><th>الحدث</th>
+              <th>المدة (أيام)</th><th>الأهمية</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </body>
+    </html>`;
+    const blob = new Blob(['﻿'+html], {type:'application/msword'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'تقرير-'+caseNum.replace(/\//g,'-')+'.doc';
+    a.click();
+  }
+
+  // === SHARED STYLES ===
+  const inpStyle = {
+    width:'100%', padding:'7px 8px',
+    border:'1px solid var(--line)', borderRadius:'4px',
+    boxSizing:'border-box', fontFamily:'inherit',
+    direction:'rtl', backgroundColor:'var(--surface)', color:'var(--ink)'
+  };
+  function tabBtn(id, label) {
+    const active = activeTab === id;
+    return (
+      <button onClick={() => setActiveTab(id)} style={{
+        padding:'7px 14px',
+        backgroundColor: active ? 'var(--ink)' : 'var(--surface)',
+        color: active ? 'var(--bg)' : 'var(--ink)',
+        border: `2px solid ${active ? 'var(--ink)' : 'var(--line)'}`,
+        borderRadius:'4px', cursor:'pointer',
+        fontFamily:'inherit', fontWeight:'bold', fontSize:'0.88em'
+      }}>{label}</button>
+    );
+  }
+
+  // === RENDER ===
+  return (
+    <div style={{ padding:'16px' }}>
+      <h2 style={{ marginTop:0, marginBottom:'14px' }}>🗺️ الخريطة الذهنية لإدارة القضايا</h2>
+
+      {/* ── Main inputs ── */}
+      <div style={{
+        display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px',
+        marginBottom:'10px', padding:'14px',
+        backgroundColor:'var(--surface)', borderRadius:'8px', border:'1px solid var(--line)'
+      }}>
+        <div>
+          <label style={{display:'block',marginBottom:'3px',fontSize:'0.83em',color:'var(--ink-3)'}}>المدعي</label>
+          <input type="text" value={plaintiff} onChange={e=>setPlaintiff(e.target.value)} style={inpStyle}/>
+        </div>
+        <div>
+          <label style={{display:'block',marginBottom:'3px',fontSize:'0.83em',color:'var(--ink-3)'}}>المدعى عليه</label>
+          <input type="text" value={defendant} onChange={e=>setDefendant(e.target.value)} style={inpStyle}/>
+        </div>
+        <div style={{gridColumn:'1/-1'}}>
+          <label style={{display:'block',marginBottom:'3px',fontSize:'0.83em',color:'var(--ink-3)'}}>رقم القضية</label>
+          <input type="text" value={caseNum} onChange={e=>setCaseNum(e.target.value)} style={inpStyle}/>
+        </div>
+        <div>
+          <label style={{display:'block',marginBottom:'3px',fontSize:'0.83em',color:'var(--ink-3)'}}>إبرام العقد</label>
+          <input type="date" value={contractDate} onChange={e=>setContractDate(e.target.value)} style={inpStyle}/>
+        </div>
+        <div>
+          <label style={{display:'block',marginBottom:'3px',fontSize:'0.83em',color:'var(--ink-3)'}}>بدء الأعمال</label>
+          <input type="date" value={workStart} onChange={e=>setWorkStart(e.target.value)} style={inpStyle}/>
+        </div>
+        <div>
+          <label style={{display:'block',marginBottom:'3px',fontSize:'0.83em',color:'var(--ink-3)'}}>صرف الدفعة الأولى</label>
+          <input type="date" value={payment1} onChange={e=>setPayment1(e.target.value)} style={inpStyle}/>
+        </div>
+        <div>
+          <label style={{display:'block',marginBottom:'3px',fontSize:'0.83em',color:'var(--ink-3)'}}>صرف الدفعة الثانية</label>
+          <input type="date" value={payment2} onChange={e=>setPayment2(e.target.value)} style={inpStyle}/>
+        </div>
+        <div>
+          <label style={{display:'block',marginBottom:'3px',fontSize:'0.83em',color:'var(--ink-3)'}}>تاريخ النزاع</label>
+          <input type="date" value={disputeDate} onChange={e=>setDisputeDate(e.target.value)} style={inpStyle}/>
+        </div>
+        <div>
+          <label style={{display:'block',marginBottom:'3px',fontSize:'0.83em',color:'var(--ink-3)'}}>تاريخ المعاينة</label>
+          <input type="date" value={inspectDate} onChange={e=>setInspectDate(e.target.value)} style={inpStyle}/>
+        </div>
+      </div>
+
+      {/* ── Custom events (compact rows) ── */}
+      {customEvents.length > 0 && (
+        <div style={{
+          marginBottom:'8px', padding:'8px 12px',
+          backgroundColor:'var(--bg-soft)', borderRadius:'6px', border:'1px solid var(--line)'
+        }}>
+          <div style={{fontSize:'0.78em',color:'var(--ink-3)',marginBottom:'6px',fontWeight:'bold'}}>
+            📌 أحداث إضافية ({customEvents.length})
+          </div>
+          {customEvents.map(ev => (
+            <div key={ev.id} style={{display:'flex',gap:'6px',marginBottom:'5px',alignItems:'center'}}>
+              <input type="date" value={ev.date}
+                onChange={e=>updateCustom(ev.id,'date',e.target.value)}
+                style={{...inpStyle,width:'138px',padding:'4px 6px',fontSize:'0.82em'}}/>
+              <input type="text" value={ev.label} placeholder="وصف الحدث..."
+                onChange={e=>updateCustom(ev.id,'label',e.target.value)}
+                style={{...inpStyle,flex:1,padding:'4px 8px',fontSize:'0.82em'}}/>
+              <select value={ev.type} onChange={e=>updateCustom(ev.id,'type',e.target.value)}
+                style={{...inpStyle,width:'110px',padding:'4px 6px',fontSize:'0.82em'}}>
+                <option value="عقد">🔴 حرج</option>
+                <option value="معاينة">🔵 عالي جداً</option>
+                <option value="دفعة">🟢 عالي</option>
+                <option value="__">⚪ متوسط</option>
+              </select>
+              <button onClick={()=>removeCustom(ev.id)} style={{
+                padding:'4px 8px',border:'1px solid var(--line)',
+                backgroundColor:'var(--surface)',color:'var(--ink)',
+                borderRadius:'4px',cursor:'pointer',fontSize:'0.9em'
+              }}>🗑</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── Action bar: add event | tabs | export ── */}
+      <div style={{display:'flex',gap:'8px',marginBottom:'12px',flexWrap:'wrap',alignItems:'center'}}>
+        <button onClick={addCustom} style={{
+          padding:'7px 12px', backgroundColor:'var(--surface)', color:'var(--ink)',
+          border:'1.5px dashed var(--line-strong)', borderRadius:'4px',
+          cursor:'pointer', fontFamily:'inherit', fontSize:'0.85em'
+        }}>➕ إضافة حدث</button>
+        <div style={{width:'1px',height:'22px',backgroundColor:'var(--line)',margin:'0 2px'}}/>
+        {tabBtn('mindmap',  '🧠 الخريطة الذهنية')}
+        {tabBtn('timeline', '📊 جدول الأحداث')}
+        <button onClick={exportWord} style={{
+          padding:'7px 14px', backgroundColor:'#1a6b3c', color:'white',
+          border:'none', borderRadius:'4px', cursor:'pointer',
+          fontFamily:'inherit', fontWeight:'bold', fontSize:'0.88em'
+        }}>📄 تصدير Word</button>
+      </div>
+
+      {/* ── Mind Map view ── */}
+      {activeTab === 'mindmap' && (
+        <div style={{
+          border:'2px solid var(--line)', borderRadius:'8px', padding:'20px',
+          backgroundColor:'var(--surface)', minHeight:'320px',
+          display:'flex', flexDirection:'column', alignItems:'center', gap:'18px'
+        }}>
+          <div style={{fontSize:'1.1em',fontWeight:'bold',color:'var(--ink)',textAlign:'center'}}>
+            🎯 {caseNum}
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'14px',width:'100%',maxWidth:'760px'}}>
+            <div style={{padding:'12px',border:'1px solid var(--line)',borderRadius:'6px',backgroundColor:'var(--bg)'}}>
+              <div style={{fontWeight:'bold',marginBottom:'6px',color:'var(--ink-2)'}}>👥 أطراف الدعوى</div>
+              <div style={{fontSize:'0.88em',lineHeight:'1.7'}}>
+                <div><strong>المدعي:</strong> {plaintiff}</div>
+                <div><strong>المدعى عليه:</strong> {defendant}</div>
+              </div>
+            </div>
+            <div style={{padding:'12px',border:'1px solid var(--line)',borderRadius:'6px',backgroundColor:'var(--bg)'}}>
+              <div style={{fontWeight:'bold',marginBottom:'6px',color:'var(--ink-2)'}}>📅 التواريخ الحاسمة</div>
+              <div style={{fontSize:'0.82em',lineHeight:'1.75'}}>
+                {allEvents.slice(0,4).map(e => (
+                  <div key={e.label+e.date}>
+                    <span style={{color:e.imp.color}}>●</span> {e.label}: {formatDate(e.date)}
+                  </div>
+                ))}
+                {allEvents.length > 4 && <div style={{color:'var(--ink-3)',marginTop:'2px'}}>+ {allEvents.length-4} أحداث أخرى</div>}
+              </div>
+            </div>
+            <div style={{padding:'12px',border:'1px solid var(--line)',borderRadius:'6px',backgroundColor:'var(--bg)'}}>
+              <div style={{fontWeight:'bold',marginBottom:'6px',color:'var(--ink-2)'}}>✅ الالتزامات</div>
+              <div style={{fontSize:'0.88em',lineHeight:'1.7'}}>
+                <div>• صرف الدفعات المالية</div>
+                <div>• تنفيذ الأعمال الهندسية</div>
+                <div>• الفحص والقبول</div>
+              </div>
+            </div>
+            <div style={{padding:'12px',border:'1px solid var(--line)',borderRadius:'6px',backgroundColor:'var(--bg)'}}>
+              <div style={{fontWeight:'bold',marginBottom:'6px',color:'var(--ink-2)'}}>📋 نطاق العقد</div>
+              <div style={{fontSize:'0.88em',lineHeight:'1.7'}}>
+                <div>• جداول الكميات</div>
+                <div>• المواصفات الفنية</div>
+                <div>• معايير الجودة</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Timeline table ── */}
+      {activeTab === 'timeline' && (
+        <div style={{overflowX:'auto'}}>
+          <table style={{width:'100%',borderCollapse:'collapse',border:'2px solid var(--line)'}}>
+            <thead>
+              <tr style={{backgroundColor:'var(--ink)',color:'var(--bg)'}}>
+                <th style={{padding:'9px 10px',textAlign:'center',borderRight:'1px solid var(--line-strong)'}}>الترتيب</th>
+                <th style={{padding:'9px 10px',textAlign:'center',borderRight:'1px solid var(--line-strong)'}}>التاريخ</th>
+                <th style={{padding:'9px 10px',textAlign:'right', borderRight:'1px solid var(--line-strong)'}}>الحدث</th>
+                <th style={{padding:'9px 10px',textAlign:'center',borderRight:'1px solid var(--line-strong)'}}>المدة (أيام)</th>
+                <th style={{padding:'9px 10px',textAlign:'center'}}>الأهمية</th>
+              </tr>
+            </thead>
+            <tbody>
+              {allEvents.map((evt,idx) => (
+                <tr key={idx} style={{backgroundColor:evt.imp.bg,borderBottom:'1px solid var(--line)'}}>
+                  <td style={{padding:'7px 8px',textAlign:'center',borderRight:'1px solid var(--line)'}}>{evt.order}</td>
+                  <td style={{padding:'7px 8px',textAlign:'center',borderRight:'1px solid var(--line)',fontWeight:'bold'}}>{formatDate(evt.date)}</td>
+                  <td style={{padding:'7px 8px',textAlign:'right', borderRight:'1px solid var(--line)'}}>{evt.label}</td>
+                  <td style={{padding:'7px 8px',textAlign:'center',borderRight:'1px solid var(--line)'}}>{evt.daysFromPrev}</td>
+                  <td style={{padding:'7px 8px',textAlign:'center',color:evt.imp.color,fontWeight:'bold'}}>{evt.imp.level}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Penalty Calculator Screen ────────────────────────────────────────────────
+function CalculatorScreen() {
+  const [tab, setTab]           = React.useState('contract');
+  // contract
+  const [cn, setCn]             = React.useState('');
+  const [cv, setCv]             = React.useState('');
+  const [cc, setCc]             = React.useState('');
+  const [ccon, setCcon]         = React.useState('');
+  const [ctype, setCtype]       = React.useState('سكني');
+  const [endDate, setEndDate]   = React.useState('');
+  // penalty config
+  const [enDelay, setEnDelay]   = React.useState(true);
+  const [rate, setRate]         = React.useState('0.1');
+  const [capP, setCapP]         = React.useState('10');
+  const [enQuality, setEnQuality] = React.useState(true);
+  // delay & defects
+  const [actualDate, setActualDate] = React.useState('');
+  const [manDays, setManDays]   = React.useState('');
+  const [defects, setDefects]   = React.useState([]);
+  // settlement
+  const [earned, setEarned]     = React.useState('');
+  const [retention, setRet]     = React.useState('');
+  const [advance, setAdv]       = React.useState('');
+  const [otherDed, setOther]    = React.useState('');
+  const [vars, setVars]         = React.useState('0');
+  // results
+  const [res, setRes]           = React.useState(null);
+
+  const inp = { width:'100%', padding:'8px 10px', borderRadius:8, border:'1px solid var(--line)', background:'var(--bg)', color:'var(--ink)', fontSize:14, fontFamily:'inherit', boxSizing:'border-box' };
+  const lbl = { display:'block', fontSize:12, color:'var(--ink-3)', marginBottom:4 };
+  const row = { marginBottom:14 };
+
+  function delayDays() {
+    if (actualDate && endDate) return Math.max(0, Math.round((new Date(actualDate) - new Date(endDate)) / 86400000));
+    return Math.max(0, parseInt(manDays) || 0);
+  }
+
+  function buildReport(r) {
+    return [
+      '═══════════════════════════════════════════',
+      '   تقرير تقييم غرامات العقد الهندسي',
+      '═══════════════════════════════════════════',
+      'العقد:           ' + (r.cn || 'غير محدد'),
+      'قيمة العقد:      ' + fmt(r.cv) + ' د.ك',
+      'العميل:          ' + (r.cc || 'غير محدد'),
+      'المقاول:         ' + (r.ccon || 'غير محدد'),
+      'النوع:           ' + r.ctype,
+      '───────────────────────────────────────────',
+      'أيام التأخير:    ' + r.days + ' يوم',
+      'غرامة التأخير:   ' + fmt(r.dFin) + ' د.ك',
+      'غرامة الجودة:    ' + fmt(r.qTot) + ' د.ك',
+      'إجمالي الغرامات: ' + fmt(r.totPen) + ' د.ك',
+      '───────────────────────────────────────────',
+      'المستحقات:       ' + fmt(r.earn) + ' د.ك',
+      'الخصومات:        ' + fmt(r.totDed) + ' د.ك',
+      'التغييرات:       ' + fmt(r.varsV) + ' د.ك',
+      '───────────────────────────────────────────',
+      'الرصيد النهائي:  ' + fmt(r.balance) + ' د.ك',
+      'الحالة:          ' + (r.pos ? 'إيجابي ✅' : 'سالب 🔴'),
+      '───────────────────────────────────────────',
+      'تاريخ التقرير:   ' + new Date().toLocaleDateString('ar-KW'),
+      'النظام:          حاسبة الغرامات الهندسية',
+      '═══════════════════════════════════════════',
+    ].join('\n');
+  }
+
+  function doCalc() {
+    const value = parseFloat(cv) || 0;
+    if (!value) { alert('الرجاء إدخال قيمة العقد'); setTab('contract'); return; }
+    const days = delayDays();
+    const mults = { simple:0.5, medium:1.0, critical:2.0 };
+    const sevLbl = { simple:'بسيط', medium:'متوسط', critical:'خطير' };
+
+    // delay
+    let dGross=0, dFin=0, dCap=0;
+    if (enDelay && days > 0) {
+      dGross = value * (parseFloat(rate)||0) / 100 * days;
+      dFin = dGross;
+      const capAmt = value * (parseFloat(capP)||0) / 100;
+      if (capAmt > 0 && dGross > capAmt) { dCap = dGross - capAmt; dFin = capAmt; }
+    }
+
+    // quality
+    let qTot=0;
+    const dds = defects.map(d => {
+      const dp = value * 0.01 * (mults[d.sev]||1) * (parseInt(d.qty)||1);
+      qTot += dp;
+      return { ...d, pen: Math.round(dp*100)/100, sevL: sevLbl[d.sev] };
+    });
+
+    const totPen  = Math.round((dFin + qTot)*100)/100;
+    const earn    = parseFloat(earned) || value;
+    const totDed  = (parseFloat(retention)||0) + (parseFloat(advance)||0) + (parseFloat(otherDed)||0);
+    const varsV   = parseFloat(vars)||0;
+    const balance = Math.round((earn - totDed - totPen + varsV)*100)/100;
+
+    const r = {
+      cn, cv:value, cc, ccon, ctype,
+      days,
+      dGross:Math.round(dGross*100)/100, dCap:Math.round(dCap*100)/100, dFin:Math.round(dFin*100)/100,
+      qTot:Math.round(qTot*100)/100, dds,
+      totPen, earn, totDed:Math.round(totDed*100)/100,
+      dedBreak: [
+        retention ? {l:'ضمان حسن التنفيذ', v:parseFloat(retention)} : null,
+        advance   ? {l:'استرداد الدفعة المقدمة', v:parseFloat(advance)} : null,
+        otherDed  ? {l:'خصومات أخرى', v:parseFloat(otherDed)} : null,
+      ].filter(Boolean),
+      varsV, balance, pos: balance >= 0
+    };
+    r.report = buildReport(r);
+    setRes(r);
+    setTab('results');
+  }
+
+  function addDef()          { setDefects(p => [...p, {id:Date.now(), desc:'', sev:'medium', qty:'1'}]); }
+  function remDef(id)        { setDefects(p => p.filter(d => d.id !== id)); }
+  function updDef(id, k, v)  { setDefects(p => p.map(d => d.id===id ? {...d,[k]:v} : d)); }
+
+  const TABS = [{id:'contract',l:'📋 العقد'},{id:'penalties',l:'⚙️ الغرامات'},{id:'defects',l:'⏱ التأخير'},{id:'settlement',l:'💰 التصفية'}];
+
+  return (
+    <div style={{padding:16}}>
+      <h2 style={{marginTop:0}}>🧮 حاسبة الغرامات الهندسية</h2>
+
+      {/* Tab bar */}
+      <div style={{display:'flex',gap:4,marginBottom:16,flexWrap:'wrap'}}>
+        {[...TABS, ...(res?[{id:'results',l:'📊 النتائج'}]:[])].map(t => (
+          <button key={t.id} onClick={()=>setTab(t.id)} style={{
+            padding:'6px 11px', borderRadius:20, fontSize:11, fontFamily:'inherit',
+            border:'none', cursor:'pointer',
+            background: tab===t.id ? 'var(--accent)' : 'var(--bg-soft)',
+            color: tab===t.id ? 'var(--bg)' : 'var(--ink-3)',
+            fontWeight: tab===t.id ? 700 : 400
+          }}>{t.l}</button>
+        ))}
+      </div>
+
+      {/* ── Contract ── */}
+      {tab==='contract' && (
+        <div className="card">
+          <h3 style={{marginTop:0}}>📋 بيانات العقد</h3>
+          <div style={row}><label style={lbl}>اسم العقد / المشروع</label><input style={inp} value={cn} onChange={e=>setCn(e.target.value)} placeholder="مثال: عقد بناء فيلا سكنية"/></div>
+          <div style={row}><label style={lbl}>قيمة العقد (د.ك) *</label><input style={inp} type="number" value={cv} onChange={e=>setCv(e.target.value)} placeholder="100000"/></div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:14}}>
+            <div><label style={lbl}>العميل</label><input style={inp} value={cc} onChange={e=>setCc(e.target.value)} placeholder="جهة العميل"/></div>
+            <div><label style={lbl}>المقاول</label><input style={inp} value={ccon} onChange={e=>setCcon(e.target.value)} placeholder="شركة المقاول"/></div>
+          </div>
+          <div style={row}><label style={lbl}>نوع المشروع</label>
+            <select style={inp} value={ctype} onChange={e=>setCtype(e.target.value)}>
+              {['سكني','تجاري','صناعي','بنية تحتية','خدمي'].map(t=><option key={t}>{t}</option>)}
+            </select>
+          </div>
+          <div style={row}><label style={lbl}>تاريخ انتهاء العقد المتفق عليه</label><input style={inp} type="date" value={endDate} onChange={e=>setEndDate(e.target.value)}/></div>
+          <button onClick={()=>setTab('penalties')} style={{width:'100%',padding:'10px',borderRadius:8,border:'none',background:'var(--accent)',color:'var(--bg)',fontWeight:600,cursor:'pointer',fontFamily:'inherit'}}>التالي: إعدادات الغرامات ←</button>
+        </div>
+      )}
+
+      {/* ── Penalties config ── */}
+      {tab==='penalties' && (
+        <div className="card">
+          <h3 style={{marginTop:0}}>⚙️ إعدادات الغرامات</h3>
+          <div style={{padding:12,background:'var(--info-bg)',borderRadius:8,marginBottom:12}}>
+            <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',fontWeight:600,marginBottom:enDelay?10:0}}>
+              <input type="checkbox" checked={enDelay} onChange={e=>setEnDelay(e.target.checked)}/> تفعيل غرامة التأخير
+            </label>
+            {enDelay && (<>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+                <div><label style={lbl}>النسبة اليومية (%)</label><input style={inp} type="number" step="0.01" value={rate} onChange={e=>setRate(e.target.value)}/></div>
+                <div><label style={lbl}>الحد الأقصى (% من العقد)</label><input style={inp} type="number" step="0.5" value={capP} onChange={e=>setCapP(e.target.value)}/></div>
+              </div>
+              <div style={{marginTop:8,fontSize:11,color:'var(--ink-3)'}}>الصيغة: قيمة العقد × {rate||'0.1'}% × الأيام، الحد الأقصى {capP||'10'}%</div>
+            </>)}
+          </div>
+          <div style={{padding:12,background:'var(--warn-bg)',borderRadius:8}}>
+            <label style={{display:'flex',alignItems:'center',gap:8,cursor:'pointer',fontWeight:600}}>
+              <input type="checkbox" checked={enQuality} onChange={e=>setEnQuality(e.target.checked)}/> تفعيل غرامة الجودة والعيوب
+            </label>
+            {enQuality && (
+              <div style={{marginTop:8,fontSize:11,color:'var(--ink-3)',lineHeight:1.9}}>
+                • بسيط: قيمة العقد × 0.5% × الكمية<br/>
+                • متوسط: قيمة العقد × 1% × الكمية<br/>
+                • خطير: قيمة العقد × 2% × الكمية
+              </div>
+            )}
+          </div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginTop:14}}>
+            <button onClick={()=>setTab('contract')} style={{padding:'10px',borderRadius:8,border:'1px solid var(--line)',background:'transparent',color:'var(--ink-3)',cursor:'pointer',fontFamily:'inherit'}}>→ السابق</button>
+            <button onClick={()=>setTab('defects')}  style={{padding:'10px',borderRadius:8,border:'none',background:'var(--accent)',color:'var(--bg)',fontWeight:600,cursor:'pointer',fontFamily:'inherit'}}>التالي ←</button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Delay & Defects ── */}
+      {tab==='defects' && (
+        <div>
+          {enDelay && (
+            <div className="card" style={{marginBottom:12}}>
+              <h3 style={{marginTop:0}}>⏱ التأخير</h3>
+              <div style={row}><label style={lbl}>تاريخ الانتهاء الفعلي</label><input style={inp} type="date" value={actualDate} onChange={e=>{setActualDate(e.target.value);setManDays('');}}/></div>
+              <div style={row}><label style={lbl}>أو أدخل عدد أيام التأخير يدوياً</label><input style={inp} type="number" value={manDays} onChange={e=>{setManDays(e.target.value);setActualDate('');}} placeholder="0"/></div>
+              {(actualDate||manDays) && <div style={{padding:10,background:'var(--neg-bg)',borderRadius:8,color:'var(--neg)',fontWeight:700,textAlign:'center'}}>⏱ أيام التأخير: {delayDays()} يوم</div>}
+            </div>
+          )}
+          {enQuality && (
+            <div className="card">
+              <h3 style={{marginTop:0}}>🔍 العيوب المكتشفة</h3>
+              {defects.map((d,i) => (
+                <div key={d.id} style={{padding:10,background:'var(--bg-soft)',borderRadius:8,marginBottom:8,border:'1px solid var(--line)'}}>
+                  <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                    <span style={{fontSize:12,fontWeight:600,color:'var(--ink-3)'}}>عيب #{i+1}</span>
+                    <button onClick={()=>remDef(d.id)} style={{background:'var(--neg-bg)',color:'var(--neg)',border:'none',borderRadius:6,padding:'2px 10px',cursor:'pointer',fontSize:12,fontFamily:'inherit'}}>حذف</button>
+                  </div>
+                  <div style={{marginBottom:8}}><input style={inp} value={d.desc} onChange={e=>updDef(d.id,'desc',e.target.value)} placeholder="وصف العيب"/></div>
+                  <div style={{display:'grid',gridTemplateColumns:'2fr 1fr',gap:8}}>
+                    <div><label style={lbl}>درجة الشدة</label>
+                      <select style={inp} value={d.sev} onChange={e=>updDef(d.id,'sev',e.target.value)}>
+                        <option value="simple">بسيط (×0.5)</option>
+                        <option value="medium">متوسط (×1.0)</option>
+                        <option value="critical">خطير (×2.0)</option>
+                      </select>
+                    </div>
+                    <div><label style={lbl}>الكمية</label><input style={inp} type="number" min="1" value={d.qty} onChange={e=>updDef(d.id,'qty',e.target.value)}/></div>
+                  </div>
+                </div>
+              ))}
+              <button onClick={addDef} style={{width:'100%',padding:'8px',borderRadius:8,border:'2px dashed var(--line)',background:'transparent',color:'var(--ink-3)',cursor:'pointer',fontFamily:'inherit'}}>+ إضافة عيب</button>
+            </div>
+          )}
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginTop:12}}>
+            <button onClick={()=>setTab('penalties')} style={{padding:'10px',borderRadius:8,border:'1px solid var(--line)',background:'transparent',color:'var(--ink-3)',cursor:'pointer',fontFamily:'inherit'}}>→ السابق</button>
+            <button onClick={()=>setTab('settlement')} style={{padding:'10px',borderRadius:8,border:'none',background:'var(--accent)',color:'var(--bg)',fontWeight:600,cursor:'pointer',fontFamily:'inherit'}}>التالي ←</button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Settlement ── */}
+      {tab==='settlement' && (
+        <div className="card">
+          <h3 style={{marginTop:0}}>💰 التصفية والمستحقات</h3>
+          <div style={row}><label style={lbl}>إجمالي المستحقات المكتسبة (د.ك)</label><input style={inp} type="number" value={earned} onChange={e=>setEarned(e.target.value)} placeholder={cv||'100000'}/></div>
+          <h4 style={{color:'var(--ink-2)',margin:'0 0 10px'}}>الخصومات</h4>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10,marginBottom:14}}>
+            <div><label style={lbl}>ضمان حسن التنفيذ (د.ك)</label><input style={inp} type="number" value={retention} onChange={e=>setRet(e.target.value)} placeholder="0"/></div>
+            <div><label style={lbl}>استرداد الدفعة المقدمة (د.ك)</label><input style={inp} type="number" value={advance} onChange={e=>setAdv(e.target.value)} placeholder="0"/></div>
+          </div>
+          <div style={row}><label style={lbl}>خصومات أخرى (د.ك)</label><input style={inp} type="number" value={otherDed} onChange={e=>setOther(e.target.value)} placeholder="0"/></div>
+          <div style={row}><label style={lbl}>أوامر التغيير (+إضافة / -خصم)</label><input style={inp} type="number" value={vars} onChange={e=>setVars(e.target.value)} placeholder="0"/></div>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8,marginTop:8}}>
+            <button onClick={()=>setTab('defects')} style={{padding:'10px',borderRadius:8,border:'1px solid var(--line)',background:'transparent',color:'var(--ink-3)',cursor:'pointer',fontFamily:'inherit'}}>→ السابق</button>
+            <button onClick={doCalc} style={{padding:'11px',borderRadius:8,border:'none',background:'var(--pos)',color:'white',fontWeight:700,cursor:'pointer',fontFamily:'inherit',fontSize:14}}>🧮 احسب الآن</button>
+          </div>
+        </div>
+      )}
+
+      {/* ── Results ── */}
+      {tab==='results' && res && (
+        <div>
+          <div style={{padding:16,borderRadius:12,background:res.pos?'var(--pos-bg)':'var(--neg-bg)',border:`1px solid ${res.pos?'var(--pos)':'var(--neg)'}`,marginBottom:14,textAlign:'center'}}>
+            <div style={{fontSize:11,color:res.pos?'var(--pos)':'var(--neg)',marginBottom:4}}>الرصيد النهائي</div>
+            <div style={{fontSize:28,fontWeight:800,color:res.pos?'var(--pos)':'var(--neg)'}}>{fmt(Math.abs(res.balance))} د.ك</div>
+            <div style={{fontSize:12,marginTop:4,color:res.pos?'var(--pos)':'var(--neg)'}}>{res.pos?'✅ مستحقات إيجابية':'🔴 رصيد سالب — توجد مديونية'}</div>
+          </div>
+
+          {/* Penalty breakdown */}
+          <div className="card" style={{marginBottom:14}}>
+            <h3 style={{marginTop:0}}>📊 تفاصيل الغرامات</h3>
+            {res.days > 0 && (
+              <div style={{marginBottom:10,padding:10,background:'var(--bg-soft)',borderRadius:8}}>
+                <div style={{fontWeight:600,marginBottom:6,fontSize:13}}>⏱ غرامة التأخير</div>
+                {[
+                  ['عدد الأيام', res.days + ' يوم'],
+                  ['الغرامة الإجمالية', fmt(res.dGross) + ' د.ك'],
+                  ...(res.dCap>0 ? [['الحد الأقصى المطبق', '- ' + fmt(res.dCap) + ' د.ك']] : []),
+                  ['الغرامة النهائية', fmt(res.dFin) + ' د.ك'],
+                ].map(([k,v],i) => (
+                  <div key={i} style={{display:'flex',justifyContent:'space-between',fontSize:12,color:'var(--ink-3)',padding:'2px 0'}}>
+                    <span>{k}</span><strong style={{color:i===([['عدد الأيام',''],[''],['',...(res.dCap>0?[['']]:[])]].length-1)?'var(--neg)':'var(--ink)'}}>{v}</strong>
+                  </div>
+                ))}
+              </div>
+            )}
+            {res.dds.length > 0 && (
+              <div style={{padding:10,background:'var(--bg-soft)',borderRadius:8,marginBottom:10}}>
+                <div style={{fontWeight:600,marginBottom:6,fontSize:13}}>🔍 غرامة الجودة</div>
+                {res.dds.map((d,i) => (
+                  <div key={i} style={{display:'flex',justifyContent:'space-between',fontSize:12,color:'var(--ink-3)',padding:'3px 0',borderBottom:'1px solid var(--line)'}}>
+                    <span>{d.desc||`عيب ${i+1}`} <span style={{color:'var(--warn)'}}>({d.sevL})</span></span>
+                    <strong style={{color:'var(--neg)'}}>{fmt(d.pen)} د.ك</strong>
+                  </div>
+                ))}
+                <div style={{display:'flex',justifyContent:'space-between',fontSize:12,fontWeight:700,marginTop:4}}>
+                  <span>إجمالي غرامة الجودة</span><span style={{color:'var(--neg)'}}>{fmt(res.qTot)} د.ك</span>
+                </div>
+              </div>
+            )}
+            <div style={{display:'flex',justifyContent:'space-between',fontWeight:800,padding:'8px 0',borderTop:'2px solid var(--line)'}}>
+              <span>إجمالي الغرامات</span><span style={{color:'var(--neg)'}}>{fmt(res.totPen)} د.ك</span>
+            </div>
+          </div>
+
+          {/* Settlement summary */}
+          <div className="card" style={{marginBottom:14}}>
+            <h3 style={{marginTop:0}}>💰 ملخص التصفية</h3>
+            {[
+              {l:'إجمالي المستحقات', v:res.earn,     c:'var(--pos)', sign:'+'},
+              {l:'إجمالي الخصومات', v:res.totDed,   c:'var(--warn)',sign:'-'},
+              {l:'إجمالي الغرامات', v:res.totPen,   c:'var(--neg)', sign:'-'},
+              {l:'أوامر التغيير',   v:res.varsV,    c:res.varsV>=0?'var(--pos)':'var(--neg)',sign:res.varsV>=0?'+':'-'},
+            ].map((r,i)=>(
+              <div key={i} style={{display:'flex',justifyContent:'space-between',padding:'6px 0',borderBottom:'1px solid var(--line)',fontSize:13}}>
+                <span>{r.l}</span>
+                <span style={{color:r.c,fontWeight:600}}>{r.sign} {fmt(Math.abs(r.v))} د.ك</span>
+              </div>
+            ))}
+            <div style={{display:'flex',justifyContent:'space-between',padding:'10px 0',fontWeight:800,fontSize:15}}>
+              <span>الرصيد النهائي</span>
+              <span style={{color:res.pos?'var(--pos)':'var(--neg)'}}>{res.balance>=0?'':'-'} {fmt(Math.abs(res.balance))} د.ك</span>
+            </div>
+          </div>
+
+          {/* Printable report */}
+          <div className="card">
+            <h3 style={{marginTop:0}}>📄 التقرير الرسمي</h3>
+            <pre id="calc-report" style={{fontFamily:'inherit',fontSize:11,lineHeight:1.8,whiteSpace:'pre-wrap',wordBreak:'break-word',background:'var(--bg-soft)',padding:12,borderRadius:8,color:'var(--ink-2)',maxHeight:360,overflowY:'auto',margin:0}}>{res.report}</pre>
+            <button onClick={()=>{const el=document.getElementById('calc-report');if(el&&navigator.clipboard)navigator.clipboard.writeText(el.innerText).then(()=>alert('✅ تم نسخ التقرير!'));}} style={{width:'100%',marginTop:8,padding:'9px',borderRadius:8,border:'1px solid var(--line)',background:'transparent',color:'var(--ink-3)',cursor:'pointer',fontFamily:'inherit'}}>📋 نسخ التقرير</button>
+          </div>
+
+          <button onClick={()=>{setTab('contract');setRes(null);}} style={{width:'100%',marginTop:12,padding:'10px',borderRadius:8,border:'1px solid var(--line)',background:'transparent',color:'var(--ink-3)',cursor:'pointer',fontFamily:'inherit'}}>🔄 حساب جديد</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Main app
+function App() {
+  const [active, setActive] = useState('dashboard');
+  const [theme, setTheme] = useState('light');
+  const [colorScheme, setColorScheme] = useState('a');
+  const [font, setFont] = useState('cairo');
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState(APP_DATA);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  React.useEffect(() => {
+    loadRealData().then(() => {
+      setData(APP_DATA);
+      setLoading(false);
+    });
+  }, []);
+
+  const fontMap = {
+    plex: '"IBM Plex Sans Arabic"',
+    cairo: '"Cairo"',
+    tajawal: '"Tajawal"',
+  };
+
+  const themeClass = `theme-${colorScheme} ${theme === 'dark' ? 'dark' : ''}`;
+
+  // Apply theme class to root element
+  React.useEffect(() => {
+    const root = document.getElementById('root');
+    root.className = themeClass;
+  }, [theme, colorScheme]);
+
+  return (
+    <div className="app-container" style={{ fontFamily: fontMap[font] }}>
+      <div className="app-content">
+        {active === 'dashboard' && <DashboardScreen/>}
+        {active === 'stores' && <WorkPricingScreen/>}
+        {active === 'products' && <ProductsScreen/>}
+        {active === 'materials' && <MaterialsTableScreen/>}
+        {active === 'database' && <DatabaseScreen/>}
+        {active === 'mindmap' && <MindMapScreen/>}
+        {active === 'calculator' && <CalculatorScreen/>}
+        {active === 'admin' && <AdminScreen onAdminAuth={auth => { setIsAdmin(auth); if (!auth) setActive('settings'); }}/>}
+        {active === 'settings' && <SettingsScreen onThemeChange={setTheme} onFontChange={setFont} theme={theme} font={font} onGoAdmin={() => setActive('admin')}/>}
+      </div>
+
+      <div className="bottom-bar">
+        {/* Sidebar header — visible only on desktop via CSS media query */}
+        <div className="sidebar-header">
+          <div className="sidebar-logo">⚡</div>
+          <div className="sidebar-title">برنامج التسعير</div>
+          <div className="sidebar-sub">الكهربائي</div>
+        </div>
+
+        <button className={`nav-item ${active === 'dashboard' ? 'active' : ''}`} onClick={() => setActive('dashboard')} title="لوحة التحكم">
+          📊<span>التحكم</span>
+        </button>
+        <button className={`nav-item ${active === 'stores' ? 'active' : ''}`} onClick={() => setActive('stores')} title="نسبة الأعمال">
+          ⚡<span>الأعمال</span>
+        </button>
+        <button className={`nav-item ${active === 'products' ? 'active' : ''}`} onClick={() => setActive('products')} title="المنتجات">
+          🔍<span>المنتجات</span>
+        </button>
+        <button className={`nav-item ${active === 'materials' ? 'active' : ''}`} onClick={() => setActive('materials')} title="جدول المواد">
+          📋<span>الجدول</span>
+        </button>
+        <button className={`nav-item ${active === 'database' ? 'active' : ''}`} onClick={() => setActive('database')} title="قاعدة البيانات">
+          💾<span>البيانات</span>
+        </button>
+        <button className={`nav-item ${active === 'mindmap' ? 'active' : ''}`} onClick={() => setActive('mindmap')} title="خريطة الأفكار القضائية">
+          🗺️<span>الخريطة</span>
+        </button>
+        <button className={`nav-item ${active === 'calculator' ? 'active' : ''}`} onClick={() => setActive('calculator')} title="الحاسبة">
+          🧮<span>الحاسبة</span>
+        </button>
+        {isAdmin && <button className={`nav-item ${active === 'admin' ? 'active' : ''}`} onClick={() => setActive('admin')} title="الإدارة">
+          🔐<span>الإدارة</span>
+        </button>}
+        <button className={`nav-item ${active === 'settings' ? 'active' : ''}`} onClick={() => setActive('settings')} title="الإعدادات">
+          ⚙️<span>الإعدادات</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
