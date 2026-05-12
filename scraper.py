@@ -1,13 +1,90 @@
+"""
+scraper.py — أداة استعلام أسعار كهربائية للاستخدام الشخصي / الاستشاري فقط
+--------------------------------------------------------------------------
+القيود القانونية المطبقة:
+  1. تشغيل واحد كحد أقصى بالشهر (يُحفظ السجل في last_run.json)
+  2. يتحقق من robots.txt لكل موقع قبل الجلب — يتجاوز إذا ممنوع
+  3. User-Agent يُعرّف الأداة بوضوح وليس مموهاً
+  4. delay ≥ 3 ثوانٍ بين الصفحات — لا يُثقل الخوادم
+  5. البيانات للاستخدام الشخصي فقط — ممنوع النشر التجاري
+--------------------------------------------------------------------------
+"""
 from playwright.sync_api import sync_playwright
 import json
 import re
 import time
 from datetime import datetime
 from pathlib import Path
+from urllib.robotparser import RobotFileParser
+from urllib.parse import urlparse
 
 BASE_DIR = Path(__file__).resolve().parent
 PRODUCTS_FILE = BASE_DIR / "products_all.json"
 HISTORY_FILE = BASE_DIR / "price_history.json"
+LAST_RUN_FILE = BASE_DIR / "last_run.json"
+
+# ============================================================
+# 0) حماية قانونية — تحقق من الحد الشهري
+# ============================================================
+def _record_hash(record: dict) -> str:
+    """✅ FIX-4: hash بسيط يكشف إذا عُدّل last_run.json يدوياً."""
+    import hashlib
+    payload = f"{record.get('month','')}{record.get('timestamp','')}"
+    return hashlib.sha256(payload.encode()).hexdigest()[:20]
+
+def check_monthly_limit() -> bool:
+    """يمنع التشغيل أكثر من مرة واحدة بالشهر."""
+    from datetime import timedelta
+    now = datetime.now()
+    current_month = f"{now.year}-{str(now.month).zfill(2)}"
+
+    # ✅ FIX-1: حساب الشهر التالي بشكل صحيح (يعمل في ديسمبر)
+    first_of_next = (now.replace(day=1) + timedelta(days=32)).replace(day=1)
+    next_month = first_of_next.strftime("%Y-%m")
+
+    if LAST_RUN_FILE.exists():
+        try:
+            data = json.loads(LAST_RUN_FILE.read_text(encoding="utf-8"))
+            if data.get("month") == current_month:
+                # ✅ FIX-4: تحقق من سلامة الملف — كشف التعديل اليدوي
+                expected_hash = _record_hash(data)
+                if data.get("_hash") != expected_hash:
+                    print("[قانوني] ⚠️ تحذير: ملف last_run.json يبدو معدّلاً يدوياً — رُفض للأمان")
+                    return False
+                print(f"[قانوني] ⛔ تم التشغيل بالفعل هذا الشهر ({data.get('timestamp')})")
+                print(f"[قانوني] الحد الشهري: مرة واحدة فقط. الشهر القادم: {next_month}")
+                return False
+        except Exception:
+            pass
+    return True
+
+def record_run():
+    """يسجل تاريخ ووقت التشغيل مع hash للتحقق من السلامة."""
+    now = datetime.now()
+    record = {
+        "month": f"{now.year}-{str(now.month).zfill(2)}",
+        "timestamp": now.strftime("%Y-%m-%d %H:%M:%S"),
+        "purpose": "استخدام شخصي / استشاري",
+        "note": "تشغيل قانوني ضمن الحد الشهري"
+    }
+    record["_hash"] = _record_hash(record)  # ✅ FIX-4: إضافة hash
+    LAST_RUN_FILE.write_text(json.dumps(record, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"[قانوني] ✅ تم تسجيل التشغيل: {record['timestamp']}")
+
+def is_allowed_by_robots(base_url: str, path: str = "/") -> bool:
+    """يتحقق من robots.txt — يعيد True إذا مسموح أو غير محدد."""
+    try:
+        rp = RobotFileParser()
+        robots_url = f"{base_url.rstrip('/')}/robots.txt"
+        rp.set_url(robots_url)
+        rp.read()
+        allowed = rp.can_fetch(UA, path)
+        if not allowed:
+            print(f"[robots.txt] ⛔ {base_url} — يمنع الجلب التلقائي، تجاوز هذا الموقع")
+        return allowed
+    except Exception:
+        # إذا لم يوجد robots.txt نفترض مسموح
+        return True
 
 
 def parse_price(raw: str) -> float | None:
@@ -379,34 +456,70 @@ def update_price_history(new_products: list):
 # ============================================================
 # 7) السكريبر الشامل
 # ============================================================
+# ✅ User-Agent واضح يُعرّف الأداة — ليس مموهاً
+# يُساعد أصحاب المواقع على التعرف على الـ bot وحجبه إذا أرادوا
 UA = (
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-    "AppleWebKit/537.36 (KHTML, like Gecko) "
-    "Chrome/124.0.0.0 Safari/537.36"
+    "ElectricalPricingBot/1.0 (personal-use; monthly-crawl; "
+    "contact: admin@electrical.kw) "
+    "Mozilla/5.0 compatible"
 )
 
 
 def scrape_all():
     all_results = []
 
+    # ✅ تحقق من الحد الشهري قبل أي شيء
+    if not check_monthly_limit():
+        print("[السكريبر] ⛔ تم إيقاف التشغيل — الحد الشهري مستنفد")
+        return []
+
+    print(f"\n{'='*60}")
+    print(f"[السكريبر] بدء الجلب — {now_str()}")
+    print(f"[السكريبر] الغرض: استخدام شخصي/استشاري — مرة بالشهر")
+    print(f"{'='*60}\n")
+
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page(user_agent=UA, locale="ar-KW")
 
+        # ✅ FIX-3: sleep أولي قبل أي طلب — لا يصل بدون تأخير
+        time.sleep(3)
+
+        # ✅ FIX-2: دومين robots.txt يطابق الجلب الفعلي
         # دخيل الجسار
-        all_results.extend(scrape_jassar(page))
+        if is_allowed_by_robots("https://online.aljassar.com", "/shop/"):
+            all_results.extend(scrape_jassar(page))
+        else:
+            print("[دخيل الجسار] ⛔ تم التجاوز بسبب robots.txt")
 
-        # العربية للكهرباء
-        all_results.extend(scrape_arabian(page))
+        # العربية للكهرباء — تجرب دومينين فالأمر غير محدد مسبقاً
+        # نفحص الاثنين ونكتفي بمن يُجيب أولاً
+        arabian_allowed = (
+            is_allowed_by_robots("https://arabianelectrical.com", "/") or
+            is_allowed_by_robots("https://www.arabian-electric.com", "/")
+        )
+        if arabian_allowed:
+            all_results.extend(scrape_arabian(page))
+        else:
+            print("[العربية للكهرباء] ⛔ تم التجاوز بسبب robots.txt")
 
-        # Extra Kuwait
-        all_results.extend(scrape_extra(page))
+        # Extra Kuwait — ✅ FIX-2: الدومين الكويتي الفعلي
+        if is_allowed_by_robots("https://www.extra.com.kw", "/"):
+            all_results.extend(scrape_extra(page))
+        else:
+            print("[Extra] ⛔ تم التجاوز بسبب robots.txt")
 
-        # اكسايت الغانم
-        all_results.extend(scrape_xcite(page))
+        # اكسايت الغانم — ✅ FIX-2: xcite.com.kw وليس xcite.com
+        if is_allowed_by_robots("https://www.xcite.com.kw", "/"):
+            all_results.extend(scrape_xcite(page))
+        else:
+            print("[اكسايت] ⛔ تم التجاوز بسبب robots.txt")
 
-        # يوبي
-        all_results.extend(scrape_youbi(page))
+        # يوبي — ✅ FIX-2: ubay.com وليس ubay.com.kw
+        if is_allowed_by_robots("https://www.ubay.com", "/"):
+            all_results.extend(scrape_youbi(page))
+        else:
+            print("[يوبي] ⛔ تم التجاوز بسبب robots.txt")
 
         browser.close()
 
@@ -419,8 +532,11 @@ def scrape_all():
 
     print(f"[السكريبر] تم حفظ {len(all_results)} منتج في {PRODUCTS_FILE}")
 
+    # ✅ سجّل التشغيل بعد النجاح فقط
+    record_run()
     update_price_history(all_results)
 
+    print(f"\n[السكريبر] ✅ اكتمل بنجاح — {now_str()}")
     return all_results
 
 

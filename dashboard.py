@@ -52,6 +52,7 @@ st.set_page_config(
     layout="wide",
 )
 
+
 # ─────────────────────────────────────────────────────────────────
 # CSS — Minimal Cream Theme (inspired by modern analytics UI)
 # ─────────────────────────────────────────────────────────────────
@@ -130,6 +131,36 @@ section[data-testid="stSidebar"] .stButton button {
 }
 section[data-testid="stSidebar"] .stButton button:hover { background: var(--border) !important; }
 section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] { color: var(--t3) !important; font-size: 0.72rem !important; }
+
+/* ══ Hide Streamlit branding & footer ════════════════════════ */
+#MainMenu,
+footer,
+footer *,
+[data-testid="stFooter"],
+[data-testid="stToolbar"],
+[data-testid="stToolbarActions"],
+[data-testid="stDecoration"],
+[data-testid="stStatusWidget"],
+[data-testid="manage-app-button"],
+[data-testid="stBaseButton-minimal"],
+[data-testid="stAppDeployButton"],
+.viewerBadge_container__1QSob,
+.viewerBadge_link__1S137,
+header[data-testid="stHeader"],
+.stDeployButton,
+.stAppDeployButton,
+div[data-testid="collapsedControl"],
+button[title*="Manage"],
+button[title*="Deploy"],
+button[kind="minimal"],
+div[class*="ToolbarActions"],
+div[class*="toolbarActions"],
+div[class*="StatusWidget"],
+div[class*="toolbar"] button { display: none !important; visibility: hidden !important; height: 0 !important; overflow: hidden !important; pointer-events: none !important; }
+
+/* Remove bottom padding Streamlit adds for the footer */
+.block-container { padding-bottom: 1rem !important; }
+.main .block-container { margin-bottom: 0 !important; }
 
 /* ══ Hide collapse buttons ══════════════════════════════════════ */
 [data-testid="stSidebarCollapseButton"],
@@ -451,7 +482,7 @@ def reload_all():
 
 
 # ─────────────────────────────────────────────────────────────────
-# ACTIONS (local only)
+# ACTIONS (local only) — تحديث شهري محمي بكلمة سر
 # ─────────────────────────────────────────────────────────────────
 def run_update(run_ai: bool = False):
     steps = [BASE_DIR / "scraper.py", BASE_DIR / "matcher.py"]
@@ -544,12 +575,40 @@ with st.sidebar:
         if st.button("♻️ مسح الكاش", use_container_width=True):
             reload_all(); st.rerun()
     else:
+        # ─── Admin-only monthly update ──────────────────────────
+        from scheduler import can_run_this_month, run_monthly_update
+
         with st.popover("⚙️ تحديث البيانات", use_container_width=True):
-            st.markdown("**خيارات التحديث**")
-            if st.button("🔄 تحديث البيانات فقط", use_container_width=True):
-                run_update(run_ai=False)
-            if st.button("🤖 تحديث + توصيف الأعمال", use_container_width=True):
-                run_update(run_ai=True)
+            st.markdown("**التحديث الشهري**")
+            st.caption(
+                "⚖️ يُسمح بمرة واحدة فقط بالشهر — التزاماً بسياسات المتاجر "
+                "وقواعس robots.txt."
+            )
+
+            allowed, msg = can_run_this_month()
+            if not allowed:
+                st.warning(f"⛔ {msg}")
+            else:
+                st.success("✅ يُسمح بالتشغيل هذا الشهر")
+
+            agree = st.checkbox(
+                "أُقرّ بأن الاستخدام شخصي/استشاري، "
+                "وأن البيانات لن تُنشَر تجارياً.",
+                key="admin_legal_agree",
+            )
+
+            disabled = (not allowed) or (not agree)
+            if st.button("🔄 تشغيل التحديث الشهري", use_container_width=True, disabled=disabled):
+                with st.spinner("جاري التحديث الشهري ..."):
+                    res = run_monthly_update()
+                if res.get("ok"):
+                    reload_all()
+                    st.success("✅ تم التحديث الشهري بنجاح")
+                    st.rerun()
+                else:
+                    st.error(f"❌ {res.get('msg','فشل التحديث')}")
+
+            st.divider()
             if st.button("♻️ مسح الكاش", use_container_width=True):
                 reload_all(); st.rerun()
 
