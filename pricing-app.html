@@ -795,6 +795,7 @@ button{
 @keyframes auth-spin { to{transform:rotate(360deg)} }
 .auth-logo-bolt { animation:auth-bolt-pulse 3.6s ease-in-out infinite; }
 @keyframes auth-bolt-pulse { 0%,100%{transform:rotate(-2deg) scale(1);filter:drop-shadow(0 0 0 rgba(196,154,85,0))} 50%{transform:rotate(2deg) scale(1.04);filter:drop-shadow(0 0 14px rgba(196,154,85,.55))} }
+@keyframes fadeSlideDown { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
 
 /* CTA button */
 .auth-cta-btn { height:52px;width:100%;border-radius:12px;border:none; background:var(--auth-ink);color:var(--auth-bg); font-family:inherit;font-size:14.5px;font-weight:600;cursor:pointer; display:flex;align-items:center;justify-content:center;gap:8px; position:relative;overflow:hidden; transition:transform .15s,box-shadow .25s; box-shadow:0 4px 14px -4px rgba(20,15,5,.35); }
@@ -1504,139 +1505,459 @@ function Icon({ name, size = 24 }) {
   return <span style={{ fontSize: size }}>{icons[name] || '•'}</span>;
 }
 
-// Dashboard Product Search Component
-function DashboardProductSearch() {
-  const [searchTerm, setSearchTerm] = React.useState('');
-  const [selectedStore, setSelectedStore] = React.useState('');
-
-  const filtered = APP_DATA.materials.filter(m => {
-    const matchesSearch = m.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStore = !selectedStore || m.store === selectedStore;
-    return matchesSearch && matchesStore;
-  });
-
-  return (
-    <div className="card" style={{ margin: '16px', background: 'linear-gradient(135deg, rgba(255, 107, 107, 0.05) 0%, rgba(148, 150, 218, 0.05) 100%)' }}>
-      <h3 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 700, color: '#FF6B6B' }}>🔍 محرك البحث عن المنتجات</h3>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
-        <input
-          type="text"
-          placeholder="ابحث عن منتج..."
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-          style={{ padding: '10px', borderRadius: '8px', border: '1px solid var(--line)', background: 'var(--bg)', color: 'var(--ink)' }}
-        />
-        <select
-          value={selectedStore}
-          onChange={e => setSelectedStore(e.target.value)}
-          style={{ padding: '10px', borderRadius: '8px', border: '1px solid var(--line)', background: 'var(--bg)', color: 'var(--ink)' }}
-        >
-          <option value="">جميع المتاجر</option>
-          {APP_DATA.stores.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
-        </select>
-      </div>
-
-      <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-        {filtered.length === 0 ? (
-          <p style={{ textAlign: 'center', color: 'var(--ink-3)', margin: '20px 0' }}>لا توجد منتجات مطابقة</p>
-        ) : (
-          <div style={{ display: 'grid', gap: '10px' }}>
-            {filtered.slice(0, 8).map(m => (
-              <div key={m.id} style={{ padding: '10px', background: 'var(--surface)', borderRadius: '8px', border: '1px solid var(--line)' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 600, color: 'var(--ink)', marginBottom: '4px' }}>{m.name}</div>
-                    <div style={{ fontSize: '12px', color: 'var(--ink-3)' }}>📍 {m.store}</div>
-                  </div>
-                  <div style={{ textAlign: 'left', minWidth: '70px' }}>
-                    <div style={{ fontWeight: 600, color: '#FF6B6B', fontSize: '14px' }}>{toEnglishNumbers(m.price.toFixed(2))} د.ك</div>
-                    <div style={{ fontSize: '11px', color: 'var(--ink-3)' }}>متوفر</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-            {filtered.length > 8 && (
-              <div style={{ textAlign: 'center', color: 'var(--ink-3)', fontSize: '12px', marginTop: '8px' }}>
-                عدد النتائج: {toEnglishNumbers(filtered.length)}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 // Dashboard screen
 function DashboardScreen() {
+  // Pricing Engine state
+  const [items, setItems] = React.useState([
+    { id:1, name:'كيبل كهربائي NYY 3×2.5mm', cQty:'100', eQty:'80', cPrice:'2.50', mPrice:'1.85' },
+    { id:2, name:'مفتاح كهربائي مفرد 16A Legrand', cQty:'50', eQty:'45', cPrice:'3.50', mPrice:'2.75' },
+    { id:3, name:'برياز مزدوج 13A Schneider', cQty:'30', eQty:'30', cPrice:'2.90', mPrice:'3.20' },
+  ]);
+  const [activeItem, setActiveItem]   = React.useState(null);
+  // Products table state
+  const [searchTerm, setSearchTerm]   = React.useState('');
+  const [sortHighest, setSortHighest] = React.useState(true);
+
   if (APP_DATA.loading) {
-    return <div style={{ padding: '16px', textAlign: 'center', color: 'var(--ink-3)' }}>جاري تحميل البيانات...</div>;
+    return <div style={{ padding: '40px', textAlign: 'center', color: 'var(--ink-3)' }}>⚡ جاري التحميل...</div>;
   }
 
+  // ── Pricing Engine helpers ────────────────────────────────────────────────
+  function addRow() {
+    var newId = Date.now();
+    setItems(function(prev) { return prev.concat([{ id:newId, name:'', cQty:'', eQty:'', cPrice:'', mPrice:'' }]); });
+  }
+  function removeRow(id) {
+    setItems(function(prev) { return prev.length > 1 ? prev.filter(function(x){ return x.id !== id; }) : prev; });
+    if (activeItem && activeItem.id === id) setActiveItem(null);
+  }
+  function updateRow(id, field, val) {
+    setItems(function(prev) {
+      return prev.map(function(item) {
+        if (item.id !== id) return item;
+        var u = { id:item.id, name:item.name, cQty:item.cQty, eQty:item.eQty, cPrice:item.cPrice, mPrice:item.mPrice };
+        u[field] = val;
+        return u;
+      });
+    });
+  }
+  function calcDev(item) {
+    var cp = parseFloat(item.cPrice)||0, mp = parseFloat(item.mPrice)||0;
+    if (!cp || !mp) return null;
+    return (cp - mp) / mp * 100;
+  }
+  function findMarketPrices(name) {
+    if (!name || name.trim().length < 3) return [];
+    var words = name.toLowerCase().trim().split(/\s+/).filter(function(w){ return w.length > 2; });
+    var sourceMap = {};
+    EMBEDDED_PRODUCTS.forEach(function(p) {
+      var matched = words.filter(function(w){ return p.name.toLowerCase().includes(w); }).length;
+      if (matched >= 2) {
+        if (!sourceMap[p.store]) sourceMap[p.store] = [];
+        sourceMap[p.store].push(p.price);
+      }
+    });
+    return Object.keys(sourceMap).slice(0,3).map(function(store) {
+      var prices = sourceMap[store];
+      return { store:store, price:Math.round(prices.reduce(function(a,b){return a+b;},0)/prices.length*100)/100 };
+    });
+  }
+
+  // ── Pricing summary ───────────────────────────────────────────────────────
+  var overItems  = items.filter(function(i){ var d=calcDev(i); return d!==null && d>5; });
+  var underItems = items.filter(function(i){ var d=calcDev(i); return d!==null && d<-5; });
+  var fairItems  = items.filter(function(i){ var d=calcDev(i); return d!==null && Math.abs(d)<=5; });
+  var totalContractVal = items.reduce(function(s,i){ return s+(parseFloat(i.cPrice)||0)*(parseFloat(i.eQty)||0); },0);
+  var totalMarketVal   = items.reduce(function(s,i){ return s+(parseFloat(i.mPrice)||0)*(parseFloat(i.eQty)||0); },0);
+  var totalDiff        = Math.round((totalContractVal - totalMarketVal)*100)/100;
+  var activePrices     = activeItem ? findMarketPrices(activeItem.name) : [];
+
+  var products = EMBEDDED_PRODUCTS;
+  var allPrices = products.map(function(p) { return p.price; });
+  var maxPriceVal = allPrices.length > 0 ? Math.max.apply(null, allPrices) : 0;
+
+  // ── Category detection ──────────────────────────────────────────────────────
+  var CAT_RULES = [
+    { key: 'كابلات',  label: 'كابلات',  color: '#4A90D9', test: function(n) { return /كيبل|كابل|cable|nyy/i.test(n); } },
+    { key: 'إضاءة',  label: 'إضاءة',   color: '#F5A623', test: function(n) { return /لمب|led|اضاء|إضاء|ضوء|سبوت|تراك|شريط/i.test(n); } },
+    { key: 'تكييف',  label: 'تكييف',   color: '#4ECDC4', test: function(n) { return /مكيف|تكييف|ترموستات|thermostat/i.test(n); } },
+    { key: 'حماية',  label: 'حماية',   color: '#FF6B6B', test: function(n) { return /قاطع|mcb|rcd|حماية|رله|انذار|حريق|دخان/i.test(n); } },
+    { key: 'مقابس',  label: 'مقابس',   color: '#7ED321', test: function(n) { return /برياز|مقبس|مفتاح|وصلة|socket|switch/i.test(n); } },
+    { key: 'لوحات',  label: 'لوحات',   color: '#F8632B', test: function(n) { return /لوحة|panel/i.test(n); } },
+    { key: 'طاقة',   label: 'طاقة',    color: '#9B59B6', test: function(n) { return /ups|مولد|طاقة|شمس|power|battery/i.test(n); } },
+  ];
+
+  function detectCategory(name) {
+    for (var ci = 0; ci < CAT_RULES.length; ci++) {
+      if (CAT_RULES[ci].test(name)) return CAT_RULES[ci];
+    }
+    return { key: 'أخرى', label: 'أخرى', color: '#9E9E9E' };
+  }
+
+  // ── Filtered & sorted table products ────────────────────────────────────────
+  var lowerSearch = searchTerm.toLowerCase();
+  var filtered = products.filter(function(p) {
+    if (!lowerSearch) return true;
+    return p.name.toLowerCase().includes(lowerSearch) || p.store.toLowerCase().includes(lowerSearch);
+  });
+  var sorted = filtered.slice().sort(function(a, b) {
+    return sortHighest ? b.price - a.price : a.price - b.price;
+  });
+  var tableRows = sorted.slice(0, 12);
+
+  // ── KPI values ───────────────────────────────────────────────────────────────
+  var totalProducts = products.length;
+  var uniqueStores = APP_DATA.stores.length;
+  var avgPrice = APP_DATA.kpis.avgPrice;
+  var highestPrice = maxPriceVal;
+
+  // ── Bar chart: products per store ────────────────────────────────────────────
+  var storeColors = ['#FF6B6B', '#4ECDC4', '#AA96DA', '#F5A623', '#7ED321', '#4A90D9', '#F8632B'];
+  var storeChartData = APP_DATA.stores.map(function(s, si) {
+    return { name: s.name, count: s.productCount, color: storeColors[si % storeColors.length] };
+  });
+  var maxStoreCount = storeChartData.length > 0 ? Math.max.apply(null, storeChartData.map(function(d) { return d.count; })) : 1;
+  var barW = 600;
+  var barH = 200;
+  var barPad = 40;
+  var barSlot = storeChartData.length > 0 ? Math.floor((barW - barPad * 2) / storeChartData.length) : 60;
+  var barWidth = Math.max(10, barSlot - 12);
+
+  // ── Histogram: price distribution ────────────────────────────────────────────
+  var buckets = [
+    { label: '0-5',    min: 0,   max: 5,        color: '#4ECDC4' },
+    { label: '5-20',   min: 5,   max: 20,       color: '#AA96DA' },
+    { label: '20-50',  min: 20,  max: 50,       color: '#F5A623' },
+    { label: '50-100', min: 50,  max: 100,      color: '#FF6B6B' },
+    { label: '100+',   min: 100, max: Infinity, color: '#F8632B' },
+  ];
+  buckets.forEach(function(b) {
+    b.count = products.filter(function(p) { return p.price >= b.min && p.price < b.max; }).length;
+  });
+  var maxBucketCount = Math.max.apply(null, buckets.map(function(b) { return b.count; })) || 1;
+  var histSlot = Math.floor((barW - barPad * 2) / buckets.length);
+  var histBarW = histSlot - 12;
+
+  // ── Category breakdown ────────────────────────────────────────────────────────
+  var catMap = {};
+  products.forEach(function(p) {
+    var cat = detectCategory(p.name);
+    if (!catMap[cat.key]) catMap[cat.key] = { label: cat.label, color: cat.color, count: 0 };
+    catMap[cat.key].count++;
+  });
+  var catList = Object.values(catMap).sort(function(a, b) { return b.count - a.count; });
+  var maxCatCount = catList.length > 0 ? catList[0].count : 1;
+
   return (
-    <div style={{ padding: '8px 16px 24px' }}>
-      {/* Greeting card */}
-      <div style={{
-        background: 'linear-gradient(135deg, #FF6B6B 0%, #FF8E72 100%)',
-        color: 'white',
-        borderRadius: 16, padding: 16, marginBottom: 16,
-      }}>
-        <div style={{ fontSize: 12, opacity: 0.9 }}>🔔 صباح الخير، مراقب الأسعار</div>
-        <div style={{ fontSize: 14, fontWeight: 500, marginTop: 4 }}>إليك ملخص أسعار المنتجات الكهربائية</div>
-        <div style={{ fontSize: 32, fontWeight: 700, marginTop: 12 }} className="num">{fmt(APP_DATA.kpis.totalProducts)}</div>
-        <div style={{ fontSize: 11, opacity: 0.85 }}>📊 إجمالي المنتجات المرصودة</div>
+    <div style={{ padding:'14px 14px 36px' }}>
+
+      {/* ══════════════════════════════════════════════════════ */}
+      {/*  ⚡ PRICING ENGINE — محرك التسعير                     */}
+      {/* ══════════════════════════════════════════════════════ */}
+
+      {/* Header */}
+      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
+        <div>
+          <div style={{ fontSize:17, fontWeight:800, color:'var(--ink)', letterSpacing:'-0.3px' }}>⚡ محرك التسعير</div>
+          <div style={{ fontSize:11, color:'var(--ink-4)', marginTop:2 }}>أثبت المبالغة · قارن السوق · احسب الانحراف</div>
+        </div>
+        <button onClick={addRow} style={{
+          padding:'8px 16px', borderRadius:99, background:'var(--accent)', color:'var(--bg)',
+          fontSize:12, fontWeight:700, border:'none', cursor:'pointer', fontFamily:'inherit',
+        }}>+ إضافة بند</button>
       </div>
 
-      {/* KPI grid */}
-      <div className="kpi-grid">
-        <div className="kpi-card" style={{ borderLeft: '4px solid #4ECDC4', background: 'linear-gradient(135deg, rgba(78, 205, 196, 0.1) 0%, transparent 100%)' }}>
-          <div style={{ fontWeight: 600, fontSize: 18, color: '#4ECDC4' }}>🏪 {APP_DATA.kpis.uniqueStores}</div>
-          <div style={{ color: 'var(--ink-3)', marginTop: 4 }}>متاجر مراقبة</div>
+      {/* Summary KPIs */}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, marginBottom:14 }}>
+        <div style={{ borderRadius:12, padding:'12px 12px', background:'rgba(255,107,107,0.07)', border:'1px solid rgba(255,107,107,0.25)', borderRight:'3px solid #FF6B6B' }}>
+          <div style={{ fontSize:22, fontWeight:800, color:'#FF6B6B', lineHeight:1 }} className="num">{toEnglishNumbers(String(overItems.length))}</div>
+          <div style={{ fontSize:10, color:'var(--ink-4)', marginTop:5, lineHeight:1.4 }}>بند مبالغ فيه<br/><span style={{fontSize:9}}>Overpriced</span></div>
         </div>
-        <div className="kpi-card" style={{ borderLeft: '4px solid #95E1D3', background: 'linear-gradient(135deg, rgba(149, 225, 211, 0.1) 0%, transparent 100%)' }}>
-          <div style={{ fontWeight: 600, fontSize: 18, color: '#95E1D3' }}>💰 {fmt(APP_DATA.kpis.avgPrice)}</div>
-          <div style={{ color: 'var(--ink-3)', marginTop: 4 }}>متوسط السعر (د.ك)</div>
+        <div style={{ borderRadius:12, padding:'12px 12px', background:'rgba(126,211,33,0.07)', border:'1px solid rgba(126,211,33,0.25)', borderRight:'3px solid #7ED321' }}>
+          <div style={{ fontSize:22, fontWeight:800, color:'#7ED321', lineHeight:1 }} className="num">{toEnglishNumbers(String(underItems.length))}</div>
+          <div style={{ fontSize:10, color:'var(--ink-4)', marginTop:5, lineHeight:1.4 }}>بند أقل سعراً<br/><span style={{fontSize:9}}>Underpriced</span></div>
         </div>
-        <div className="kpi-card" style={{ borderLeft: '4px solid #F38181', background: 'linear-gradient(135deg, rgba(243, 129, 129, 0.1) 0%, transparent 100%)' }}>
-          <div style={{ fontWeight: 600, fontSize: 18, color: '#F38181' }}>📈 {APP_DATA.kpis.priceRange}</div>
-          <div style={{ color: 'var(--ink-3)', marginTop: 4 }}>نطاق السعر (د.ك)</div>
+        <div style={{ borderRadius:12, padding:'12px 12px', background:'rgba(245,166,35,0.07)', border:'1px solid rgba(245,166,35,0.25)', borderRight:'3px solid #F5A623' }}>
+          <div style={{ fontSize:22, fontWeight:800, color:'#F5A623', lineHeight:1 }} className="num">{toEnglishNumbers(String(fairItems.length))}</div>
+          <div style={{ fontSize:10, color:'var(--ink-4)', marginTop:5, lineHeight:1.4 }}>بند عادل<br/><span style={{fontSize:9}}>Fair Price</span></div>
         </div>
-        <div className="kpi-card" style={{ borderLeft: '4px solid #AA96DA', background: 'linear-gradient(135deg, rgba(170, 150, 218, 0.1) 0%, transparent 100%)' }}>
-          <div style={{ fontWeight: 600, fontSize: 18, color: '#AA96DA' }}>📦 {APP_DATA.materials.length}</div>
-          <div style={{ color: 'var(--ink-3)', marginTop: 4 }}>أنواع مختلفة</div>
+        <div style={{ borderRadius:12, padding:'12px 12px', background: totalDiff>0?'rgba(255,107,107,0.07)':'rgba(126,211,33,0.07)', border: '1px solid '+(totalDiff>0?'rgba(255,107,107,0.25)':'rgba(126,211,33,0.25)'), borderRight:'3px solid '+(totalDiff>0?'#FF6B6B':'#7ED321') }}>
+          <div style={{ fontSize:18, fontWeight:800, color: totalDiff>0?'#FF6B6B':'#7ED321', lineHeight:1 }} className="num">
+            {totalDiff>0?'+':''}{toEnglishNumbers(fmt(Math.abs(totalDiff)))}
+          </div>
+          <div style={{ fontSize:10, color:'var(--ink-4)', marginTop:5, lineHeight:1.4 }}>
+            {totalDiff>0?'لصالح المقاول':'لصالح الجهة'}<br/><span style={{fontSize:9}}>د.ك إجمالي فرق</span>
+          </div>
         </div>
       </div>
 
-      {/* Product Search Engine */}
-      <DashboardProductSearch />
-
-      {/* Stores list */}
-      <div className="card" style={{ margin: '16px' }}>
-        <h3 style={{ margin: '0 0 16px', fontSize: 15, fontWeight: 700, color: 'var(--accent)' }}>🏢 المتاجر المراقبة</h3>
-        <div className="table-container">
-          <table>
+      {/* ── Pricing Table ── */}
+      <div style={{ background:'var(--surface)', borderRadius:14, border:'1px solid var(--line)', overflow:'hidden', marginBottom:14 }}>
+        <div style={{ overflowX:'auto' }}>
+          <table style={{ width:'100%', borderCollapse:'collapse', fontSize:12 }}>
             <thead>
-              <tr style={{ background: 'linear-gradient(135deg, #FF6B6B 0%, #FF8E72 100%)', color: 'white' }}>
-                <th style={{ color: 'white' }}>اسم المتجر</th>
-                <th style={{ color: 'white' }}>عدد المنتجات</th>
-                <th style={{ color: 'white' }}>متوسط السعر</th>
-                <th style={{ color: 'white' }}>الحالة</th>
+              <tr style={{ background:'var(--bg-soft)', borderBottom:'2px solid var(--line)' }}>
+                <th style={{ padding:'10px 8px', textAlign:'right', color:'var(--ink-4)', fontWeight:600, fontSize:10, width:28 }}>#</th>
+                <th style={{ padding:'10px 8px', textAlign:'right', color:'var(--ink-4)', fontWeight:600, fontSize:10, minWidth:170 }}>اسم البند / المادة</th>
+                <th style={{ padding:'10px 6px', textAlign:'center', color:'var(--ink-4)', fontWeight:600, fontSize:10, whiteSpace:'nowrap' }}>الكمية<br/><span style={{fontWeight:400,fontSize:9,color:'var(--ink-4)'}}>التعاقدية</span></th>
+                <th style={{ padding:'10px 6px', textAlign:'center', color:'var(--ink-4)', fontWeight:600, fontSize:10, whiteSpace:'nowrap' }}>الكمية<br/><span style={{fontWeight:400,fontSize:9,color:'var(--ink-4)'}}>المنفذة</span></th>
+                <th style={{ padding:'10px 6px', textAlign:'center', color:'var(--ink-4)', fontWeight:600, fontSize:10, whiteSpace:'nowrap', background:'rgba(255,107,107,0.04)' }}>السعر<br/><span style={{fontWeight:400,fontSize:9,color:'var(--ink-4)'}}>التعاقدي</span></th>
+                <th style={{ padding:'10px 6px', textAlign:'center', color:'var(--ink-4)', fontWeight:600, fontSize:10, whiteSpace:'nowrap', background:'rgba(78,205,196,0.05)' }}>السعر<br/><span style={{fontWeight:400,fontSize:9,color:'var(--ink-4)'}}>السوقي</span></th>
+                <th style={{ padding:'10px 6px', textAlign:'center', color:'var(--ink-4)', fontWeight:600, fontSize:10 }}>الانحراف %</th>
+                <th style={{ padding:'10px 6px', textAlign:'center', color:'var(--ink-4)', fontWeight:600, fontSize:10 }}>المؤشر</th>
+                <th style={{ padding:'10px 6px', textAlign:'center', color:'var(--ink-4)', fontWeight:600, fontSize:10, width:50 }}>مقارنة</th>
+                <th style={{ width:28 }}></th>
               </tr>
             </thead>
             <tbody>
-              {APP_DATA.stores.map((s, idx) => (
-                <tr key={s.id} style={{ background: idx % 2 === 0 ? 'transparent' : 'var(--bg-soft)' }}>
-                  <td><strong style={{ color: '#FF6B6B' }}>🏪 {s.name}</strong></td>
-                  <td style={{ fontSize: 14, fontWeight: 600, color: '#4ECDC4' }}>{s.productCount}</td>
-                  <td className="num" style={{ color: '#95E1D3', fontWeight: 600 }}>{fmt(s.avgPrice)} د.ك</td>
-                  <td><span className={`badge badge-${s.productCount > 20 ? 'pos' : 'info'}`}>✅ نشط</span></td>
+              {items.map(function(item, ri) {
+                var dev = calcDev(item);
+                var isOver  = dev !== null && dev > 5;
+                var isUnder = dev !== null && dev < -5;
+                var isFair  = dev !== null && Math.abs(dev) <= 5;
+                var devColor = isOver ? '#FF6B6B' : isUnder ? '#7ED321' : isFair ? '#F5A623' : 'var(--ink-4)';
+                var isActive = activeItem && activeItem.id === item.id;
+                var rowBg = isActive ? 'rgba(78,205,196,0.07)' : (ri%2===0 ? 'transparent' : 'var(--bg-soft)');
+                return (
+                  <tr key={item.id}
+                    style={{ borderBottom:'1px solid var(--line)', background:rowBg, transition:'background 0.1s' }}
+                    onMouseEnter={function(e){ if(!isActive) e.currentTarget.style.background='rgba(0,0,0,0.03)'; }}
+                    onMouseLeave={function(e){ e.currentTarget.style.background=rowBg; }}
+                  >
+                    {/* # */}
+                    <td style={{ padding:'8px 8px', color:'var(--ink-4)', fontSize:11, fontWeight:600 }}>{toEnglishNumbers(String(ri+1))}</td>
+
+                    {/* Name input */}
+                    <td style={{ padding:'6px 8px' }}>
+                      <input value={item.name}
+                        onChange={function(e){ updateRow(item.id,'name',e.target.value); }}
+                        placeholder="اسم البند أو المادة..."
+                        style={{ width:'100%', padding:'6px 8px', borderRadius:7, border:'1px solid var(--line)', background:'var(--bg)', color:'var(--ink)', fontSize:12, fontFamily:'inherit', outline:'none' }}
+                      />
+                    </td>
+
+                    {/* Contract Qty */}
+                    <td style={{ padding:'6px 4px', background:'rgba(255,107,107,0.02)' }}>
+                      <input type="number" min="0" value={item.cQty}
+                        onChange={function(e){ updateRow(item.id,'cQty',e.target.value); }}
+                        style={{ width:64, padding:'6px 6px', borderRadius:7, border:'1px solid var(--line)', background:'var(--bg)', color:'var(--ink)', fontSize:12, textAlign:'center', fontFamily:'inherit', outline:'none' }}
+                      />
+                    </td>
+
+                    {/* Executed Qty */}
+                    <td style={{ padding:'6px 4px' }}>
+                      <input type="number" min="0" value={item.eQty}
+                        onChange={function(e){ updateRow(item.id,'eQty',e.target.value); }}
+                        style={{ width:64, padding:'6px 6px', borderRadius:7, border:'1px solid var(--line)', background:'var(--bg)', color:'var(--ink)', fontSize:12, textAlign:'center', fontFamily:'inherit', outline:'none' }}
+                      />
+                    </td>
+
+                    {/* Contract Price */}
+                    <td style={{ padding:'6px 4px', background:'rgba(255,107,107,0.02)' }}>
+                      <div style={{ display:'flex', alignItems:'center', gap:2, justifyContent:'center' }}>
+                        <input type="number" min="0" step="0.01" value={item.cPrice}
+                          onChange={function(e){ updateRow(item.id,'cPrice',e.target.value); }}
+                          style={{ width:68, padding:'6px 6px', borderRadius:7, border:'1px solid rgba(255,107,107,0.3)', background:'rgba(255,107,107,0.04)', color:'var(--ink)', fontSize:12, textAlign:'center', fontFamily:'inherit', outline:'none' }}
+                        />
+                      </div>
+                    </td>
+
+                    {/* Market Price */}
+                    <td style={{ padding:'6px 4px', background:'rgba(78,205,196,0.03)' }}>
+                      <input type="number" min="0" step="0.01" value={item.mPrice}
+                        onChange={function(e){ updateRow(item.id,'mPrice',e.target.value); }}
+                        style={{ width:68, padding:'6px 6px', borderRadius:7, border:'1px solid rgba(78,205,196,0.35)', background:'rgba(78,205,196,0.06)', color:'var(--ink)', fontSize:12, textAlign:'center', fontFamily:'inherit', outline:'none' }}
+                      />
+                    </td>
+
+                    {/* Deviation */}
+                    <td style={{ padding:'8px 6px', textAlign:'center' }}>
+                      {dev !== null ? (
+                        <div style={{ fontWeight:800, fontSize:14, color:devColor }} className="num">
+                          {dev>0?'+':''}{toEnglishNumbers(dev.toFixed(1))}%
+                        </div>
+                      ) : <span style={{ color:'var(--ink-4)', fontSize:13 }}>—</span>}
+                    </td>
+
+                    {/* Indicator badge */}
+                    <td style={{ padding:'8px 6px', textAlign:'center', whiteSpace:'nowrap' }}>
+                      {isOver  && <span style={{ display:'inline-flex', alignItems:'center', gap:3, padding:'4px 9px', borderRadius:99, background:'rgba(255,107,107,0.15)', color:'#FF6B6B', fontSize:10, fontWeight:700, border:'1px solid rgba(255,107,107,0.3)' }}>↑ مبالغ</span>}
+                      {isUnder && <span style={{ display:'inline-flex', alignItems:'center', gap:3, padding:'4px 9px', borderRadius:99, background:'rgba(126,211,33,0.15)', color:'#7ED321', fontSize:10, fontWeight:700, border:'1px solid rgba(126,211,33,0.3)' }}>↓ أقل</span>}
+                      {isFair  && <span style={{ display:'inline-flex', alignItems:'center', gap:3, padding:'4px 9px', borderRadius:99, background:'rgba(245,166,35,0.15)', color:'#F5A623', fontSize:10, fontWeight:700, border:'1px solid rgba(245,166,35,0.3)' }}>✓ عادل</span>}
+                      {dev === null && <span style={{ color:'var(--ink-4)', fontSize:12 }}>—</span>}
+                    </td>
+
+                    {/* Compare toggle */}
+                    <td style={{ padding:'8px 4px', textAlign:'center' }}>
+                      <button
+                        onClick={function(){ setActiveItem(isActive ? null : item); }}
+                        style={{ padding:'5px 10px', borderRadius:99, border: isActive?'1.5px solid #4ECDC4':'1px solid var(--line)', background: isActive?'rgba(78,205,196,0.15)':'transparent', color: isActive?'#4ECDC4':'var(--ink-3)', fontSize:11, cursor:'pointer', fontFamily:'inherit', fontWeight:700 }}
+                      >{isActive ? '✕' : '🔍'}</button>
+                    </td>
+
+                    {/* Delete */}
+                    <td style={{ padding:'8px 4px', textAlign:'center' }}>
+                      <button onClick={function(){ removeRow(item.id); }}
+                        style={{ padding:'4px 8px', borderRadius:6, border:'none', background:'rgba(255,107,107,0.1)', color:'#FF6B6B', fontSize:11, cursor:'pointer', fontFamily:'inherit' }}>✕</button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+            {/* Totals footer */}
+            {(totalContractVal > 0 || totalMarketVal > 0) && (
+              <tfoot>
+                <tr style={{ background:'var(--bg-soft)', borderTop:'2px solid var(--line)' }}>
+                  <td colSpan="4" style={{ padding:'9px 8px', fontWeight:700, color:'var(--ink-3)', fontSize:11 }}>الإجمالي</td>
+                  <td style={{ padding:'9px 6px', textAlign:'center', fontWeight:800, color:'#FF6B6B', fontSize:13 }} className="num">
+                    {toEnglishNumbers(fmt(totalContractVal))} <span style={{fontSize:9,fontWeight:400,color:'var(--ink-4)'}}>د.ك</span>
+                  </td>
+                  <td style={{ padding:'9px 6px', textAlign:'center', fontWeight:800, color:'#4ECDC4', fontSize:13 }} className="num">
+                    {toEnglishNumbers(fmt(totalMarketVal))} <span style={{fontSize:9,fontWeight:400,color:'var(--ink-4)'}}>د.ك</span>
+                  </td>
+                  <td colSpan="4" style={{ padding:'9px 8px', textAlign:'center', fontWeight:800, color: totalDiff>0?'#FF6B6B':'#7ED321', fontSize:13 }} className="num">
+                    {totalDiff!==0 ? ((totalDiff>0?'زيادة +':'وفر ')+toEnglishNumbers(fmt(Math.abs(totalDiff)))+' د.ك') : '—'}
+                  </td>
                 </tr>
-              ))}
+              </tfoot>
+            )}
+          </table>
+        </div>
+        <div style={{ padding:'10px 12px', borderTop:'1px solid var(--line)' }}>
+          <button onClick={addRow} style={{ width:'100%', padding:'8px', borderRadius:8, border:'2px dashed var(--line)', background:'transparent', color:'var(--ink-3)', fontSize:12, cursor:'pointer', fontFamily:'inherit', fontWeight:600 }}>
+            + إضافة بند جديد
+          </button>
+        </div>
+      </div>
+
+      {/* ── Market Comparison Panel ── */}
+      {activeItem && (
+        <div style={{ background:'var(--surface)', borderRadius:14, border:'1.5px solid #4ECDC4', padding:'14px 16px', marginBottom:14, animation:'fadeSlideDown 0.2s ease' }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
+            <div>
+              <div style={{ fontSize:12, fontWeight:700, color:'#4ECDC4' }}>🔍 مقارنة الأسعار السوقية</div>
+              <div style={{ fontSize:11, color:'var(--ink-4)', marginTop:2 }}>{activeItem.name || 'أدخل اسم البند أولاً'}</div>
+            </div>
+            <button onClick={function(){setActiveItem(null);}} style={{ background:'none', border:'none', color:'var(--ink-4)', cursor:'pointer', fontSize:15, padding:4 }}>✕</button>
+          </div>
+
+          {activePrices.length > 0 ? (
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:10 }}>
+              {activePrices.map(function(src, si) {
+                var cp = parseFloat(activeItem.cPrice)||0;
+                var diff = cp > 0 ? (cp - src.price) / src.price * 100 : null;
+                var sColor = si===0?'#FF6B6B':si===1?'#4ECDC4':'#AA96DA';
+                return (
+                  <div key={si} style={{ borderRadius:10, padding:'12px 14px', background:'var(--bg-soft)', border:'1px solid var(--line)', borderTop:'3px solid '+sColor }}>
+                    <div style={{ fontSize:11, fontWeight:700, color:'var(--ink-2)', marginBottom:8, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>🏪 {src.store}</div>
+                    <div style={{ fontSize:22, fontWeight:800, color:sColor, lineHeight:1 }} className="num">{toEnglishNumbers(src.price.toFixed(2))}</div>
+                    <div style={{ fontSize:10, color:'var(--ink-4)', marginTop:3 }}>د.ك / وحدة</div>
+                    {diff !== null && (
+                      <div style={{ marginTop:10, padding:'4px 10px', borderRadius:99, display:'inline-block', background:diff>0?'rgba(255,107,107,0.15)':'rgba(126,211,33,0.15)', color:diff>0?'#FF6B6B':'#7ED321', fontSize:11, fontWeight:700, border:'1px solid '+(diff>0?'rgba(255,107,107,0.3)':'rgba(126,211,33,0.3)') }} className="num">
+                        {diff>0?'أعلى بـ +':'أدنى بـ '}{toEnglishNumbers(Math.abs(diff).toFixed(1))}%
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div style={{ textAlign:'center', padding:'20px 10px', color:'var(--ink-3)', fontSize:12 }}>
+              <div style={{ fontSize:24, marginBottom:8 }}>🔍</div>
+              {activeItem.name && activeItem.name.trim().length > 2
+                ? 'لم يُعثر على منتج مطابق في قاعدة البيانات — جرّب اسماً أبسط'
+                : 'أدخل اسم البند في الجدول ثم اضغط 🔍 للمقارنة'}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── Category Breakdown ── */}
+      <div style={{ background:'var(--surface)', borderRadius:14, padding:'14px 16px', border:'1px solid var(--line)', marginBottom:14 }}>
+        <div style={{ fontSize:12, fontWeight:700, color:'var(--ink)', marginBottom:12 }}>🗂️ تصنيف المنتجات</div>
+        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px 20px' }}>
+          {catList.map(function(cat, ci) {
+            var pct = Math.round((cat.count / totalProducts) * 100);
+            return (
+              <div key={ci}>
+                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:3 }}>
+                  <span style={{ fontSize:11, fontWeight:600, color:'var(--ink)' }}>{cat.label}</span>
+                  <span style={{ fontSize:10, color:'var(--ink-4)' }}>{toEnglishNumbers(String(cat.count))} · {toEnglishNumbers(String(pct))}%</span>
+                </div>
+                <div style={{ height:6, borderRadius:3, background:'var(--bg-soft)', overflow:'hidden' }}>
+                  <div style={{ height:'100%', width:pct+'%', background:cat.color, borderRadius:3 }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* ── Products Table ── */}
+      <div style={{ background:'var(--surface)', borderRadius:14, padding:'14px 14px', border:'1px solid var(--line)' }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12, gap:8, flexWrap:'wrap' }}>
+          <div style={{ fontSize:12, fontWeight:700, color:'var(--ink)' }}>📋 قائمة المنتجات</div>
+          <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+            <input
+              type="text"
+              placeholder="بحث..."
+              value={searchTerm}
+              onChange={function(e) { setSearchTerm(e.target.value); }}
+              style={{ padding:'6px 10px', borderRadius:8, border:'1px solid var(--line)', background:'var(--bg)', color:'var(--ink)', fontSize:12, width:130, fontFamily:'inherit' }}
+            />
+            <button
+              onClick={function() { setSortHighest(!sortHighest); }}
+              style={{ padding:'6px 10px', borderRadius:8, border:'none', background: sortHighest ? '#FF6B6B' : '#4ECDC4', color:'white', fontSize:10, fontWeight:700, cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}
+            >
+              {sortHighest ? '↓ أعلى سعر' : '↑ أدنى سعر'}
+            </button>
+          </div>
+        </div>
+
+        <div style={{ overflowX:'auto' }}>
+          <table style={{ width:'100%', borderCollapse:'collapse', fontSize:12 }}>
+            <thead>
+              <tr>
+                <th style={{ padding:'8px 8px', textAlign:'right', color:'var(--ink-4)', fontWeight:600, borderBottom:'2px solid var(--line)', fontSize:11 }}>#</th>
+                <th style={{ padding:'8px 8px', textAlign:'right', color:'var(--ink-4)', fontWeight:600, borderBottom:'2px solid var(--line)', fontSize:11 }}>المنتج</th>
+                <th style={{ padding:'8px 8px', textAlign:'right', color:'var(--ink-4)', fontWeight:600, borderBottom:'2px solid var(--line)', fontSize:11 }}>المتجر</th>
+                <th style={{ padding:'8px 8px', textAlign:'right', color:'var(--ink-4)', fontWeight:600, borderBottom:'2px solid var(--line)', fontSize:11 }}>الفئة</th>
+                <th style={{ padding:'8px 8px', textAlign:'left',  color:'var(--ink-4)', fontWeight:600, borderBottom:'2px solid var(--line)', fontSize:11 }}>السعر</th>
+              </tr>
+            </thead>
+            <tbody>
+              {tableRows.map(function(p, ri) {
+                var cat = detectCategory(p.name);
+                var priceColor = p.price > 50 ? '#FF6B6B' : p.price > 10 ? '#F5A623' : '#7ED321';
+                return (
+                  <tr key={ri}
+                    onMouseEnter={function(e) { e.currentTarget.style.background='var(--bg-soft)'; }}
+                    onMouseLeave={function(e) { e.currentTarget.style.background='transparent'; }}
+                    style={{ transition:'background 0.1s' }}
+                  >
+                    <td style={{ padding:'7px 8px', color:'var(--ink-4)', borderBottom:'1px solid var(--line)' }}>{toEnglishNumbers(String(ri+1))}</td>
+                    <td style={{ padding:'7px 8px', color:'var(--ink)', fontWeight:500, borderBottom:'1px solid var(--line)', maxWidth:180, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{p.name}</td>
+                    <td style={{ padding:'7px 8px', color:'var(--ink-3)', borderBottom:'1px solid var(--line)', whiteSpace:'nowrap', fontSize:11 }}>{p.store}</td>
+                    <td style={{ padding:'7px 8px', borderBottom:'1px solid var(--line)' }}>
+                      <span style={{ display:'inline-block', padding:'2px 7px', borderRadius:99, background:cat.color+'18', color:cat.color, fontSize:10, fontWeight:700, border:'1px solid '+cat.color+'30' }}>{cat.label}</span>
+                    </td>
+                    <td style={{ padding:'7px 8px', color:priceColor, fontWeight:800, borderBottom:'1px solid var(--line)', textAlign:'left', direction:'ltr', fontSize:12 }} className="num">
+                      {toEnglishNumbers(p.price.toFixed(2))} <span style={{ fontSize:9, fontWeight:400, color:'var(--ink-4)' }}>د.ك</span>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
+
+        {filtered.length > 12 && (
+          <div style={{ marginTop:10, textAlign:'center', fontSize:11, color:'var(--ink-4)' }}>
+            عرض {toEnglishNumbers('12')} من {toEnglishNumbers(String(filtered.length))} منتج
+          </div>
+        )}
       </div>
+
     </div>
   );
 }
@@ -2814,8 +3135,10 @@ function CalculatorScreen() {
   const [endDate, setEndDate]   = React.useState('');
   // penalty config
   const [enDelay, setEnDelay]   = React.useState(true);
+  const [delayMode, setDelayMode] = React.useState('percentage'); // 'percentage' or 'fixed'
   const [rate, setRate]         = React.useState('0.1');
   const [capP, setCapP]         = React.useState('10');
+  const [dailyPenalty, setDailyPenalty] = React.useState('');
   const [enQuality, setEnQuality] = React.useState(true);
   // delay & defects
   const [actualDate, setActualDate] = React.useState('');
@@ -2878,10 +3201,15 @@ function CalculatorScreen() {
     // delay
     let dGross=0, dFin=0, dCap=0;
     if (enDelay && days > 0) {
-      dGross = value * (parseFloat(rate)||0) / 100 * days;
-      dFin = dGross;
-      const capAmt = value * (parseFloat(capP)||0) / 100;
-      if (capAmt > 0 && dGross > capAmt) { dCap = dGross - capAmt; dFin = capAmt; }
+      if (delayMode === 'percentage') {
+        dGross = value * (parseFloat(rate)||0) / 100 * days;
+        dFin = dGross;
+        const capAmt = value * (parseFloat(capP)||0) / 100;
+        if (capAmt > 0 && dGross > capAmt) { dCap = dGross - capAmt; dFin = capAmt; }
+      } else if (delayMode === 'fixed') {
+        dGross = (parseFloat(dailyPenalty)||0) * days;
+        dFin = dGross;
+      }
     }
 
     // quality
@@ -2900,7 +3228,7 @@ function CalculatorScreen() {
 
     const r = {
       cn, cv:value, cc, ccon, ctype,
-      days,
+      days, delayMode, dailyPenaltyValue: delayMode==='fixed' ? parseFloat(dailyPenalty)||0 : null,
       dGross:Math.round(dGross*100)/100, dCap:Math.round(dCap*100)/100, dFin:Math.round(dFin*100)/100,
       qTot:Math.round(qTot*100)/100, dds,
       totPen, earn, totDed:Math.round(totDed*100)/100,
@@ -2968,11 +3296,34 @@ function CalculatorScreen() {
               <input type="checkbox" checked={enDelay} onChange={e=>setEnDelay(e.target.checked)}/> تفعيل غرامة التأخير
             </label>
             {enDelay && (<>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-                <div><label style={lbl}>النسبة اليومية (%)</label><input style={inp} type="number" step="0.01" value={rate} onChange={e=>setRate(e.target.value)}/></div>
-                <div><label style={lbl}>الحد الأقصى (% من العقد)</label><input style={inp} type="number" step="0.5" value={capP} onChange={e=>setCapP(e.target.value)}/></div>
+              <div style={{marginBottom:12,padding:10,background:'white',borderRadius:6,border:'1px solid var(--line)'}}>
+                <div style={{fontSize:12,fontWeight:600,marginBottom:8}}>اختر نوع الغرامة:</div>
+                <div style={{display:'flex',gap:16}}>
+                  <label style={{display:'flex',alignItems:'center',gap:6,cursor:'pointer',fontSize:14}}>
+                    <input type="radio" name="delayPenaltyMode" value="percentage" checked={delayMode==='percentage'} onChange={e=>setDelayMode('percentage')}/>
+                    النسبة المئوية
+                  </label>
+                  <label style={{display:'flex',alignItems:'center',gap:6,cursor:'pointer',fontSize:14}}>
+                    <input type="radio" name="delayPenaltyMode" value="fixed" checked={delayMode==='fixed'} onChange={e=>setDelayMode('fixed')}/>
+                    غرامة يومية ثابتة
+                  </label>
+                </div>
               </div>
-              <div style={{marginTop:8,fontSize:11,color:'var(--ink-3)'}}>الصيغة: قيمة العقد × {rate||'0.1'}% × الأيام، الحد الأقصى {capP||'10'}%</div>
+
+              {delayMode==='percentage' ? (
+                <>
+                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+                    <div><label style={lbl}>النسبة اليومية (%)</label><input style={inp} type="number" step="0.01" value={rate} onChange={e=>setRate(e.target.value)}/></div>
+                    <div><label style={lbl}>الحد الأقصى (% من العقد)</label><input style={inp} type="number" step="0.5" value={capP} onChange={e=>setCapP(e.target.value)}/></div>
+                  </div>
+                  <div style={{marginTop:8,fontSize:11,color:'var(--ink-3)'}}>الصيغة: قيمة العقد × {rate||'0.1'}% × الأيام، الحد الأقصى {capP||'10'}%</div>
+                </>
+              ) : (
+                <>
+                  <div><label style={lbl}>الغرامة اليومية (د.ك)</label><input style={inp} type="number" step="0.01" value={dailyPenalty} onChange={e=>setDailyPenalty(e.target.value)} placeholder="مثال: 50"/></div>
+                  <div style={{marginTop:8,fontSize:11,color:'var(--ink-3)'}}>الصيغة: {dailyPenalty||'0'} د.ك × الأيام</div>
+                </>
+              )}
             </>)}
           </div>
           <div style={{padding:12,background:'var(--warn-bg)',borderRadius:8}}>
@@ -3136,6 +3487,505 @@ function CalculatorScreen() {
   );
 }
 
+// ══════════════════════════════════════════════════════════════════
+// قاعدة المعرفة المدمجة — خبرة كهربائية وقانونية
+// ══════════════════════════════════════════════════════════════════
+var EXPERT_KB = {
+  penalties: {
+    keywords: ['غرامة','غرامات','جزاء','تأخير','تأخر','متأخر','التأخير'],
+    answers: [
+      'غرامة التأخير في عقود الأعمال الكهربائية بالكويت عادةً تُحسب بنسبة ½% من قيمة العقد عن كل أسبوع تأخير، وبحد أقصى 10% من إجمالي قيمة العقد.',
+      'طريقة حساب الغرامة: (قيمة العقد × نسبة الغرامة اليومية) × عدد أيام التأخير. مثال: إذا كانت القيمة 100,000 د.ك والنسبة 0.1% يومياً: 100 د.ك × عدد الأيام.',
+      'الغرامة قد تُعفى إذا كان التأخير بسبب: أوامر التغيير من المالك، ظروف قاهرة، أو تأخر المالك نفسه في تسليم الموقع أو المواد.',
+      'يجب التحقق من سريان مفعول الغرامة بالرجوع لشهادة الإنجاز الصادرة من المهندس المشرف وتاريخ إصدارها مقارنةً بالتاريخ التعاقدي.'
+    ]
+  },
+  approvals: {
+    keywords: ['اعتماد','اعتمادات','مستخلص','صرف','دفعة','فاتورة','مطالبة','حق'],
+    answers: [
+      'الاعتمادات في عقود الأعمال الكهربائية تمر بمراحل: تقديم المستخلص → مراجعة المهندس المشرف → اعتماد المالك → صرف المبلغ. عادةً خلال 28 يوماً.',
+      'إذا رُفض الاعتماد جزئياً، يحق للمقاول الاعتراض خلال 28 يوماً وتقديم المستندات الداعمة. الصمت لا يُعني القبول.',
+      'في حال التأخر في الصرف يحق للمقاول المطالبة بفوائد تأخير وفقاً للمادة المقابلة في العقد (عادةً سعر الفائدة التجاري + 2%).'
+    ]
+  },
+  quantities: {
+    keywords: ['كمية','كميات','بند','بنود','جدول','مواد','مواصفات','قياس','قياسات','فعلي','تعاقدي','منفذ'],
+    answers: [
+      'الكميات في جداول الكميات تُعدّ تقديرية وليست قطعية في معظم عقود الأعمال الكهربائية. الكميات الفعلية تُقاس في الموقع.',
+      'التفاوت بين الكميات المتعاقدة والمنفذة: إذا تجاوز 10-15% عن أي بند، يستوجب ذلك إصدار أمر تغيير رسمي لتعديل العقد.',
+      'يجب مقارنة جداول الكميات مع كشوفات القياس الميداني وتسجيل أي فروق في سجل الموقع الموقّع من المهندسين.'
+    ]
+  },
+  defects: {
+    keywords: ['معيب','عيب','عيوب','ضمان','إصلاح','خلل','قصور','رداءة','مطابقة','مواصفة'],
+    answers: [
+      'فترة ضمان الأعمال الكهربائية عادةً 12 شهراً من تاريخ شهادة الإنجاز. خلالها المقاول مسؤول عن إصلاح أي عيوب.',
+      'العيب يُعرَّف بأنه عدم مطابقة العمل لمواصفات العقد والمعايير الكويتية (MEW/KEWA) للتمديدات الكهربائية.',
+      'في حال رفض المقاول الإصلاح، يحق للمالك استئجار مقاول آخر وخصم التكاليف من ضمان حسن التنفيذ.'
+    ]
+  },
+  prices: {
+    keywords: ['سعر','أسعار','تكلفة','قيمة','مبلغ','دينار','فرق','زيادة','ارتفاع','مبالغة','إثبات'],
+    answers: [
+      'لإثبات المبالغة في الأسعار: يجب مقارنة أسعار التعاقد بثلاثة مصادر سوقية على الأقل في نفس فترة التعاقد.',
+      'يُستعان بفهارس أسعار وزارة الأشغال، وعروض الأسعار من موردين معتمدين، وقاعدة بيانات الأسعار للتحقق.',
+      'الانحراف المقبول في الأسعار عادةً ±15%. ما فوق ذلك يُعدّ مبالغة يمكن الطعن فيها أمام لجنة التحكيم.'
+    ]
+  },
+  general: {
+    keywords: ['عقد','تحكيم','نزاع','حل','محكمة','قانون','حق','مطالبة'],
+    answers: [
+      'نزاعات عقود الأعمال الكهربائية في الكويت تُحسم عبر التحكيم أو القضاء. يُفضّل التفاود الودي أولاً ثم التحكيم.',
+      'المهلة الزمنية للمطالبات: يجب تقديم المطالبات خلال 28 يوماً من علم المقاول بالحدث الموجب للمطالبة وإلا سقط حقه.'
+    ]
+  }
+};
+
+function SourceChatScreen() {
+  var [sources,       setSources]       = React.useState([]);
+  var [activeId,      setActiveId]      = React.useState(null);
+  var [messages,      setMessages]      = React.useState([
+    { id: 1, role: 'assistant', text: 'مرحباً! 🗂️\n\n① ارفع مستنداتك (PDF أو ملف نصي)\n② اسألني أي سؤال\n③ سأجيبك من واقع ما في المستند فقط\n\nابدأ بالضغط على زر "＋ رفع مصدر" 👆' }
+  ]);
+  var [input,         setInput]         = React.useState('');
+  var [pdfReady,      setPdfReady]      = React.useState(false);
+  var msgEndRef   = React.useRef(null);
+  var fileInputRef = React.useRef(null);
+  var sourcesRef  = React.useRef(sources);
+  React.useEffect(function() { sourcesRef.current = sources; }, [sources]);
+
+  // Load PDF.js once
+  React.useEffect(function() {
+    if (window.pdfjsLib) { setPdfReady(true); return; }
+    var s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js';
+    s.onload = function() {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+      setPdfReady(true);
+    };
+    document.head.appendChild(s);
+  }, []);
+
+  React.useEffect(function() {
+    if (msgEndRef.current) msgEndRef.current.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // ── استخراج بيانات ذكي من النص ──────────────────────────────────
+  function extractKeyData(text) {
+    var r = {};
+    var vals = text.match(/[\d,\.]+\s*(دينار كويتي|دينار|KD|KWD|د\.ك)/gi);
+    if (vals && vals.length) r.values = vals.slice(0, 5);
+    var dates = text.match(/\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}/g);
+    if (dates && dates.length) r.dates = dates.slice(0, 5);
+    var penalties = text.match(/غرامة[^\n،.]{0,120}/gi);
+    if (penalties && penalties.length) r.penalties = penalties.slice(0, 3);
+    var qtys = text.match(/\d+[\d,\.]*\s*(متر مربع|متر طولي|م²|م٢|م3|قطعة|وحدة|طن|كجم|لفة)/gi);
+    if (qtys && qtys.length) r.quantities = qtys.slice(0, 5);
+    var contractors = text.match(/المقاول\s*[:\-]\s*([^\n،.]{3,50})/gi);
+    if (contractors && contractors.length) r.contractors = contractors.slice(0, 2);
+    var projects = text.match(/المشروع\s*[:\-]\s*([^\n،.]{3,80})/gi);
+    if (projects && projects.length) r.projects = projects.slice(0, 2);
+    var items = text.match(/\d+[\d\.]*\s*(د\.ك|KD)\s*[\/\-]\s*(متر|م|وحدة|قطعة)/gi);
+    if (items && items.length) r.unitPrices = items.slice(0, 5);
+    return r;
+  }
+
+  function buildAnalysisMsg(filename, ext, pageCount) {
+    var src = sources.find(function(s) { return s.name === filename; }) || {};
+    var text = src.text || '';
+    var ext2 = extractKeyData(text);
+    var lines = ['✅ تم قراءة **' + filename + '**'];
+    if (pageCount) lines.push('📄 ' + pageCount + ' صفحة');
+    lines.push('');
+    lines.push('📊 **البيانات المستخرجة:**');
+    if (ext2.projects   && ext2.projects.length)    lines.push('🏗️ المشروع: '   + ext2.projects.join(' | '));
+    if (ext2.contractors && ext2.contractors.length) lines.push('👷 المقاول: '  + ext2.contractors.join(' | '));
+    if (ext2.values     && ext2.values.length)       lines.push('💰 قيم مالية: '+ ext2.values.slice(0,3).join(' · '));
+    if (ext2.dates      && ext2.dates.length)        lines.push('📅 تواريخ: '   + ext2.dates.join(' · '));
+    if (ext2.penalties  && ext2.penalties.length)    lines.push('⚠️ غرامات: '   + ext2.penalties.join('\n   '));
+    if (ext2.quantities && ext2.quantities.length)   lines.push('📦 كميات: '    + ext2.quantities.join(' · '));
+    if (ext2.unitPrices && ext2.unitPrices.length)   lines.push('💲 أسعار: '    + ext2.unitPrices.join(' · '));
+    if (!Object.keys(ext2).length) lines.push('لم أعثر على بيانات هيكلية — يمكنك سؤالي بلغة طبيعية.');
+    lines.push('');
+    lines.push('❓ اسألني عن أي تفصيل في هذا المصدر أو المصادر الأخرى!');
+    return lines.join('\n');
+  }
+
+  // ── معالجة الملفات ───────────────────────────────────────────────
+  function handleFiles(files) {
+    Array.from(files).forEach(function(file) {
+      var ext = file.name.split('.').pop().toLowerCase();
+      if (ext === 'pdf') {
+        processPDF(file);
+      } else if (['jpg','jpeg','png','gif','webp','bmp'].indexOf(ext) !== -1) {
+        processImage(file);
+      } else if (['txt','csv','text'].indexOf(ext) !== -1) {
+        processText(file);
+      } else if (['doc','docx'].indexOf(ext) !== -1) {
+        addMsg('⚠️ ملفات Word لا تُقرأ مباشرة. انسخ النص من الملف والصقه هنا كرسالة نصية.');
+      }
+    });
+  }
+
+  function processPDF(file) {
+    if (!window.pdfjsLib) { addMsg('⏳ جاري تحميل قارئ PDF، انتظر لحظة...'); return; }
+    addMsg('⏳ جاري قراءة ' + file.name + '...');
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var buffer = e.target.result;
+      window.pdfjsLib.getDocument({ data: buffer }).promise.then(function(pdf) {
+        var totalPages = pdf.numPages;
+        var allText = '';
+        var pages = [];
+        var chain = Promise.resolve();
+        for (var i = 1; i <= totalPages; i++) {
+          (function(pageNum) {
+            chain = chain.then(function() {
+              return pdf.getPage(pageNum).then(function(page) {
+                return page.getTextContent().then(function(tc) {
+                  var pageText = tc.items.map(function(it) { return it.str; }).join(' ');
+                  allText += pageText + '\n';
+                  var viewport = page.getViewport({ scale: 1.4 });
+                  var canvas = document.createElement('canvas');
+                  canvas.width = viewport.width;
+                  canvas.height = viewport.height;
+                  return page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise.then(function() {
+                    pages.push({ pageNum: pageNum, dataUrl: canvas.toDataURL('image/jpeg', 0.7), text: pageText });
+                  });
+                });
+              });
+            });
+          })(i);
+        }
+        chain.then(function() {
+          var src = { id: Date.now(), name: file.name, type: 'pdf', text: allText, pages: pages, thumb: pages[0] ? pages[0].dataUrl : null };
+          setSources(function(prev) { return [...prev, src]; });
+          setActiveId(src.id);
+          // remove loading message and add analysis
+          setMessages(function(prev) {
+            var filtered = prev.filter(function(m) { return m.text.indexOf('جاري قراءة ' + file.name) === -1; });
+            return [...filtered, { id: Date.now() + 1, role: 'assistant', text: buildAnalysisForSrc(src) }];
+          });
+        });
+      }).catch(function(err) {
+        addMsg('❌ تعذّر قراءة PDF: ' + err.message);
+      });
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function buildAnalysisForSrc(src) {
+    var ext = extractKeyData(src.text || '');
+    var lines = ['✅ تم قراءة **' + src.name + '**'];
+    if (src.pages) lines.push('📄 ' + src.pages.length + ' صفحة');
+    lines.push('');
+    lines.push('📊 **البيانات المستخرجة:**');
+    if (ext.projects    && ext.projects.length)    lines.push('🏗️ المشروع: '   + ext.projects.join(' | '));
+    if (ext.contractors && ext.contractors.length) lines.push('👷 المقاول: '   + ext.contractors.join(' | '));
+    if (ext.values      && ext.values.length)      lines.push('💰 قيم مالية: ' + ext.values.slice(0,3).join(' · '));
+    if (ext.dates       && ext.dates.length)       lines.push('📅 تواريخ: '    + ext.dates.join(' · '));
+    if (ext.penalties   && ext.penalties.length)   lines.push('⚠️ غرامات: '    + ext.penalties.slice(0,2).join('\n   '));
+    if (ext.quantities  && ext.quantities.length)  lines.push('📦 كميات: '     + ext.quantities.join(' · '));
+    if (ext.unitPrices  && ext.unitPrices.length)  lines.push('💲 أسعار وحدة: '+ ext.unitPrices.join(' · '));
+    if (!Object.keys(ext).length) lines.push('لم أجد بيانات هيكلية — اسألني بلغة طبيعية عن أي شيء في المستند.');
+    lines.push('\n❓ اسألني عن أي تفصيل في هذا المصدر أو المصادر الأخرى!');
+    return lines.join('\n');
+  }
+
+  function processImage(file) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var src = { id: Date.now(), name: file.name, type: 'image', text: '', dataUrl: e.target.result };
+      setSources(function(prev) { return [...prev, src]; });
+      setActiveId(src.id);
+      addMsg('🖼️ تم رفع الصورة **' + file.name + '**.\n\nلا أستطيع قراءة النص من الصور بدون API للذكاء الاصطناعي، لكن يمكنك:\n• وصف محتوى الصورة هنا بكلماتك\n• أو نسخ أي نص من الصورة ولصقه\n\nوسأساعدك في التحليل فوراً!');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function processText(file) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var text = e.target.result;
+      var src = { id: Date.now(), name: file.name, type: 'text', text: text };
+      setSources(function(prev) { return [...prev, src]; });
+      setActiveId(src.id);
+      addMsg(buildAnalysisForSrc(src));
+    };
+    reader.readAsText(file, 'utf-8');
+  }
+
+  function addMsg(text) {
+    setMessages(function(prev) { return [...prev, { id: Date.now(), role: 'assistant', text: text }]; });
+  }
+
+  // ── تطبيع النص العربي للبحث ─────────────────────────────────────
+  function normalizeAr(text) {
+    return text
+      .replace(/أ|إ|آ/g, 'ا')
+      .replace(/ة/g, 'ه')
+      .replace(/ى/g, 'ي')
+      .replace(/[ً-ٟ]/g, '') // remove tashkeel
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  // ── محرك البحث في المستندات ──────────────────────────────────────
+  function answerQuestion(q, srcsArg) {
+    var srcs = srcsArg || sourcesRef.current || [];
+
+    if (!srcs.length) {
+      return 'ارفع مستنداً أولاً';
+    }
+
+    // ابنِ قائمة الفقرات مع تتبّع المصدر لكل فقرة
+    var paragraphs = [];
+    srcs.forEach(function(src) {
+      var text = (src && src.text) || '';
+      if (!text.trim()) return;
+
+      // قسّم على فواصل الأسطر المزدوجة أولاً
+      var rawParas = text.split(/\n\s*\n+/);
+      rawParas.forEach(function(p) {
+        var clean = p.replace(/\s+/g, ' ').trim();
+        if (!clean) return;
+        // إذا كانت الفقرة طويلة جداً، قسّمها لمجموعات من 3 جمل
+        var sentences = clean.split(/(?<=[.!؟?])\s+|[،؛]\s+/).filter(function(s) { return s.trim().length > 0; });
+        if (sentences.length <= 4) {
+          paragraphs.push({ text: clean, source: src.name || '' });
+        } else {
+          // chunks بطول 3 جمل مع تداخل جملة واحدة
+          for (var i = 0; i < sentences.length; i += 2) {
+            var chunk = sentences.slice(i, i + 3).join(' ').trim();
+            if (chunk.length > 10) paragraphs.push({ text: chunk, source: src.name || '' });
+            if (i + 3 >= sentences.length) break;
+          }
+        }
+      });
+    });
+
+    if (!paragraphs.length) {
+      return 'ارفع مستنداً أولاً';
+    }
+
+    var qNorm = normalizeAr(q);
+    var qWords = qNorm.split(/\s+/).filter(function(w) { return w.length > 1; });
+
+    if (!qWords.length) {
+      return 'لم أجد هذه المعلومة في مصادرك';
+    }
+
+    // سجّل نقاط كل فقرة بعدد الكلمات المطابقة
+    var scored = paragraphs.map(function(p) {
+      var pNorm = normalizeAr(p.text);
+      var matched = 0;
+      qWords.forEach(function(w) {
+        if (pNorm.indexOf(w) !== -1) matched++;
+      });
+      return { text: p.text, source: p.source, score: matched };
+    });
+
+    scored.sort(function(a, b) { return b.score - a.score; });
+    var top = scored.filter(function(x) { return x.score > 0; }).slice(0, 5);
+
+    if (!top.length) {
+      return 'لم أجد هذه المعلومة في مصادرك';
+    }
+
+    // اجمع أفضل النتائج وارفقها بأسماء المصادر
+    var answer = '📋 من المصادر المرفوعة:\n\n';
+    top.forEach(function(item, i) {
+      answer += '📌 ' + (i + 1) + '. ' + item.text + '\n';
+      if (item.source) answer += '   📄 المصدر: ' + item.source + '\n';
+      answer += '\n';
+    });
+
+    return answer.trim();
+  }
+
+  function sendMessage() {
+    if (!input.trim()) return;
+    var userText = input.trim();
+    setMessages(function(prev) { return [...prev, { id: Date.now(), role: 'user', text: userText }]; });
+    setInput('');
+    setTimeout(function() {
+      addMsg(answerQuestion(userText, sourcesRef.current));
+    }, 400);
+  }
+
+  var activeSource = sources.find(function(s) { return s.id === activeId; });
+
+  // ── JSX ─────────────────────────────────────────────────────────
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
+
+      {/* رأس الصفحة */}
+      <div style={{ padding: '10px 16px', background: 'var(--surface)', borderBottom: '1px solid var(--line)', flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--ink)' }}>🗂️ المستشار الذكي — من واقع المصادر</div>
+          <div style={{ fontSize: 11, color: 'var(--ink-3)', marginTop: 2 }}>
+            {sources.length === 0 ? 'ارفع مصادرك للبدء' : sources.length + ' مصدر مرفوع · ' + sources.filter(function(s){return s.type==='pdf';}).length + ' PDF · ' + sources.filter(function(s){return s.type==='image';}).length + ' صورة'}
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            onClick={function() { fileInputRef.current && fileInputRef.current.click(); }}
+            style={{ padding: '7px 16px', borderRadius: 8, border: 'none', background: 'var(--accent)', color: 'var(--bg)', fontFamily: 'inherit', fontWeight: 700, fontSize: 12, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            ＋ رفع مصدر
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            accept=".pdf,.png,.jpg,.jpeg,.gif,.webp,.txt,.csv"
+            style={{ display: 'none' }}
+            onChange={function(e) { handleFiles(e.target.files); e.target.value = ''; }}
+          />
+        </div>
+      </div>
+
+      {/* المحتوى الرئيسي */}
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+
+        {/* يسار: المصادر + العارض */}
+        <div style={{ width: '55%', display: 'flex', flexDirection: 'column', borderLeft: '1px solid var(--line)', overflow: 'hidden' }}>
+
+          {/* شريط المصادر */}
+          <div style={{ display: 'flex', gap: 4, padding: '6px 8px', background: 'var(--bg-soft)', borderBottom: '1px solid var(--line)', overflowX: 'auto', flexShrink: 0, alignItems: 'center' }}>
+            {sources.length === 0 ? (
+              <span style={{ fontSize: 11, color: 'var(--ink-4)', padding: '2px 4px' }}>لا توجد مصادر بعد</span>
+            ) : sources.map(function(s) { return (
+              <button
+                key={s.id}
+                onClick={function() { setActiveId(s.id); }}
+                style={{
+                  padding: '4px 10px', borderRadius: 6, border: 'none', cursor: 'pointer',
+                  fontFamily: 'inherit', fontSize: 11, fontWeight: 600, flexShrink: 0,
+                  background: s.id === activeId ? 'var(--accent)' : 'var(--surface)',
+                  color: s.id === activeId ? 'var(--bg)' : 'var(--ink)',
+                  boxShadow: s.id === activeId ? 'none' : '0 1px 2px rgba(0,0,0,.06)',
+                }}
+              >
+                {s.type === 'pdf' ? '📄' : s.type === 'image' ? '🖼️' : '📝'} {s.name.length > 20 ? s.name.substring(0,18) + '…' : s.name}
+              </button>
+            ); })}
+          </div>
+
+          {/* عارض المستند */}
+          <div style={{ flex: 1, overflowY: 'auto', background: '#f0f0ec', padding: activeSource ? 12 : 0 }}
+            onDragOver={function(e) { e.preventDefault(); }}
+            onDrop={function(e) { e.preventDefault(); handleFiles(e.dataTransfer.files); }}
+          >
+            {!activeSource ? (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 14, padding: 24 }}>
+                <div style={{ fontSize: 52 }}>📁</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink-2)' }}>ارفع مصادرك هنا</div>
+                <div style={{ fontSize: 12, color: 'var(--ink-4)', textAlign: 'center', lineHeight: 1.7 }}>
+                  PDF · صور · ملفات نصية<br/>اسحب وأفلت أو اضغط الزر أعلاه
+                </div>
+                <button
+                  onClick={function() { fileInputRef.current && fileInputRef.current.click(); }}
+                  style={{ padding: '10px 22px', borderRadius: 8, border: '2px dashed var(--line-strong)', background: 'transparent', color: 'var(--ink-2)', fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}
+                >
+                  ＋ اختر ملفات
+                </button>
+              </div>
+            ) : activeSource.type === 'image' ? (
+              <div style={{ textAlign: 'center' }}>
+                <img src={activeSource.dataUrl} alt={activeSource.name} style={{ maxWidth: '100%', borderRadius: 8, boxShadow: '0 2px 12px rgba(0,0,0,.15)' }} />
+              </div>
+            ) : activeSource.type === 'pdf' ? (
+              <div>
+                {activeSource.pages && activeSource.pages.map(function(p) { return (
+                  <div key={p.pageNum} style={{ marginBottom: 12, background: '#fff', borderRadius: 6, overflow: 'hidden', boxShadow: '0 1px 6px rgba(0,0,0,.12)' }}>
+                    <img src={p.dataUrl} alt={'صفحة ' + p.pageNum} style={{ width: '100%', display: 'block' }} />
+                    <div style={{ padding: '4px 8px', fontSize: 10, color: '#888', textAlign: 'center', borderTop: '1px solid #eee' }}>صفحة {p.pageNum}</div>
+                  </div>
+                ); })}
+              </div>
+            ) : (
+              <div style={{ background: '#fff', borderRadius: 8, padding: 16, boxShadow: '0 1px 4px rgba(0,0,0,.08)' }}>
+                <pre style={{ fontSize: 12, lineHeight: 1.7, color: 'var(--ink)', whiteSpace: 'pre-wrap', fontFamily: 'inherit', margin: 0 }}>{activeSource.text}</pre>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* يمين: الجات */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--surface)', overflow: 'hidden' }}>
+
+          <div style={{ padding: '8px 12px', background: 'var(--bg-soft)', borderBottom: '1px solid var(--line)', fontSize: 11, fontWeight: 700, color: 'var(--ink-2)', flexShrink: 0 }}>
+            🤖 المستشار الذكي — {sources.length > 0 ? ('يقرأ ' + sources.length + ' مصدر') : 'في انتظار المصادر'}
+          </div>
+
+          {/* الرسائل */}
+          <div style={{ flex: 1, overflowY: 'auto', padding: '14px 12px' }}>
+            {messages.map(function(m) { return (
+              <div key={m.id} style={{ marginBottom: 12, display: 'flex', justifyContent: m.role === 'assistant' ? 'flex-start' : 'flex-end' }}>
+                <div style={{
+                  maxWidth: '88%', padding: '10px 14px', borderRadius: 12,
+                  background: m.role === 'assistant' ? 'var(--bg-soft)' : 'var(--accent)',
+                  color: m.role === 'assistant' ? 'var(--ink)' : 'var(--bg)',
+                  fontSize: 13, lineHeight: 1.65,
+                  borderTopRightRadius: m.role === 'assistant' ? 12 : 2,
+                  borderTopLeftRadius:  m.role === 'assistant' ? 2  : 12,
+                  border: m.role === 'assistant' ? '1px solid var(--line)' : 'none',
+                }}>
+                  {m.role === 'assistant' && (
+                    <div style={{ fontWeight: 700, fontSize: 11, color: 'var(--ink-3)', marginBottom: 5 }}>🤖 المستشار</div>
+                  )}
+                  <div style={{ whiteSpace: 'pre-wrap' }}>{m.text}</div>
+                </div>
+              </div>
+            ); })}
+            <div ref={msgEndRef} />
+          </div>
+
+          {/* حقل الإدخال */}
+          <div style={{ padding: '10px 12px', background: 'var(--bg-soft)', borderTop: '1px solid var(--line)', flexShrink: 0 }}>
+            <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
+              <textarea
+                style={{
+                  flex: 1, padding: '9px 12px', borderRadius: 10, fontSize: 13,
+                  border: '1px solid var(--line)', background: 'var(--surface)',
+                  color: 'var(--ink)', fontFamily: 'inherit', resize: 'none',
+                  minHeight: 40, maxHeight: 100, lineHeight: 1.5,
+                  outline: 'none',
+                }}
+                placeholder={sources.length > 0 ? 'اسأل عن الغرامات، الكميات، الأسعار، التواريخ...' : 'ارفع مصدراً أولاً، أو الصق نصاً هنا مباشرة...'}
+                value={input}
+                onChange={function(e) { setInput(e.target.value); }}
+                onKeyDown={function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
+              />
+              <button
+                onClick={sendMessage}
+                style={{
+                  width: 42, height: 42, borderRadius: 10, border: 'none', flexShrink: 0,
+                  background: input.trim() ? 'var(--accent)' : 'var(--bg-soft)',
+                  color: input.trim() ? 'var(--bg)' : 'var(--ink-4)',
+                  cursor: input.trim() ? 'pointer' : 'default',
+                  fontSize: 18, fontWeight: 700, transition: 'all .15s',
+                }}
+              >↑</button>
+            </div>
+            {sources.length > 0 && (
+              <div style={{ marginTop: 6, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {['ما هي الغرامات؟', 'أبرز الكميات', 'القيم المالية', 'التواريخ المهمة'].map(function(q) { return (
+                  <button key={q} onClick={function() { setInput(q); }}
+                    style={{ padding: '3px 10px', borderRadius: 20, border: '1px solid var(--line)', background: 'var(--surface)', color: 'var(--ink-2)', fontSize: 11, cursor: 'pointer', fontFamily: 'inherit' }}>
+                    {q}
+                  </button>
+                ); })}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // Main app
 function App({ session, onLogout }) {
   const [active, setActive] = useState('dashboard');
@@ -3187,6 +4037,7 @@ function App({ session, onLogout }) {
           {active === 'materials' && <MaterialsTableScreen/>}
           {active === 'database' && <DatabaseScreen/>}
           {active === 'mindmap' && <MindMapScreen/>}
+          {active === 'discussion' && <SourceChatScreen/>}
           {active === 'calculator' && <CalculatorScreen/>}
           {active === 'admin' && isAdmin && <AdminScreen onAdminAuth={()=>{}}/>}
           {active === 'settings' && <SettingsScreen onThemeChange={setTheme} onFontChange={setFont} theme={theme} font={font} onGoAdmin={() => isAdmin && setActive('admin')}/>}
@@ -3203,11 +4054,11 @@ function App({ session, onLogout }) {
           <button className={`nav-item ${active === 'dashboard' ? 'active' : ''}`} onClick={() => setActive('dashboard')} title="لوحة التحكم">
             📊<span>التحكم</span>
           </button>
-          <button className={`nav-item ${active === 'stores' ? 'active' : ''}`} onClick={() => setActive('stores')} title="نسبة الأعمال">
-            ⚡<span>الأعمال</span>
-          </button>
           <button className={`nav-item ${active === 'products' ? 'active' : ''}`} onClick={() => setActive('products')} title="المنتجات">
             🔍<span>المنتجات</span>
+          </button>
+          <button className={`nav-item ${active === 'stores' ? 'active' : ''}`} onClick={() => setActive('stores')} title="نسبة الأعمال">
+            ⚡<span>الأعمال</span>
           </button>
           <button className={`nav-item ${active === 'materials' ? 'active' : ''}`} onClick={() => setActive('materials')} title="جدول المواد">
             📋<span>الجدول</span>
@@ -3217,6 +4068,9 @@ function App({ session, onLogout }) {
           </button>
           <button className={`nav-item ${active === 'mindmap' ? 'active' : ''}`} onClick={() => setActive('mindmap')} title="خريطة الأفكار القضائية">
             🗺️<span>الخريطة</span>
+          </button>
+          <button className={`nav-item ${active === 'discussion' ? 'active' : ''}`} onClick={() => setActive('discussion')} title="جلسة النقاش والتنظيم">
+            💬<span>النقاش</span>
           </button>
           <button className={`nav-item ${active === 'calculator' ? 'active' : ''}`} onClick={() => setActive('calculator')} title="الحاسبة">
             🧮<span>الحاسبة</span>

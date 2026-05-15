@@ -1,11 +1,6 @@
-# متغيرات البيئة — لا ترفع هذا الملف أبداً
+# Environment
 .env
-
-# بيانات مجلوبة — تُرفع مرة واحدة كبيانات أولية
-# products_all.json
-# price_history.json
-# matched_groups.json
-# work_descriptions.json
+.streamlit/secrets.toml
 
 # Python
 __pycache__/
@@ -13,6 +8,3 @@ __pycache__/
 *.pyo
 .venv/
 venv/
-
-# Streamlit
-.streamlit/secrets.toml
