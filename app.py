@@ -23,4 +23,4 @@ st.markdown("""
 html_path = Path(__file__).parent / "pricing-app.html"
 html_content = html_path.read_text(encoding="utf-8")
 
-components.html(html_content, height=950, scrolling=False)
+components.html(html_content, height=1200, scrolling=True)
