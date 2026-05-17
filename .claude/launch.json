@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "pricing-app",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["/tmp/serve_pricing.py"],
+      "port": 8765,
+      "url": "http://localhost:8765/pricing-app.html"
+    }
+  ]
+}
