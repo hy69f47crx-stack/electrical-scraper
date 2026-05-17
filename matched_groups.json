@@ -1,6 +1,6 @@
 [
     {
-        "group_id": "69659fe6-c7fd-4f1d-978d-71d9e2209d9c",
+        "group_id": "d1305040-1dfe-43c1-b695-a552f21f7238",
         "canonical_name": "كيبل كهربائي NYY 3×2.5mm مقاوم للحرارة",
         "products": [
             {
@@ -20,10 +20,10 @@
         "best_price": 1.85,
         "worst_price": 1.95,
         "savings_pct": 5.1,
-        "last_updated": "2026-05-02"
+        "last_updated": "2026-05-12"
     },
     {
-        "group_id": "cebd3512-1b87-4d15-a9e9-abcf6471d855",
+        "group_id": "981db49b-22ca-4c61-9a1d-3e8eb17d0442",
         "canonical_name": "مفتاح كهربائي مفرد 16A",
         "products": [
             {
@@ -49,10 +49,10 @@
         "best_price": 2.5,
         "worst_price": 3.1,
         "savings_pct": 19.4,
-        "last_updated": "2026-05-02"
+        "last_updated": "2026-05-12"
     },
     {
-        "group_id": "a45ce471-b7da-444c-b1cd-62f8e303f95a",
+        "group_id": "7b598b18-a42e-49f5-b2f4-e1cf141382b9",
         "canonical_name": "برياز كهربائي مزدوج 13A Schneider",
         "products": [
             {
@@ -72,10 +72,10 @@
         "best_price": 3.2,
         "worst_price": 3.5,
         "savings_pct": 8.6,
-        "last_updated": "2026-05-02"
+        "last_updated": "2026-05-12"
     },
     {
-        "group_id": "c0e07beb-e537-42d0-8f3f-911ed73e5d62",
+        "group_id": "fb3de547-7059-46f2-a1a6-6d65e28f770e",
         "canonical_name": "قاطع حماية MCB 16A رأس واحد Hager",
         "products": [
             {
@@ -95,10 +95,10 @@
         "best_price": 4.5,
         "worst_price": 4.8,
         "savings_pct": 6.2,
-        "last_updated": "2026-05-02"
+        "last_updated": "2026-05-12"
     },
     {
-        "group_id": "baa24101-909c-4cd5-a7c1-a5451bac392c",
+        "group_id": "dd7ae1f0-8e61-403f-8a02-0a31aead8295",
         "canonical_name": "قاطع حماية MCB 32A",
         "products": [
             {
@@ -124,10 +124,10 @@
         "best_price": 4.9,
         "worst_price": 5.6,
         "savings_pct": 12.5,
-        "last_updated": "2026-05-02"
+        "last_updated": "2026-05-12"
     },
     {
-        "group_id": "e1504ea1-96c6-4ec3-918f-d2520a70b4c1",
+        "group_id": "c9f6789c-01b2-4b48-b276-ccd7578f91f9",
         "canonical_name": "لمبة LED 12W بيضاء بارده Philips",
         "products": [
             {
@@ -153,10 +153,10 @@
         "best_price": 1.25,
         "worst_price": 1.5,
         "savings_pct": 16.7,
-        "last_updated": "2026-05-02"
+        "last_updated": "2026-05-12"
     },
     {
-        "group_id": "6d9aa4e1-4bfd-4363-aaa4-0f0cb41bd777",
+        "group_id": "70978a81-4b96-464c-9184-d78491de70ee",
         "canonical_name": "لمبة LED 9W دافئ 3000K",
         "products": [
             {
@@ -188,10 +188,10 @@
         "best_price": 0.85,
         "worst_price": 1.2,
         "savings_pct": 29.2,
-        "last_updated": "2026-05-02"
+        "last_updated": "2026-05-12"
     },
     {
-        "group_id": "1203020b-4fb5-429c-8dac-21eb67ef0b13",
+        "group_id": "1a13c91c-ea1d-4241-b017-b1722fef474a",
         "canonical_name": "لوحة كهربائية 12 وحدة سطح",
         "products": [
             {
@@ -217,10 +217,10 @@
         "best_price": 16.5,
         "worst_price": 20.0,
         "savings_pct": 17.5,
-        "last_updated": "2026-05-02"
+        "last_updated": "2026-05-12"
     },
     {
-        "group_id": "a5b96b86-cdf7-4d2e-85f8-907a94989d5d",
+        "group_id": "28e86bce-bd06-42ea-93b9-528bd6267b58",
         "canonical_name": "كونتاكتور 25A 3 فاز Schneider",
         "products": [
             {
@@ -240,10 +240,10 @@
         "best_price": 22.0,
         "worst_price": 24.5,
         "savings_pct": 10.2,
-        "last_updated": "2026-05-02"
+        "last_updated": "2026-05-12"
     },
     {
-        "group_id": "3dc4f1a7-ae78-475f-a486-cd4c54c33d4c",
+        "group_id": "01c24dac-a2e1-46db-9853-dc0b2dd2a1e0",
         "canonical_name": "رله حراري 18-25A Schneider",
         "products": [
             {
@@ -263,10 +263,10 @@
         "best_price": 14.5,
         "worst_price": 16.0,
         "savings_pct": 9.4,
-        "last_updated": "2026-05-02"
+        "last_updated": "2026-05-12"
     },
     {
-        "group_id": "069fe125-8897-4695-a217-8a879140ff8f",
+        "group_id": "206d9cfa-993d-4a1f-8999-5b046f7f2f0d",
         "canonical_name": "كيبل ارضي NYY 4x6mm",
         "products": [
             {
@@ -292,10 +292,10 @@
         "best_price": 3.95,
         "worst_price": 4.6,
         "savings_pct": 14.1,
-        "last_updated": "2026-05-02"
+        "last_updated": "2026-05-12"
     },
     {
-        "group_id": "5358348b-e844-43fd-8af2-f9b6d4857ceb",
+        "group_id": "e3e71522-c9e9-4da5-b61c-99f9fd9a5de0",
         "canonical_name": "انذار دخان 9V بطارية",
         "products": [
             {
@@ -315,10 +315,10 @@
         "best_price": 5.8,
         "worst_price": 6.5,
         "savings_pct": 10.8,
-        "last_updated": "2026-05-02"
+        "last_updated": "2026-05-12"
     },
     {
-        "group_id": "97b652e0-1f12-4787-bf26-2c5c75fba9bf",
+        "group_id": "6c305d5b-dd7c-442c-a753-0c223b2483a7",
         "canonical_name": "قاطع تفاضلي RCD 40A",
         "products": [
             {
@@ -344,10 +344,10 @@
         "best_price": 18.0,
         "worst_price": 21.0,
         "savings_pct": 14.3,
-        "last_updated": "2026-05-02"
+        "last_updated": "2026-05-12"
     },
     {
-        "group_id": "a251d489-e318-4c41-befb-7f13745e1ef2",
+        "group_id": "d8fefaf7-345f-4b8d-be40-90c48e2890dd",
         "canonical_name": "جهاز UPS 650VA APC",
         "products": [
             {
@@ -367,10 +367,10 @@
         "best_price": 35.0,
         "worst_price": 38.0,
         "savings_pct": 7.9,
-        "last_updated": "2026-05-02"
+        "last_updated": "2026-05-12"
     },
     {
-        "group_id": "553c752f-a54a-498a-b7ac-2e46fb4b66e0",
+        "group_id": "a35bec1e-c0af-439c-9f3a-58ac5d5210d4",
         "canonical_name": "سبوت اضاءة LED مدمج 12 واط دائري",
         "products": [
             {
@@ -390,10 +390,10 @@
         "best_price": 7.8,
         "worst_price": 9.2,
         "savings_pct": 15.2,
-        "last_updated": "2026-05-02"
+        "last_updated": "2026-05-12"
     },
     {
-        "group_id": "9b89c5d9-0235-4ed3-810c-4d742c2e4afa",
+        "group_id": "6b9c8b78-d63e-4176-a26a-a5e1736412aa",
         "canonical_name": "ترموستات رقمي للتكييف",
         "products": [
             {
@@ -413,10 +413,10 @@
         "best_price": 13.5,
         "worst_price": 15.0,
         "savings_pct": 10.0,
-        "last_updated": "2026-05-02"
+        "last_updated": "2026-05-12"
     },
     {
-        "group_id": "b293f736-bad9-4e3e-a5c7-a30454cd9e8d",
+        "group_id": "9ffd0a43-951a-42cf-b894-3ed8e584a1e1",
         "canonical_name": "شريط LED 5m RGB ملون مع تحكم",
         "products": [
             {
@@ -442,10 +442,10 @@
         "best_price": 7.9,
         "worst_price": 9.5,
         "savings_pct": 16.8,
-        "last_updated": "2026-05-02"
+        "last_updated": "2026-05-12"
     },
     {
-        "group_id": "527298b9-c79b-4e89-be40-dff4a57d1e9a",
+        "group_id": "f9145595-8779-4730-95cd-98cb0bb5f349",
         "canonical_name": "UPS APC Back-UPS 650VA 230V",
         "products": [
             {
@@ -471,10 +471,10 @@
         "best_price": 40.0,
         "worst_price": 65.0,
         "savings_pct": 38.5,
-        "last_updated": "2026-05-02"
+        "last_updated": "2026-05-12"
     },
     {
-        "group_id": "41ef8024-7264-49f0-af69-e02cf54b8863",
+        "group_id": "e9d1e427-1e2c-46fa-aa4c-830b0a747dca",
         "canonical_name": "كشاف طوارئ LED قابل للشحن 5W",
         "products": [
             {
@@ -494,10 +494,10 @@
         "best_price": 12.5,
         "worst_price": 14.0,
         "savings_pct": 10.7,
-        "last_updated": "2026-05-02"
+        "last_updated": "2026-05-12"
     },
     {
-        "group_id": "b3b9ad22-b10a-4ef6-b930-6ed5bac7f061",
+        "group_id": "7dc8db24-123d-4208-aee2-a4c0f8a388a2",
         "canonical_name": "ترموستات ذكي WIFI للتكييف Honeywell",
         "products": [
             {
@@ -517,10 +517,10 @@
         "best_price": 28.0,
         "worst_price": 32.0,
         "savings_pct": 12.5,
-        "last_updated": "2026-05-02"
+        "last_updated": "2026-05-12"
     },
     {
-        "group_id": "d4c0d8bd-1449-470c-a24b-97d07812cf39",
+        "group_id": "601a6008-16eb-4d0f-bac2-5ad351456d6f",
         "canonical_name": "مكيف سبليت 1.5 طن Samsung",
         "products": [
             {
@@ -546,10 +546,10 @@
         "best_price": 335.0,
         "worst_price": 359.0,
         "savings_pct": 6.7,
-        "last_updated": "2026-05-02"
+        "last_updated": "2026-05-12"
     },
     {
-        "group_id": "c6414e4d-5e99-4c03-ab8a-c75d7752ed41",
+        "group_id": "9eb3008c-2616-42a1-8e81-4059442a63b5",
         "canonical_name": "مكيف سبليت 2 طن LG Dual Cool",
         "products": [
             {
@@ -575,6 +575,6 @@
         "best_price": 415.0,
         "worst_price": 449.0,
         "savings_pct": 7.6,
-        "last_updated": "2026-05-02"
+        "last_updated": "2026-05-12"
     }
 ]

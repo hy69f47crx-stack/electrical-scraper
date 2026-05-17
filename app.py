@@ -1,21 +1,26 @@
-
 import streamlit as st
-import requests
-import pandas as pd
-import sqlite3
+import streamlit.components.v1 as components
+from pathlib import Path
 
-API_URL = "http://127.0.0.1:8000/price"
+st.set_page_config(
+    page_title="نظام التسعير الكهربائي",
+    page_icon="⚡",
+    layout="wide",
+    initial_sidebar_state="collapsed",
+)
 
-st.title("🔍 Multi‑Store Price Checker")
+# Hide Streamlit chrome to give the React app full space
+st.markdown("""
+<style>
+    #MainMenu { visibility: hidden; }
+    header { visibility: hidden; }
+    footer { visibility: hidden; }
+    .block-container { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
+    .stApp { overflow: hidden; }
+</style>
+""", unsafe_allow_html=True)
 
-product_name = st.text_input("اسم المنتج:")
+html_path = Path(__file__).parent / "pricing-app.html"
+html_content = html_path.read_text(encoding="utf-8")
 
-if st.button("بحث"):
-    response = requests.get(API_URL, params={"product": product_name})
-    data = response.json()
-
-    if "error" in data:
-        st.error(data["error"])
-    else:
-        st.subheader(f"الأسعار لمنتج: {product_name}")
-        st.write(data["prices"])
+components.html(html_content, height=950, scrolling=False)
