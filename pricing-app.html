@@ -1817,9 +1817,6 @@ function DashboardScreen() {
     { id:3, name:'برياز مزدوج 13A Schneider', cQty:'30', eQty:'30', cPrice:'2.90', mPrice:'3.20' },
   ]);
   const [activeItem, setActiveItem]   = React.useState(null);
-  // Products table state
-  const [searchTerm, setSearchTerm]   = React.useState('');
-  const [sortHighest, setSortHighest] = React.useState(true);
 
   if (APP_DATA.loading) {
     return <div style={{ padding: '40px', textAlign: 'center', color: 'var(--ink-3)' }}>⚡ جاري التحميل...</div>;
@@ -1875,81 +1872,6 @@ function DashboardScreen() {
   var totalDiff        = Math.round((totalContractVal - totalMarketVal)*100)/100;
   var activePrices     = activeItem ? findMarketPrices(activeItem.name) : [];
 
-  var products = EMBEDDED_PRODUCTS;
-  var allPrices = products.map(function(p) { return p.price; });
-  var maxPriceVal = allPrices.length > 0 ? Math.max.apply(null, allPrices) : 0;
-
-  // ── Category detection ──────────────────────────────────────────────────────
-  var CAT_RULES = [
-    { key: 'كابلات',  label: 'كابلات',  color: '#4A90D9', test: function(n) { return /كيبل|كابل|cable|nyy/i.test(n); } },
-    { key: 'إضاءة',  label: 'إضاءة',   color: '#F5A623', test: function(n) { return /لمب|led|اضاء|إضاء|ضوء|سبوت|تراك|شريط/i.test(n); } },
-    { key: 'تكييف',  label: 'تكييف',   color: '#4ECDC4', test: function(n) { return /مكيف|تكييف|ترموستات|thermostat/i.test(n); } },
-    { key: 'حماية',  label: 'حماية',   color: '#FF6B6B', test: function(n) { return /قاطع|mcb|rcd|حماية|رله|انذار|حريق|دخان/i.test(n); } },
-    { key: 'مقابس',  label: 'مقابس',   color: '#7ED321', test: function(n) { return /برياز|مقبس|مفتاح|وصلة|socket|switch/i.test(n); } },
-    { key: 'لوحات',  label: 'لوحات',   color: '#F8632B', test: function(n) { return /لوحة|panel/i.test(n); } },
-    { key: 'طاقة',   label: 'طاقة',    color: '#9B59B6', test: function(n) { return /ups|مولد|طاقة|شمس|power|battery/i.test(n); } },
-  ];
-
-  function detectCategory(name) {
-    for (var ci = 0; ci < CAT_RULES.length; ci++) {
-      if (CAT_RULES[ci].test(name)) return CAT_RULES[ci];
-    }
-    return { key: 'أخرى', label: 'أخرى', color: '#9E9E9E' };
-  }
-
-  // ── Filtered & sorted table products ────────────────────────────────────────
-  var lowerSearch = searchTerm.toLowerCase();
-  var filtered = products.filter(function(p) {
-    if (!lowerSearch) return true;
-    return p.name.toLowerCase().includes(lowerSearch) || p.store.toLowerCase().includes(lowerSearch);
-  });
-  var sorted = filtered.slice().sort(function(a, b) {
-    return sortHighest ? b.price - a.price : a.price - b.price;
-  });
-  var tableRows = sorted.slice(0, 12);
-
-  // ── KPI values ───────────────────────────────────────────────────────────────
-  var totalProducts = products.length;
-  var uniqueStores = APP_DATA.stores.length;
-  var avgPrice = APP_DATA.kpis.avgPrice;
-  var highestPrice = maxPriceVal;
-
-  // ── Bar chart: products per store ────────────────────────────────────────────
-  var storeColors = ['#FF6B6B', '#4ECDC4', '#AA96DA', '#F5A623', '#7ED321', '#4A90D9', '#F8632B'];
-  var storeChartData = APP_DATA.stores.map(function(s, si) {
-    return { name: s.name, count: s.productCount, color: storeColors[si % storeColors.length] };
-  });
-  var maxStoreCount = storeChartData.length > 0 ? Math.max.apply(null, storeChartData.map(function(d) { return d.count; })) : 1;
-  var barW = 600;
-  var barH = 200;
-  var barPad = 40;
-  var barSlot = storeChartData.length > 0 ? Math.floor((barW - barPad * 2) / storeChartData.length) : 60;
-  var barWidth = Math.max(10, barSlot - 12);
-
-  // ── Histogram: price distribution ────────────────────────────────────────────
-  var buckets = [
-    { label: '0-5',    min: 0,   max: 5,        color: '#4ECDC4' },
-    { label: '5-20',   min: 5,   max: 20,       color: '#AA96DA' },
-    { label: '20-50',  min: 20,  max: 50,       color: '#F5A623' },
-    { label: '50-100', min: 50,  max: 100,      color: '#FF6B6B' },
-    { label: '100+',   min: 100, max: Infinity, color: '#F8632B' },
-  ];
-  buckets.forEach(function(b) {
-    b.count = products.filter(function(p) { return p.price >= b.min && p.price < b.max; }).length;
-  });
-  var maxBucketCount = Math.max.apply(null, buckets.map(function(b) { return b.count; })) || 1;
-  var histSlot = Math.floor((barW - barPad * 2) / buckets.length);
-  var histBarW = histSlot - 12;
-
-  // ── Category breakdown ────────────────────────────────────────────────────────
-  var catMap = {};
-  products.forEach(function(p) {
-    var cat = detectCategory(p.name);
-    if (!catMap[cat.key]) catMap[cat.key] = { label: cat.label, color: cat.color, count: 0 };
-    catMap[cat.key].count++;
-  });
-  var catList = Object.values(catMap).sort(function(a, b) { return b.count - a.count; });
-  var maxCatCount = catList.length > 0 ? catList[0].count : 1;
 
   return (
     <div style={{ padding:'14px 14px 36px' }}>
@@ -2175,92 +2097,238 @@ function DashboardScreen() {
         </div>
       )}
 
-      {/* ── Category Breakdown ── */}
-      <div style={{ background:'var(--surface)', borderRadius:14, padding:'14px 16px', border:'1px solid var(--line)', marginBottom:14 }}>
-        <div style={{ fontSize:12, fontWeight:700, color:'var(--ink)', marginBottom:12 }}>🗂️ تصنيف المنتجات</div>
-        <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'8px 20px' }}>
-          {catList.map(function(cat, ci) {
-            var pct = Math.round((cat.count / totalProducts) * 100);
-            return (
-              <div key={ci}>
-                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:3 }}>
-                  <span style={{ fontSize:11, fontWeight:600, color:'var(--ink)' }}>{cat.label}</span>
-                  <span style={{ fontSize:10, color:'var(--ink-4)' }}>{toEnglishNumbers(String(cat.count))} · {toEnglishNumbers(String(pct))}%</span>
-                </div>
-                <div style={{ height:6, borderRadius:3, background:'var(--bg-soft)', overflow:'hidden' }}>
-                  <div style={{ height:'100%', width:pct+'%', background:cat.color, borderRadius:3 }} />
-                </div>
-              </div>
-            );
-          })}
+      <DashboardCalendarCard/>
+
+    </div>
+  );
+}
+
+// ── Dashboard Calendar Card ────────────────────────────────────────────────────
+function DashboardCalendarCard() {
+  var STORAGE_KEY = 'ea_calendar_v1';
+  var MONTHS_AR = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+  var DAYS_EN   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var DAYS_AR   = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  var today = new Date(); today.setHours(0,0,0,0);
+  var todayStr = today.toISOString().slice(0,10);
+
+  var [events, setEvents] = React.useState(function(){
+    try {
+      var raw = JSON.parse(localStorage.getItem(STORAGE_KEY))||{};
+      if (Array.isArray(raw)) return raw.reduce(function(acc,e){ if(!acc[e.date])acc[e.date]=[]; acc[e.date].push(e); return acc; },{});
+      return raw;
+    } catch(e){ return {}; }
+  });
+  var [viewDate, setViewDate] = React.useState(new Date(today.getFullYear(), today.getMonth(), 1));
+  var [selDate,  setSelDate]  = React.useState(todayStr);
+  var [newTitle, setNewTitle] = React.useState('');
+  var [newTime,  setNewTime]  = React.useState('');
+  var [newCat,   setNewCat]   = React.useState('Personal');
+
+  React.useEffect(function(){
+    function onStorage(){ try{ var r=JSON.parse(localStorage.getItem(STORAGE_KEY))||{}; if(!Array.isArray(r))setEvents(r); }catch(e){} }
+    window.addEventListener('storage', onStorage);
+    return function(){ window.removeEventListener('storage', onStorage); };
+  }, []);
+
+  var yr = viewDate.getFullYear();
+  var mo = viewDate.getMonth();
+  var firstDay = new Date(yr, mo, 1).getDay();
+  var daysInMonth = new Date(yr, mo+1, 0).getDate();
+
+  function prevMonth(){ setViewDate(new Date(yr, mo-1, 1)); }
+  function nextMonth(){ setViewDate(new Date(yr, mo+1, 1)); }
+  function goToday(){ setViewDate(new Date(today.getFullYear(), today.getMonth(), 1)); setSelDate(todayStr); }
+
+  function addEvent(){
+    if(!newTitle.trim()) return;
+    var eObj = { title:newTitle, time:newTime, category:newCat, emoji:'📌', color:'#4ECDC4' };
+    var newEvents = {...events};
+    if(!newEvents[selDate]) newEvents[selDate] = [];
+    newEvents[selDate].push(eObj);
+    setEvents(newEvents);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newEvents));
+    setNewTitle('');
+    setNewTime('');
+    setNewCat('Personal');
+  }
+
+  var selEvts = events[selDate]||[];
+  var selObj  = new Date(selDate+'T00:00:00');
+  var selDayName = DAYS_AR[selObj.getDay()];
+  var selLabel = selDayName.toUpperCase() + ', ' + MONTHS_AR[selObj.getMonth()] + ' ' + selObj.getDate();
+
+  var COLOR_OPTS = [
+    {name:'Personal', color:'#FF6B6B'},
+    {name:'Work', color:'#ff8c32'},
+    {name:'Health', color:'#AA96DA'},
+    {name:'Other', color:'#F5A623'},
+  ];
+  var selColor = COLOR_OPTS.find(function(c){return c.name===newCat;})?.color||'#ff8c32';
+
+  var cells = [];
+  for(var b=0;b<firstDay;b++) cells.push(null);
+  for(var d=1;d<=daysInMonth;d++) cells.push(d);
+
+  return (
+    <div style={{ marginTop:20, borderRadius:16, overflow:'hidden',
+      background:'#fff', border:'1px solid #ffe8da',
+      boxShadow:'0 8px 32px rgba(255,140,50,0.08)', maxWidth:680, margin:'20px auto' }}>
+
+      {/* ── Header ── */}
+      <div style={{ background:'linear-gradient(135deg, #fff9f5 0%, #ffffff 100%)', padding:'18px 24px', borderBottom:'2px solid #fff5f0',
+        display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+          <span style={{ fontSize:20, fontWeight:800, color:'#1a1a1a', letterSpacing:'-0.5px' }}>
+            {MONTHS_AR[mo]} {yr}
+          </span>
+          <span style={{ fontSize:12, fontWeight:600, color:'#ff8c32', background:'#fff5f0',
+            padding:'4px 10px', borderRadius:99 }}>{daysInMonth}</span>
+        </div>
+        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+          <button onClick={goToday} style={{ padding:'6px 14px', borderRadius:8,
+            background:'#fff', border:'1px solid #ffe8da', color:'#ff8c32',
+            fontSize:11, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}>Today</button>
+          <button onClick={prevMonth} style={{ width:28, height:28, borderRadius:6,
+            background:'#fff', border:'1px solid #ffe8da', color:'#ff8c32',
+            cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'inherit' }}>‹</button>
+          <button onClick={nextMonth} style={{ width:28, height:28, borderRadius:6,
+            background:'#fff', border:'1px solid #ffe8da', color:'#ff8c32',
+            cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'inherit' }}>›</button>
         </div>
       </div>
 
-      {/* ── Products Table ── */}
-      <div style={{ background:'var(--surface)', borderRadius:14, padding:'14px 14px', border:'1px solid var(--line)' }}>
-        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12, gap:8, flexWrap:'wrap' }}>
-          <div style={{ fontSize:12, fontWeight:700, color:'var(--ink)' }}>📋 قائمة المنتجات</div>
+      {/* ── Day names ── */}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:0,
+        padding:'0 24px', paddingTop:16, marginBottom:8 }}>
+        {DAYS_EN.map(function(d){ return (
+          <div key={d} style={{ textAlign:'center', fontSize:11, fontWeight:700,
+            color:'#ff8c32', paddingBottom:8 }}>{d}</div>
+        ); })}
+      </div>
+
+      {/* ── Grid ── */}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:8,
+        padding:'0 24px 0 24px' }}>
+        {cells.map(function(day, ci){
+          if(!day) return <div key={'b'+ci}/>;
+          var ds = new Date(yr, mo, day).toISOString().slice(0,10);
+          var isToday  = ds === todayStr;
+          var isSel    = ds === selDate;
+          var dayEvts  = events[ds]||[];
+          var hasEvts  = dayEvts.length > 0;
+          return (
+            <div key={ds}
+              onClick={function(){ setSelDate(ds); }}
+              style={{
+                display:'flex', flexDirection:'column', alignItems:'center',
+                padding:'10px 6px', borderRadius:10, cursor:'pointer',
+                background: isSel ? '#fff5f0' : isToday ? '#fff9f5' : '#fff',
+                border: isSel ? '2px solid #ff8c32' : isToday ? '1.5px solid #ffe8da' : '1.5px solid #ffe8da',
+                transition:'all 0.12s',
+                minHeight:70,
+              }}>
+              <span style={{
+                fontSize:14, fontWeight: isSel?700:isToday?600:400, lineHeight:1, marginBottom:4,
+                color: isSel ? '#ff8c32' : isToday ? '#ff8c32' : '#333',
+              }}>{day}</span>
+              {hasEvts && (
+                <div style={{ display:'flex', gap:2, flexWrap:'wrap', justifyContent:'center', marginTop:2 }}>
+                  {dayEvts.slice(0,3).map(function(ev,ei){
+                    return <div key={ei} style={{ width:5, height:5, borderRadius:'50%',
+                      background: ev.color||'#ff8c32' }}/>;
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Events Section ── */}
+      <div style={{ padding:'20px 24px 24px', borderTop:'1px solid #ffe8da' }}>
+        <div style={{ fontSize:11, fontWeight:700, color:'#ff8c32', textTransform:'uppercase',
+          letterSpacing:'0.05em', marginBottom:12 }}>
+          {selLabel} · {selEvts.length} EVENT{selEvts.length!==1?'S':''}
+        </div>
+
+        {/* Events list */}
+        {selEvts.length > 0 ? (
+          <div style={{ display:'flex', flexDirection:'column', gap:8, marginBottom:16 }}>
+            {selEvts.map(function(ev,ei){
+              return (
+                <div key={ei} style={{ display:'flex', alignItems:'flex-start', gap:12,
+                  padding:'10px 14px', background:'#fff5f0', borderRadius:10,
+                  border:'1px solid #ffe8da', borderLeft:'4px solid '+(ev.color||'#ff8c32') }}>
+                  <span style={{ fontSize:16, lineHeight:1, flexShrink:0 }}>{ev.emoji||'📌'}</span>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontSize:12, fontWeight:600, color:'#1a1a1a' }}>
+                      {ev.time && <span style={{ color:'#ff8c32', marginRight:8, direction:'ltr', fontSize:11, fontWeight:500 }}>{ev.time}</span>}
+                      {ev.title}
+                    </div>
+                  </div>
+                  {ev.category && (
+                    <span style={{ fontSize:9, fontWeight:700, padding:'2px 8px', borderRadius:99,
+                      background:ev.color+'18', color:ev.color, whiteSpace:'nowrap' }}>
+                      {ev.category}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : null}
+
+        {/* Add event form */}
+        <div style={{ padding:'12px 14px', background:'#fff5f0', borderRadius:10,
+          border:'1px solid #ffe8da' }}>
+          <input type="text" placeholder="Dinner"
+            value={newTitle}
+            onChange={function(e){setNewTitle(e.target.value);}}
+            style={{ width:'100%', padding:'8px 10px', borderRadius:6, border:'1px solid #ffe8da',
+              background:'#fff', color:'#333', fontSize:12, fontFamily:'inherit', marginBottom:8, outline:'none' }}
+          />
           <div style={{ display:'flex', gap:8, alignItems:'center' }}>
-            <input
-              type="text"
-              placeholder="بحث..."
-              value={searchTerm}
-              onChange={function(e) { setSearchTerm(e.target.value); }}
-              style={{ padding:'6px 10px', borderRadius:8, border:'1px solid var(--line)', background:'var(--bg)', color:'var(--ink)', fontSize:12, width:130, fontFamily:'inherit' }}
+            <input type="time"
+              value={newTime}
+              onChange={function(e){setNewTime(e.target.value);}}
+              style={{ flex:1, padding:'6px 8px', borderRadius:6, border:'1px solid #ffe8da',
+                background:'#fff', color:'#333', fontSize:11, fontFamily:'inherit', outline:'none' }}
             />
-            <button
-              onClick={function() { setSortHighest(!sortHighest); }}
-              style={{ padding:'6px 10px', borderRadius:8, border:'none', background: sortHighest ? '#FF6B6B' : '#4ECDC4', color:'white', fontSize:10, fontWeight:700, cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap' }}
-            >
-              {sortHighest ? '↓ أعلى سعر' : '↑ أدنى سعر'}
+            <span style={{ fontSize:10, color:'#ff8c32' }}>{newTime||'9:00'}</span>
+          </div>
+
+          {/* Color picker */}
+          <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:8, marginBottom:10 }}>
+            {COLOR_OPTS.map(function(opt){
+              return (
+                <button key={opt.name}
+                  onClick={function(){setNewCat(opt.name);}}
+                  style={{ width:24, height:24, borderRadius:'50%', background:opt.color,
+                    border: newCat===opt.name ? '3px solid #ff8c32' : '2px solid transparent',
+                    cursor:'pointer', transition:'all 0.12s' }}
+                  title={opt.name}/>
+              );
+            })}
+          </div>
+
+          <div style={{ display:'flex', gap:6, alignItems:'center' }}>
+            <select value={newCat}
+              onChange={function(e){setNewCat(e.target.value);}}
+              style={{ flex:1, padding:'6px 8px', borderRadius:6, border:'1px solid #ffe8da',
+                background:'#fff', color:'#333', fontSize:11, fontFamily:'inherit', outline:'none' }}>
+              {COLOR_OPTS.map(function(opt){
+                return <option key={opt.name} value={opt.name}>{opt.name}</option>;
+              })}
+            </select>
+            <button onClick={addEvent}
+              style={{ padding:'6px 16px', borderRadius:6, background:'linear-gradient(135deg, #ff8c32 0%, #ff7e26 100%)', border:'none',
+                color:'#fff', fontSize:11, fontWeight:700, cursor:'pointer', fontFamily:'inherit' }}>
+              Add
             </button>
           </div>
         </div>
-
-        <div style={{ overflowX:'auto' }}>
-          <table style={{ width:'100%', borderCollapse:'collapse', fontSize:12 }}>
-            <thead>
-              <tr>
-                <th style={{ padding:'8px 8px', textAlign:'right', color:'var(--ink-4)', fontWeight:600, borderBottom:'2px solid var(--line)', fontSize:11 }}>#</th>
-                <th style={{ padding:'8px 8px', textAlign:'right', color:'var(--ink-4)', fontWeight:600, borderBottom:'2px solid var(--line)', fontSize:11 }}>المنتج</th>
-                <th style={{ padding:'8px 8px', textAlign:'right', color:'var(--ink-4)', fontWeight:600, borderBottom:'2px solid var(--line)', fontSize:11 }}>المتجر</th>
-                <th style={{ padding:'8px 8px', textAlign:'right', color:'var(--ink-4)', fontWeight:600, borderBottom:'2px solid var(--line)', fontSize:11 }}>الفئة</th>
-                <th style={{ padding:'8px 8px', textAlign:'left',  color:'var(--ink-4)', fontWeight:600, borderBottom:'2px solid var(--line)', fontSize:11 }}>السعر</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tableRows.map(function(p, ri) {
-                var cat = detectCategory(p.name);
-                var priceColor = p.price > 50 ? '#FF6B6B' : p.price > 10 ? '#F5A623' : '#7ED321';
-                return (
-                  <tr key={ri}
-                    onMouseEnter={function(e) { e.currentTarget.style.background='var(--bg-soft)'; }}
-                    onMouseLeave={function(e) { e.currentTarget.style.background='transparent'; }}
-                    style={{ transition:'background 0.1s' }}
-                  >
-                    <td style={{ padding:'7px 8px', color:'var(--ink-4)', borderBottom:'1px solid var(--line)' }}>{toEnglishNumbers(String(ri+1))}</td>
-                    <td style={{ padding:'7px 8px', color:'var(--ink)', fontWeight:500, borderBottom:'1px solid var(--line)', maxWidth:180, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{p.name}</td>
-                    <td style={{ padding:'7px 8px', color:'var(--ink-3)', borderBottom:'1px solid var(--line)', whiteSpace:'nowrap', fontSize:11 }}>{p.store}</td>
-                    <td style={{ padding:'7px 8px', borderBottom:'1px solid var(--line)' }}>
-                      <span style={{ display:'inline-block', padding:'2px 7px', borderRadius:99, background:cat.color+'18', color:cat.color, fontSize:10, fontWeight:700, border:'1px solid '+cat.color+'30' }}>{cat.label}</span>
-                    </td>
-                    <td style={{ padding:'7px 8px', color:priceColor, fontWeight:800, borderBottom:'1px solid var(--line)', textAlign:'left', direction:'ltr', fontSize:12 }} className="num">
-                      {toEnglishNumbers(p.price.toFixed(2))} <span style={{ fontSize:9, fontWeight:400, color:'var(--ink-4)' }}>د.ك</span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        {filtered.length > 12 && (
-          <div style={{ marginTop:10, textAlign:'center', fontSize:11, color:'var(--ink-4)' }}>
-            عرض {toEnglishNumbers('12')} من {toEnglishNumbers(String(filtered.length))} منتج
-          </div>
-        )}
       </div>
-
     </div>
   );
 }
@@ -4374,134 +4442,121 @@ function CalendarScreen() {
   var btnBase = { border:'1px solid var(--line)', background:'var(--surface)', cursor:'pointer', fontFamily:'inherit' };
 
   return (
-    <div style={{ padding:'14px 14px 36px' }}>
-      <div style={cardStyle}>
+    <div style={{ display:'flex', flexDirection:'row-reverse', height:'calc(100vh - 56px)', overflow:'hidden', fontFamily:'inherit' }}>
 
-        {/* ── Header ── */}
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'18px 20px 14px', borderBottom:'1px solid var(--line)' }}>
-          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-            <span style={{ fontSize:19, fontWeight:800, color:'var(--ink)' }}>{MONTH_NAMES[viewMonth]} {viewYear}</span>
-            <span style={{ background:'var(--bg-soft)', color:'var(--ink-3)', borderRadius:20, padding:'2px 10px', fontSize:12, fontWeight:600 }}>{totalEventsInMonth()}</span>
-          </div>
-          <div style={{ display:'flex', gap:8, alignItems:'center' }}>
-            <button onClick={goToToday} style={{ ...btnBase, padding:'5px 14px', borderRadius:20, color:'var(--ink-2)', fontSize:12, fontWeight:600 }}>اليوم</button>
-            <button onClick={prevMonth} style={{ ...btnBase, width:30, height:30, borderRadius:8, display:'flex', alignItems:'center', justifyContent:'center' }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M15 18l-6-6 6-6"/></svg>
-            </button>
-            <button onClick={nextMonth} style={{ ...btnBase, width:30, height:30, borderRadius:8, display:'flex', alignItems:'center', justifyContent:'center' }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
-            </button>
-          </div>
+      {/* ── Right panel: events + add form ── */}
+      <div style={{ width:280, flexShrink:0, display:'flex', flexDirection:'column', borderLeft:'1px solid var(--line)', background:'var(--bg-soft)', overflow:'hidden' }}>
+
+        {/* Selected day header */}
+        <div style={{ padding:'18px 16px 12px', borderBottom:'1px solid var(--line)', background:'var(--surface)' }}>
+          <div style={{ fontSize:13, fontWeight:700, color:'var(--ink)', marginBottom:2 }}>{selDateLabel}</div>
+          <div style={{ fontSize:11, color:'var(--ink-3)' }}>{selectedEvts.length} {selectedEvts.length === 1 ? 'حدث' : 'أحداث'}</div>
         </div>
 
-        {/* ── Day name headers ── */}
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', padding:'12px 16px 0' }}>
-          {DAY_NAMES.map(function(dn) {
-            return <div key={dn} style={{ textAlign:'center', fontSize:11, fontWeight:600, color:'var(--ink-4)', paddingBottom:8 }}>{dn}</div>;
+        {/* Events list */}
+        <div style={{ flex:1, overflowY:'auto', padding:'10px 12px', display:'flex', flexDirection:'column', gap:6 }}>
+          {selectedEvts.length === 0 && (
+            <div style={{ color:'var(--ink-4)', fontSize:12, textAlign:'center', padding:'24px 0', fontStyle:'italic' }}>لا توجد أحداث</div>
+          )}
+          {selectedEvts.map(function(ev) {
+            return (
+              <div key={ev.id} style={{ background:'var(--surface)', borderRadius:12, padding:'10px 12px', border:'1px solid var(--line)', display:'flex', alignItems:'center', gap:8 }}>
+                <div style={{ width:8, height:8, borderRadius:'50%', background:ev.color, flexShrink:0 }}/>
+                <div style={{ flex:1, minWidth:0 }}>
+                  {ev.time && <div style={{ fontSize:10, color:'var(--ink-4)', direction:'ltr', fontVariantNumeric:'tabular-nums', marginBottom:1 }}>{ev.time}</div>}
+                  <div style={{ fontSize:12, fontWeight:600, color:'var(--ink)', whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{ev.title}</div>
+                  <span style={{ background:ev.color+'22', color:ev.color, padding:'1px 7px', borderRadius:20, fontSize:9, fontWeight:700 }}>{ev.category}</span>
+                </div>
+                <button onClick={function() { removeEvent(ev.id); }}
+                  style={{ background:'none', border:'none', cursor:'pointer', color:'var(--ink-4)', fontSize:16, lineHeight:1, padding:'0 2px', opacity:0.5 }}
+                  onMouseEnter={function(e){e.currentTarget.style.opacity='1';}}
+                  onMouseLeave={function(e){e.currentTarget.style.opacity='0.5';}}>×</button>
+              </div>
+            );
           })}
         </div>
 
-        {/* ── Day grid ── */}
-        <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', padding:'0 12px 12px', gap:'2px 0' }}>
-          {cells.map(function(cell, idx) {
-            if (!cell.current) {
-              return <div key={idx} style={{ textAlign:'center', padding:'6px 0', opacity:0.25 }}><span style={{ fontSize:13 }}>{cell.day}</span></div>;
+        {/* Add event form */}
+        <div style={{ padding:'12px', borderTop:'1px solid var(--line)', background:'var(--surface)' }}>
+          <input type="text" placeholder="عنوان الحدث..." value={newTitle}
+            onChange={function(e){setNewTitle(e.target.value);}}
+            onKeyDown={function(e){if(e.key==='Enter')addEvent();}}
+            style={{ width:'100%', padding:'8px 10px', borderRadius:8, border:'1px solid var(--line)', background:'var(--bg-soft)', color:'var(--ink)', fontSize:12, fontFamily:'inherit', outline:'none', marginBottom:8, boxSizing:'border-box' }}
+          />
+          <div style={{ display:'flex', gap:6, marginBottom:8, alignItems:'center' }}>
+            <input type="time" value={newTime} onChange={function(e){setNewTime(e.target.value);}}
+              style={{ flex:1, padding:'6px 8px', borderRadius:8, border:'1px solid var(--line)', background:'var(--bg-soft)', color:'var(--ink)', fontSize:11, fontFamily:'inherit', outline:'none' }}
+            />
+            <select value={newCategory} onChange={function(e){setNewCategory(e.target.value);}}
+              style={{ flex:1, padding:'6px 8px', borderRadius:8, border:'1px solid var(--line)', background:'var(--bg-soft)', color:newColor, fontSize:11, fontFamily:'inherit', fontWeight:700, cursor:'pointer', outline:'none' }}>
+              {EVENT_CATEGORIES.map(function(cat){return <option key={cat} value={cat}>{cat}</option>;})}
+            </select>
+          </div>
+          <div style={{ display:'flex', gap:5, alignItems:'center', marginBottom:10 }}>
+            {EVENT_COLORS.map(function(c){
+              return <button key={c} onClick={function(){setNewColor(c);}} style={{ width:22, height:22, borderRadius:'50%', background:c, cursor:'pointer', padding:0, border: newColor===c ? '3px solid var(--ink)' : '2px solid transparent', flexShrink:0 }}/>;
+            })}
+          </div>
+          <button onClick={addEvent}
+            style={{ width:'100%', padding:'8px', borderRadius:8, background:'var(--ink)', color:'var(--bg)', border:'none', fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:'inherit' }}>
+            + إضافة حدث
+          </button>
+        </div>
+      </div>
+
+      {/* ── Left panel: month calendar ── */}
+      <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden', background:'var(--surface)' }}>
+
+        {/* Month navigation header */}
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'16px 20px 12px', borderBottom:'1px solid var(--line)', flexShrink:0 }}>
+          <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+            <span style={{ fontSize:18, fontWeight:800, color:'var(--ink)' }}>{MONTH_NAMES[viewMonth]}</span>
+            <span style={{ fontSize:18, fontWeight:400, color:'var(--ink-3)' }}>{viewYear}</span>
+            <span style={{ background:'var(--bg-soft)', color:'var(--ink-3)', borderRadius:20, padding:'2px 10px', fontSize:11, fontWeight:600 }}>{totalEventsInMonth()} حدث</span>
+          </div>
+          <div style={{ display:'flex', gap:6, alignItems:'center' }}>
+            <button onClick={goToToday} style={{ padding:'5px 14px', borderRadius:20, border:'1px solid var(--line)', background:'var(--surface)', color:'var(--ink-2)', fontSize:12, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}>اليوم</button>
+            <button onClick={prevMonth} style={{ width:30, height:30, borderRadius:8, border:'1px solid var(--line)', background:'var(--surface)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <button onClick={nextMonth} style={{ width:30, height:30, borderRadius:8, border:'1px solid var(--line)', background:'var(--surface)', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer' }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Day headers */}
+        <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', padding:'10px 16px 0', flexShrink:0 }}>
+          {DAY_NAMES.map(function(dn){
+            return <div key={dn} style={{ textAlign:'center', fontSize:11, fontWeight:700, color:'var(--ink-4)', paddingBottom:6 }}>{dn}</div>;
+          })}
+        </div>
+
+        {/* Day grid */}
+        <div style={{ flex:1, display:'grid', gridTemplateColumns:'repeat(7,1fr)', gridTemplateRows:'repeat(6,1fr)', padding:'0 12px 12px', gap:'1px', overflow:'hidden' }}>
+          {cells.map(function(cell, idx){
+            if(!cell.current){
+              return <div key={idx} style={{ display:'flex', alignItems:'center', justifyContent:'center' }}><span style={{ fontSize:12, color:'var(--ink-4)', opacity:0.3 }}>{cell.day}</span></div>;
             }
             var isToday = cell.dateStr === todayStr;
             var isSel = cell.dateStr === selectedDate;
             var dots = eventsForDate(cell.dateStr).slice(0,3);
             return (
-              <div key={idx} onClick={function() { setSelectedDate(cell.dateStr); }}
-                style={{ textAlign:'center', padding:'3px 2px', cursor:'pointer' }}>
-                <div style={{
-                  display:'inline-flex', flexDirection:'column', alignItems:'center', gap:3,
-                  background: isSel ? 'var(--ink)' : isToday ? 'var(--bg-soft)' : 'transparent',
-                  borderRadius:10, padding:'4px 5px', minWidth:30, transition:'background 0.15s',
-                }}>
-                  <span style={{
-                    fontSize:13, fontWeight: (isToday || isSel) ? 700 : 400, lineHeight:1,
-                    color: isSel ? 'var(--bg)' : isToday ? 'var(--ink)' : 'var(--ink-2)',
-                  }}>{cell.day}</span>
-                  {dots.length > 0 && (
-                    <div style={{ display:'flex', gap:2 }}>
-                      {dots.map(function(ev, ei) {
-                        return <div key={ei} style={{ width:5, height:5, borderRadius:'50%', background: isSel ? 'rgba(255,255,255,0.65)' : ev.color }}/>;
-                      })}
-                    </div>
-                  )}
-                </div>
+              <div key={idx} onClick={function(){setSelectedDate(cell.dateStr);}}
+                style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', cursor:'pointer', borderRadius:10, transition:'background 0.15s',
+                  background: isSel ? 'var(--ink)' : isToday ? 'var(--bg-soft)' : 'transparent' }}
+                onMouseEnter={function(e){if(!isSel)e.currentTarget.style.background='var(--bg-soft)';}}
+                onMouseLeave={function(e){if(!isSel)e.currentTarget.style.background=isToday?'var(--bg-soft)':'transparent';}}>
+                <span style={{ fontSize:13, fontWeight:(isToday||isSel)?700:400, lineHeight:1, color: isSel?'var(--bg)':isToday?'var(--ink)':'var(--ink-2)' }}>{cell.day}</span>
+                {dots.length>0 && (
+                  <div style={{ display:'flex', gap:2, marginTop:3 }}>
+                    {dots.map(function(ev,ei){return <div key={ei} style={{ width:4, height:4, borderRadius:'50%', background: isSel?'rgba(255,255,255,0.65)':ev.color }}/>;}) }
+                  </div>
+                )}
               </div>
             );
           })}
         </div>
-
-        {/* ── Selected day events ── */}
-        <div style={{ borderTop:'1px solid var(--line)', padding:'14px 20px' }}>
-          <div style={{ fontSize:11, fontWeight:700, color:'var(--ink-4)', marginBottom:10, letterSpacing:'0.04em' }}>
-            {selDateLabel} · {selectedEvts.length} {selectedEvts.length === 1 ? 'حدث' : 'أحداث'}
-          </div>
-          {selectedEvts.length === 0 && (
-            <div style={{ color:'var(--ink-4)', fontSize:12, textAlign:'center', padding:'10px 0', fontStyle:'italic' }}>
-              لا توجد أحداث في هذا اليوم
-            </div>
-          )}
-          {selectedEvts.map(function(ev) {
-            return (
-              <div key={ev.id} style={{ display:'flex', alignItems:'center', gap:10, padding:'8px 0', borderBottom:'1px solid var(--line)' }}>
-                <div style={{ width:8, height:8, borderRadius:'50%', background:ev.color, flexShrink:0 }}/>
-                {ev.time && <span style={{ fontSize:12, color:'var(--ink-4)', minWidth:38, direction:'ltr', fontVariantNumeric:'tabular-nums' }}>{ev.time}</span>}
-                <span style={{ flex:1, fontSize:13, fontWeight:600, color:'var(--ink)' }}>{ev.title}</span>
-                <span style={{ background:ev.color+'22', color:ev.color, padding:'2px 9px', borderRadius:20, fontSize:10, fontWeight:700, whiteSpace:'nowrap' }}>{ev.category}</span>
-                <button onClick={function() { removeEvent(ev.id); }} title="حذف"
-                  style={{ background:'none', border:'none', cursor:'pointer', color:'var(--ink-4)', fontSize:18, lineHeight:1, padding:'0 2px', opacity:0.5, transition:'opacity 0.15s' }}
-                  onMouseEnter={function(e) { e.currentTarget.style.opacity='1'; }}
-                  onMouseLeave={function(e) { e.currentTarget.style.opacity='0.5'; }}>×</button>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* ── Add event form ── */}
-        <div style={{ borderTop:'1px solid var(--line)', padding:'14px 20px', background:'var(--bg-soft)' }}>
-          <div style={{ display:'flex', gap:8, marginBottom:10 }}>
-            <input type="text" placeholder="عنوان الحدث..." value={newTitle}
-              onChange={function(e) { setNewTitle(e.target.value); }}
-              onKeyDown={function(e) { if (e.key === 'Enter') addEvent(); }}
-              style={{ flex:1, padding:'8px 12px', borderRadius:10, border:'1px solid var(--line)', background:'var(--surface)', color:'var(--ink)', fontSize:13, fontFamily:'inherit', outline:'none' }}
-            />
-            <input type="time" value={newTime}
-              onChange={function(e) { setNewTime(e.target.value); }}
-              style={{ width:90, padding:'8px 8px', borderRadius:10, border:'1px solid var(--line)', background:'var(--surface)', color:'var(--ink)', fontSize:12, fontFamily:'inherit', outline:'none' }}
-            />
-          </div>
-          <div style={{ display:'flex', alignItems:'center', gap:8, flexWrap:'wrap' }}>
-            {EVENT_COLORS.map(function(c) {
-              return (
-                <button key={c} onClick={function() { setNewColor(c); }} style={{
-                  width:26, height:26, borderRadius:'50%', background:c, cursor:'pointer', padding:0,
-                  border: newColor === c ? '3px solid var(--ink)' : '3px solid transparent',
-                  boxShadow: newColor === c ? ('0 0 0 1px ' + c) : 'none',
-                  transition:'border 0.15s, box-shadow 0.15s',
-                  display:'flex', alignItems:'center', justifyContent:'center',
-                }}>
-                  {newColor === c && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5"><path d="M5 12l5 5 9-11"/></svg>}
-                </button>
-              );
-            })}
-            <select value={newCategory} onChange={function(e) { setNewCategory(e.target.value); }}
-              style={{ padding:'5px 10px', borderRadius:20, border:'1px solid var(--line)', background:'var(--surface)', color:newColor, fontSize:11, fontFamily:'inherit', fontWeight:700, cursor:'pointer', outline:'none' }}>
-              {EVENT_CATEGORIES.map(function(cat) { return <option key={cat} value={cat}>{cat}</option>; })}
-            </select>
-            <div style={{ flex:1 }}/>
-            <button onClick={addEvent}
-              style={{ padding:'8px 22px', borderRadius:10, background:'var(--ink)', color:'var(--bg)', border:'none', fontSize:12, fontWeight:700, cursor:'pointer', fontFamily:'inherit', transition:'opacity 0.15s' }}
-              onMouseEnter={function(e) { e.currentTarget.style.opacity='0.85'; }}
-              onMouseLeave={function(e) { e.currentTarget.style.opacity='1'; }}>
-              إضافة
-            </button>
-          </div>
-        </div>
-
       </div>
     </div>
   );
@@ -4560,9 +4615,7 @@ function App({ session, onLogout }) {
           {active === 'mindmap' && <MindMapScreen/>}
           {active === 'discussion' && <SourceChatScreen/>}
           {active === 'calculator' && <CalculatorScreen/>}
-          {active === 'calendar' && <CalendarScreen/>}
           {active === 'admin' && isAdmin && <AdminScreen onAdminAuth={()=>{}}/>}
-          {active === 'settings' && <SettingsScreen onThemeChange={setTheme} onFontChange={setFont} theme={theme} font={font} onGoAdmin={() => isAdmin && setActive('admin')}/>}
         </div>
 
         <div className="bottom-bar">
@@ -4597,17 +4650,11 @@ function App({ session, onLogout }) {
           <button className={`nav-item ${active === 'calculator' ? 'active' : ''}`} onClick={() => setActive('calculator')} title="الحاسبة">
             <NavIcon icon="calculator" /><span>الحاسبة</span>
           </button>
-          <button className={`nav-item ${active === 'calendar' ? 'active' : ''}`} onClick={() => setActive('calendar')} title="التقويم">
-            <NavIcon icon="calendar" /><span>التقويم</span>
-          </button>
           {isAdmin && (
             <button className={`nav-item ${active === 'admin' ? 'active' : ''}`} onClick={() => setActive('admin')} title="إدارة المستخدمين">
               <NavIcon icon="admin" /><span>الإدارة</span>
             </button>
           )}
-          <button className={`nav-item ${active === 'settings' ? 'active' : ''}`} onClick={() => setActive('settings')} title="الإعدادات">
-            <NavIcon icon="settings" /><span>الإعدادات</span>
-          </button>
         </div>
       </div>
     </div>
@@ -4617,6 +4664,678 @@ function App({ session, onLogout }) {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <AuthWrapper><App/></AuthWrapper>
 );
+</script>
+
+<!-- ═══════════════════════════════════════════
+     FLOATING CALENDAR WIDGET
+════════════════════════════════════════════ -->
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+#cw-root *,#cw-root *::before,#cw-root *::after{box-sizing:border-box;margin:0;padding:0;}
+#cw-root{font-family:'Inter',sans-serif;}
+
+/* ── Nav button — matches .nav-item exactly ── */
+.cw-nav-btn.nav-item.cw-open {
+  background:var(--nav-active-bg) !important;
+  color:var(--nav-active-color) !important;
+}
+/* Icon rotation on open */
+.cw-nav-btn .nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cw-nav-btn .nav-icon svg {
+  width: 20px !important;
+  height: 20px !important;
+  stroke-width: 2 !important;
+  transition: transform 0.45s cubic-bezier(0.34,1.56,0.64,1) !important;
+  display: block;
+}
+.cw-nav-btn.cw-open .nav-icon svg {
+  transform: rotate(90deg) !important;
+}
+
+/* ── Widget panel position ── */
+@media(max-width:1100px){
+  #cw-widget{right:62px !important;width:300px !important;}
+}
+@media(min-width:1101px){
+  #cw-widget{right:228px !important;width:340px !important;}
+}
+
+/* ── Widget panel — Orange & White ── */
+#cw-widget{
+  position:fixed;
+  bottom:20px;right:40px;
+  top:70px;
+  width:340px;
+  max-height:calc(100vh - 90px);
+  background:#ffffff;
+  border-radius:32px;
+  box-shadow:0 0 0 2px #fff5f0,0 20px 60px rgba(255,140,50,.15),0 10px 25px rgba(0,0,0,.08);
+  z-index:9999;overflow:hidden;
+  display:flex;flex-direction:column;
+  opacity:0;transform:translateY(30px) scale(0.92);pointer-events:none;
+  transition:all .45s cubic-bezier(.34,1.56,.64,1);
+}
+#cw-widget.cw-visible{opacity:1;transform:translateY(0) scale(1);pointer-events:all;}
+#cw-widget.dark{background:#1a1a1a;box-shadow:0 0 0 2px #2a2a2a,0 20px 60px rgba(255,140,50,.1),0 10px 25px rgba(0,0,0,.3);}
+
+/* drag handle */
+.cw-drag{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:40px;height:5px;background:rgba(255,140,50,.3);border-radius:3px;cursor:grab;}
+.cw-drag:active{cursor:grabbing;}
+#cw-widget.dark .cw-drag{background:rgba(255,140,50,.25);}
+
+/* header */
+.cw-header{padding:24px 22px 16px !important;background:linear-gradient(135deg,#fff9f5 0%,#ffffff 100%) !important;border-bottom:2px solid #fff5f0 !important;display:flex !important;align-items:flex-start !important;justify-content:space-between !important;position:relative !important;overflow:hidden !important;flex-shrink:0 !important;}
+.cw-header::before{content:'';position:absolute;top:-50%;right:-20%;width:200px;height:200px;background:radial-gradient(circle,rgba(255,140,50,.06) 0%,transparent 70%);border-radius:50%;pointer-events:none;}
+.cw-date-label{font-size:11px !important;font-weight:600 !important;color:#ff8c32 !important;letter-spacing:.8px !important;text-transform:uppercase !important;direction:ltr !important;text-align:left !important;}
+.cw-greeting{font-size:20px !important;font-weight:700 !important;color:#1a1a1a !important;letter-spacing:-.5px !important;margin-top:4px !important;line-height:1.2 !important;direction:ltr !important;text-align:left !important;}
+.cw-avatar{width:44px !important;height:44px !important;border-radius:50% !important;background:linear-gradient(135deg,#ff8c32 0%,#ff7e26 100%) !important;display:flex !important;align-items:center !important;justify-content:center !important;font-size:18px !important;font-weight:700 !important;color:#fff !important;flex-shrink:0 !important;box-shadow:0 4px 12px rgba(255,140,50,.25) !important;}
+#cw-widget.dark .cw-header{background:linear-gradient(135deg,#1f1f1f 0%,#1a1a1a 100%) !important;border-bottom-color:#2a2a2a !important;}
+#cw-widget.dark .cw-greeting{color:#fff !important;}
+#cw-widget.dark .cw-avatar{background:linear-gradient(135deg,#ff8c32 0%,#ff7e26 100%) !important;box-shadow:0 4px 12px rgba(255,140,50,.2) !important;}
+
+/* week strip */
+.cw-week{margin:12px !important;background:#fff5f0 !important;border-radius:20px !important;padding:14px 12px !important;border:1px solid #ffe8da !important;flex-shrink:0 !important;}
+.cw-days-hdr{display:grid !important;grid-template-columns:repeat(7,1fr) !important;margin-bottom:10px !important;}
+.cw-days-hdr span{text-align:center !important;font-size:10px !important;font-weight:600 !important;color:#ff8c32 !important;letter-spacing:.5px !important;}
+.cw-dates{display:grid !important;grid-template-columns:repeat(7,1fr) !important;gap:4px !important;}
+.cw-day{display:flex !important;flex-direction:column !important;align-items:center !important;gap:3px !important;cursor:pointer !important;}
+.cw-day-num{width:36px !important;height:36px !important;display:flex !important;align-items:center !important;justify-content:center !important;border-radius:12px !important;font-size:13px !important;font-weight:600 !important;color:#666 !important;transition:all .25s cubic-bezier(.34,1.56,.64,1) !important;background:transparent !important;}
+.cw-day:hover .cw-day-num{background:#ffe8da !important;color:#ff8c32 !important;transform:scale(1.08) !important;}
+.cw-day.cw-today .cw-day-num{background:linear-gradient(135deg,#ff8c32 0%,#ff7e26 100%) !important;color:#fff !important;font-weight:700 !important;box-shadow:0 4px 12px rgba(255,140,50,.3) !important;}
+.cw-day.cw-sel .cw-day-num{background:#1a1a1a !important;color:#fff !important;}
+.cw-day-dot{width:6px !important;height:6px !important;border-radius:50% !important;background:#ff8c32 !important;opacity:0 !important;transform:scale(0) !important;transition:all .25s cubic-bezier(.34,1.56,.64,1) !important;}
+.cw-day.cw-has-ev .cw-day-dot{opacity:1 !important;transform:scale(1) !important;}
+#cw-widget.dark .cw-week{background:#252525 !important;border-color:#333 !important;}
+#cw-widget.dark .cw-days-hdr span{color:#ff8c32 !important;}
+#cw-widget.dark .cw-day-num{color:#ccc !important;}
+#cw-widget.dark .cw-day:hover .cw-day-num{background:#333 !important;color:#ff8c32 !important;}
+#cw-widget.dark .cw-day.cw-sel .cw-day-num{background:#fff !important;color:#1a1a1a !important;}
+
+/* section label */
+.cw-sec-label{padding:12px 22px 8px !important;font-size:10px !important;font-weight:700 !important;color:#ff8c32 !important;text-transform:uppercase !important;letter-spacing:1px !important;flex-shrink:0 !important;}
+#cw-widget.dark .cw-sec-label{color:#ff8c32 !important;}
+
+/* events */
+.cw-events{padding:0 12px !important;display:flex !important;flex-direction:column !important;gap:8px !important;flex:1 !important;overflow-y:auto !important;scrollbar-width:none !important;min-height:0 !important;}
+.cw-events::-webkit-scrollbar{display:none !important;}
+.cw-ev-card{background:#fff5f0 !important;border-radius:14px !important;padding:11px 13px !important;display:flex !important;align-items:center !important;gap:11px !important;cursor:pointer !important;transition:all .2s cubic-bezier(.22,1,.36,1) !important;border:1px solid #ffe8da !important;animation:cw-slide-up .3s cubic-bezier(.22,1,.36,1) both !important;}
+.cw-ev-card:hover{background:#ffe8da !important;transform:translateX(4px) !important;border-color:#ff8c32 !important;}
+.cw-ev-icon{width:36px !important;height:36px !important;border-radius:50% !important;background:rgba(255,140,50,.1) !important;display:flex !important;align-items:center !important;justify-content:center !important;flex-shrink:0 !important;font-size:16px !important;}
+.cw-ev-info{flex:1 !important;min-width:0 !important;}
+.cw-ev-title{font-size:12px !important;font-weight:600 !important;color:#1a1a1a !important;white-space:nowrap !important;overflow:hidden !important;text-overflow:ellipsis !important;}
+.cw-ev-meta{font-size:10px !important;color:#ff8c32 !important;margin-top:2px !important;font-weight:500 !important;}
+.cw-no-ev{padding:16px 22px !important;font-size:12px !important;color:#ccc !important;text-align:center !important;display:none;}
+@keyframes cw-slide-up{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+#cw-widget.dark .cw-ev-card{background:#252525 !important;border-color:#333 !important;}
+#cw-widget.dark .cw-ev-card:hover{background:#2f2f2f !important;border-color:#ff8c32 !important;}
+#cw-widget.dark .cw-ev-title{color:#fff !important;}
+#cw-widget.dark .cw-ev-icon{background:rgba(255,140,50,.1) !important;}
+
+/* bottom nav */
+.cw-nav{margin:12px 12px 14px !important;background:#fff5f0 !important;border-radius:16px !important;padding:6px !important;display:flex !important;align-items:center !important;gap:2px !important;border:1px solid #ffe8da !important;flex-shrink:0 !important;}
+.cw-tab{display:flex !important;align-items:center !important;justify-content:center !important;height:40px !important;flex:1 !important;border-radius:12px !important;cursor:pointer !important;color:#888 !important;font-size:11px !important;font-weight:600 !important;transition:all .25s cubic-bezier(.22,1,.36,1) !important;}
+.cw-tab svg{width:20px !important;height:20px !important;stroke-width:2 !important;stroke:currentColor !important;fill:none !important;}
+.cw-tab:hover{background:#ffe8da !important;color:#ff8c32 !important;transform:scale(1.05) !important;}
+.cw-tab.cw-tab-active{background:linear-gradient(135deg,#ff8c32 0%,#ff7e26 100%) !important;color:#fff !important;box-shadow:0 4px 12px rgba(255,140,50,.3) !important;}
+.cw-add{width:40px !important;height:40px !important;border-radius:12px !important;background:linear-gradient(135deg,#ff8c32 0%,#ff7e26 100%) !important;color:#fff !important;display:flex !important;align-items:center !important;justify-content:center !important;cursor:pointer !important;flex-shrink:0 !important;transition:all .3s cubic-bezier(.34,1.56,.64,1) !important;box-shadow:0 4px 12px rgba(255,140,50,.25) !important;border:none !important;}
+.cw-add svg{width:20px !important;height:20px !important;stroke-width:2.5 !important;stroke:#fff !important;fill:none !important;transition:transform .4s cubic-bezier(.34,1.56,.64,1) !important;}
+.cw-add:hover{transform:scale(1.1) !important;box-shadow:0 8px 20px rgba(255,140,50,.35) !important;}
+#cw-widget.dark .cw-nav{background:#252525 !important;border-color:#333 !important;}
+#cw-widget.dark .cw-tab{color:#888 !important;}
+#cw-widget.dark .cw-tab:hover{background:#333 !important;color:#ff8c32 !important;}
+#cw-widget.dark .cw-tab.cw-tab-active{background:linear-gradient(135deg,#ff8c32 0%,#ff7e26 100%) !important;color:#fff !important;}
+#cw-widget.dark .cw-add{background:linear-gradient(135deg,#ff8c32 0%,#ff7e26 100%) !important;box-shadow:0 4px 12px rgba(255,140,50,.2) !important;}
+
+/* theme toggle pill */
+.cw-toggle-pill{width:48px !important;height:40px !important;position:relative !important;background:transparent !important;cursor:pointer !important;display:flex !important;align-items:center !important;justify-content:center !important;flex-shrink:0 !important;}
+.cw-toggle-circle{width:38px !important;height:38px !important;border-radius:12px !important;background:#fff5f0 !important;border:2px solid #ffe8da !important;display:flex !important;align-items:center !important;justify-content:center !important;position:relative !important;transition:all .35s cubic-bezier(.34,1.56,.64,1) !important;}
+.cw-toggle-pill:hover .cw-toggle-circle{border-color:#ff8c32 !important;box-shadow:0 4px 12px rgba(255,140,50,.2) !important;}
+.cw-toggle-icon{width:20px !important;height:20px !important;display:flex !important;align-items:center !important;justify-content:center !important;position:absolute !important;}
+.cw-toggle-icon svg{width:20px !important;height:20px !important;stroke-width:2 !important;stroke:#ff8c32 !important;fill:none !important;transition:all .35s cubic-bezier(.34,1.56,.64,1) !important;}
+.cw-toggle-icon.cw-sun{opacity:1 !important;transform:rotate(0deg) scale(1) !important;}
+.cw-toggle-icon.cw-moon{opacity:0 !important;transform:rotate(180deg) scale(0) !important;}
+.cw-toggle-pill.dark .cw-toggle-circle{background:#1a1a1a !important;border-color:#333 !important;}
+.cw-toggle-pill.dark .cw-sun{opacity:0 !important;transform:rotate(180deg) scale(0) !important;}
+.cw-toggle-pill.dark .cw-moon{opacity:1 !important;transform:rotate(0deg) scale(1) !important;}
+
+/* ── PROFILE PANEL ── */
+.cw-profile-panel{position:absolute;inset:0;background:#fff;border-radius:28px;display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:translateY(100%);transition:opacity .35s cubic-bezier(.22,1,.36,1),transform .35s cubic-bezier(.22,1,.36,1);z-index:12;overflow:hidden;}
+.cw-profile-panel.cw-visible{opacity:1;pointer-events:all;transform:translateY(0);}
+.cw-cover{height:100px !important;flex-shrink:0 !important;position:relative !important;background:linear-gradient(135deg,#ff8c32 0%,#ff7e26 60%,#ffaa60 100%) !important;overflow:hidden !important;}
+.cw-cover::before{content:'';position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);width:180px;height:100px;background:radial-gradient(ellipse,rgba(255,255,255,.7) 0%,transparent 70%);border-radius:50%;}
+.cw-cover-close{position:absolute !important;top:10px !important;right:10px !important;width:28px !important;height:28px !important;border-radius:50% !important;background:rgba(255,255,255,.85) !important;display:flex !important;align-items:center !important;justify-content:center !important;cursor:pointer !important;font-size:12px !important;color:#555 !important;transition:background .2s,transform .2s !important;}
+.cw-cover-close:hover{background:#fff !important;transform:scale(1.1) !important;}
+.cw-av-wrap{width:70px !important;height:70px !important;margin:-35px auto 0 !important;position:relative !important;z-index:2 !important;flex-shrink:0 !important;}
+.cw-av-ring{width:70px !important;height:70px !important;border-radius:50% !important;background:#e8e5e0 !important;padding:3px !important;display:flex !important;align-items:center !important;justify-content:center !important;}
+.cw-av-inner{width:100% !important;height:100% !important;border-radius:50% !important;background:linear-gradient(135deg,#c8c4bc,#a8a49c) !important;display:flex !important;align-items:center !important;justify-content:center !important;font-size:24px !important;font-weight:700 !important;color:#fff !important;border:3px solid #f5f4f0 !important;}
+.cw-profile-info{margin-top:8px !important;text-align:center !important;padding:0 20px 10px !important;}
+.cw-profile-name{font-size:18px !important;font-weight:700 !important;color:#0f0f0f !important;letter-spacing:-.3px !important;}
+.cw-profile-bio{font-size:11px !important;color:#a8a59c !important;margin-top:3px !important;}
+.cw-stats{margin:0 12px !important;background:#fff !important;border-radius:16px !important;display:flex !important;padding:10px 0 !important;}
+.cw-stat{flex:1 !important;text-align:center !important;position:relative !important;}
+.cw-stat+.cw-stat::before{content:'';position:absolute;left:0;top:20%;height:60%;width:1px;background:#e8e5e0;}
+.cw-stat-num{font-size:16px !important;font-weight:700 !important;color:#0f0f0f !important;letter-spacing:-.5px !important;}
+.cw-stat-lbl{font-size:10px !important;color:#b0ada6 !important;margin-top:1px !important;font-weight:500 !important;}
+/* todos */
+.cw-todo-sec{flex:1 !important;display:flex !important;flex-direction:column !important;padding:0 12px 12px !important;overflow:hidden !important;margin-top:10px !important;}
+.cw-todo-hdr{display:flex !important;align-items:center !important;justify-content:space-between !important;margin-bottom:7px !important;}
+.cw-todo-title{font-size:10px !important;font-weight:600 !important;color:#a8a59c !important;text-transform:uppercase !important;letter-spacing:.8px !important;}
+.cw-todo-add{width:22px !important;height:22px !important;border-radius:50% !important;background:#0f0f0f !important;color:#fff !important;display:flex !important;align-items:center !important;justify-content:center !important;cursor:pointer !important;font-size:14px !important;line-height:1 !important;transition:transform .2s cubic-bezier(.34,1.56,.64,1) !important;}
+.cw-todo-add:hover{transform:scale(1.15) rotate(90deg) !important;}
+.cw-todo-list{display:flex !important;flex-direction:column !important;gap:5px !important;overflow-y:auto !important;flex:1 !important;scrollbar-width:none !important;}
+.cw-todo-list::-webkit-scrollbar{display:none;}
+.cw-todo-item{display:flex !important;align-items:center !important;gap:9px !important;background:#fff !important;border-radius:13px !important;padding:9px 11px !important;cursor:pointer !important;transition:transform .2s cubic-bezier(.22,1,.36,1),opacity .2s !important;animation:cw-slide-up .3s cubic-bezier(.22,1,.36,1) both !important;}
+.cw-todo-item:hover{transform:translateY(-1px) !important;}
+.cw-todo-item.cw-done{opacity:.45 !important;}
+.cw-todo-chk{width:18px !important;height:18px !important;border-radius:50% !important;flex-shrink:0 !important;border:2px solid #ddd !important;display:flex !important;align-items:center !important;justify-content:center !important;transition:border-color .2s,background .2s,transform .25s cubic-bezier(.34,1.56,.64,1) !important;}
+.cw-todo-item.cw-done .cw-todo-chk{background:#e07040 !important;border-color:#e07040 !important;transform:scale(1.1) !important;}
+.cw-todo-chk svg{opacity:0;transition:opacity .2s;}
+.cw-todo-item.cw-done .cw-todo-chk svg{opacity:1 !important;}
+.cw-todo-txt{flex:1 !important;font-size:12px !important;font-weight:500 !important;color:#0f0f0f !important;transition:color .2s !important;}
+.cw-todo-item.cw-done .cw-todo-txt{text-decoration:line-through !important;color:#b0ada6 !important;}
+.cw-todo-tag{font-size:9px !important;font-weight:600 !important;padding:2px 7px !important;border-radius:20px !important;flex-shrink:0 !important;}
+.cw-tag-work{background:#fff3e8 !important;color:#e07040 !important;}
+.cw-tag-personal{background:#e8f0ff !important;color:#4a7aff !important;}
+.cw-tag-urgent{background:#ffe8e8 !important;color:#e04040 !important;}
+.cw-todo-inp-wrap{display:flex !important;gap:7px !important;margin-top:7px !important;}
+.cw-todo-inp{flex:1 !important;background:#fff !important;border:1.5px solid #e8e5e0 !important;border-radius:11px !important;padding:7px 11px !important;font-size:12px !important;font-family:'Inter',sans-serif !important;color:#0f0f0f !important;outline:none !important;transition:border-color .2s !important;}
+.cw-todo-inp:focus{border-color:#e07040 !important;}
+.cw-todo-submit{width:33px !important;height:33px !important;border-radius:9px !important;background:#e07040 !important;color:#fff !important;border:none !important;display:flex !important;align-items:center !important;justify-content:center !important;cursor:pointer !important;transition:transform .2s cubic-bezier(.34,1.56,.64,1),background .2s !important;}
+.cw-todo-submit:hover{transform:scale(1.08) !important;background:#c05828 !important;}
+/* dark profile */
+#cw-widget.dark .cw-profile-panel{background:#1c1c1e !important;}
+#cw-widget.dark .cw-av-inner{border-color:#1c1c1e !important;}
+#cw-widget.dark .cw-profile-name{color:#f0f0f0 !important;}
+#cw-widget.dark .cw-profile-bio{color:#888 !important;}
+#cw-widget.dark .cw-stats{background:#2a2a2c !important;}
+#cw-widget.dark .cw-stat-num{color:#f0f0f0 !important;}
+#cw-widget.dark .cw-stat-lbl{color:#888 !important;}
+#cw-widget.dark .cw-stat+.cw-stat::before{background:#3a3a3c !important;}
+#cw-widget.dark .cw-todo-title{color:#777 !important;}
+#cw-widget.dark .cw-todo-add{background:#e8e8e8 !important;color:#0f0f0f !important;}
+#cw-widget.dark .cw-todo-item{background:#2a2a2c !important;}
+#cw-widget.dark .cw-todo-txt{color:#f0f0f0 !important;}
+#cw-widget.dark .cw-todo-item.cw-done .cw-todo-txt{color:#666 !important;}
+#cw-widget.dark .cw-todo-chk{border-color:#555 !important;}
+#cw-widget.dark .cw-todo-inp{background:#2a2a2c !important;border-color:#3a3a3c !important;color:#f0f0f0 !important;}
+#cw-widget.dark .cw-tag-work{background:rgba(224,112,64,.15) !important;color:#e07040 !important;}
+#cw-widget.dark .cw-tag-personal{background:rgba(74,122,255,.15) !important;color:#7a9aff !important;}
+#cw-widget.dark .cw-tag-urgent{background:rgba(224,64,64,.15) !important;color:#ff7a7a !important;}
+
+/* ── CALCULATOR PANEL ── */
+.cw-calc-panel{--cb-h:48px;--cb-r:15px;--cb-fs:16px;--cb-op-fs:20px;--grid-gap:7px;--grid-pad:14px;--disp-pad:6px 18px 10px;--disp-fs:38px;position:absolute;inset:0;background:#0f0f0f;border-radius:32px;display:flex;flex-direction:column;opacity:0;pointer-events:none;transform:translateY(100%);transition:opacity .35s cubic-bezier(.22,1,.36,1),transform .35s cubic-bezier(.22,1,.36,1);z-index:11;overflow:hidden;}
+.cw-calc-panel.cw-visible{opacity:1;pointer-events:all;transform:translateY(0);}
+.cw-calc-panel.cw-sci-open{--cb-h:40px;--cb-r:13px;--cb-fs:13px;--cb-op-fs:17px;--grid-gap:5px;--disp-pad:3px 18px 6px;--disp-fs:30px;}
+.cw-calc-topbar{display:flex !important;align-items:center !important;justify-content:space-between !important;padding:16px 18px 0 !important;flex-shrink:0 !important;}
+.cw-calc-title{font-size:11px !important;font-weight:600 !important;color:#555 !important;letter-spacing:.5px !important;text-transform:uppercase !important;}
+.cw-calc-sci-btn{font-size:10px !important;font-weight:700 !important;color:#ff8c32 !important;background:rgba(255,140,50,.12) !important;border-radius:7px !important;padding:3px 9px !important;cursor:pointer !important;letter-spacing:.3px !important;text-transform:uppercase !important;transition:background .2s !important;user-select:none !important;}
+.cw-calc-sci-btn:hover{background:rgba(255,140,50,.22) !important;}
+.cw-calc-sci-btn.cw-sci-on{background:#ff8c32 !important;color:#fff !important;}
+.cw-calc-close{width:26px !important;height:26px !important;border-radius:50% !important;background:#2a2a2a !important;display:flex !important;align-items:center !important;justify-content:center !important;cursor:pointer !important;font-size:12px !important;color:#888 !important;transition:background .2s,transform .2s !important;}
+.cw-calc-close:hover{background:#333 !important;transform:scale(1.1) !important;}
+.cw-calc-display{padding:6px 18px 10px !important;text-align:right !important;flex-shrink:0 !important;}
+.cw-calc-expr{font-size:11px !important;color:#555 !important;min-height:14px !important;overflow:hidden !important;text-overflow:ellipsis !important;white-space:nowrap !important;direction:ltr !important;}
+.cw-calc-result{font-size:38px !important;font-weight:300 !important;color:#f0f0f0 !important;letter-spacing:-1.5px !important;line-height:1.1 !important;margin-top:1px !important;overflow:hidden !important;text-overflow:ellipsis !important;white-space:nowrap !important;direction:ltr !important;}
+.cw-calc-panel.cw-sci-open .cw-calc-result{font-size:30px !important;}
+.cw-calc-result.cw-pop{animation:cw-pop .15s cubic-bezier(.34,1.56,.64,1);}
+@keyframes cw-pop{0%{transform:scale(1.05);}100%{transform:scale(1);}}
+.cw-sci-row,.cw-calc-grid{display:grid !important;grid-template-columns:repeat(4,1fr) !important;gap:7px !important;padding-left:14px !important;padding-right:14px !important;}
+.cw-sci-row{max-height:0 !important;overflow:hidden !important;opacity:0 !important;padding-top:0 !important;padding-bottom:0 !important;transition:max-height .35s cubic-bezier(.22,1,.36,1),opacity .25s ease,padding .3s ease !important;}
+.cw-sci-row.cw-sci-open{max-height:200px !important;opacity:1 !important;padding-top:7px !important;}
+.cw-calc-grid{padding-top:7px !important;padding-bottom:14px !important;flex:1 !important;align-content:start !important;}
+.cw-cb{display:flex !important;align-items:center !important;justify-content:center !important;height:48px !important;border-radius:15px !important;font-size:16px !important;font-weight:500 !important;color:#f0f0f0 !important;cursor:pointer !important;user-select:none !important;position:relative !important;overflow:hidden !important;transition:transform .15s cubic-bezier(.34,1.56,.64,1),filter .15s ease !important;}
+.cw-calc-panel.cw-sci-open .cw-cb{height:40px !important;border-radius:13px !important;font-size:13px !important;}
+.cw-cb:active{transform:scale(.91) !important;filter:brightness(1.2) !important;}
+.cw-cb-num{background:#1e1e1e !important;}.cw-cb-num:hover{background:#272727 !important;}
+.cw-cb-util,.cw-cb-sci{background:#2a2a2a !important;}.cw-cb-util:hover,.cw-cb-sci:hover{background:#353535 !important;}
+.cw-cb-op{background:linear-gradient(145deg,#ff8c32,#e07020) !important;box-shadow:0 3px 10px rgba(255,140,50,.35) !important;font-size:20px !important;}
+.cw-cb-op:hover{filter:brightness(1.1) !important;}
+.cw-cb-eq{background:linear-gradient(145deg,#ff8c32,#e07020) !important;box-shadow:0 4px 14px rgba(255,140,50,.45) !important;font-size:20px !important;}
+.cw-cb-eq:hover{filter:brightness(1.1) !important;}
+.cw-cb-zero{grid-column:span 2 !important;border-radius:24px !important;justify-content:flex-start !important;padding-left:22px !important;background:#1e1e1e !important;}
+.cw-cb-zero:hover{background:#272727 !important;}
+
+/* ── ADD EVENT MODAL ── */
+.cw-add-modal{position:absolute !important;inset:0 !important;background:rgba(245,244,240,.97) !important;backdrop-filter:blur(8px) !important;border-radius:28px !important;padding:22px 20px !important;display:flex !important;flex-direction:column !important;gap:12px !important;opacity:0;pointer-events:none;transform:translateY(12px);transition:opacity .3s ease,transform .3s cubic-bezier(.22,1,.36,1);z-index:10;}
+.cw-add-modal.cw-visible{opacity:1;pointer-events:all;transform:translateY(0);}
+.cw-modal-title{font-size:17px !important;font-weight:700 !important;color:#0f0f0f !important;display:flex !important;align-items:center !important;justify-content:space-between !important;}
+.cw-modal-close{width:26px !important;height:26px !important;border-radius:50% !important;background:#e8e5e0 !important;display:flex !important;align-items:center !important;justify-content:center !important;cursor:pointer !important;font-size:13px !important;color:#666 !important;transition:background .2s,transform .2s !important;}
+.cw-modal-close:hover{background:#ddd !important;transform:scale(1.1) !important;}
+.cw-inp-grp{display:flex !important;flex-direction:column !important;gap:5px !important;}
+.cw-inp-grp label{font-size:10px !important;font-weight:600 !important;color:#a0a09a !important;text-transform:uppercase !important;letter-spacing:.6px !important;}
+.cw-inp-grp input{background:#fff !important;border:1.5px solid #e8e5e0 !important;border-radius:11px !important;padding:9px 13px !important;font-size:13px !important;font-family:'Inter',sans-serif !important;color:#0f0f0f !important;outline:none !important;transition:border-color .2s,box-shadow .2s !important;}
+.cw-inp-grp input:focus{border-color:#e07040 !important;box-shadow:0 0 0 3px rgba(224,112,64,.08) !important;}
+.cw-emoji-row{display:flex !important;gap:6px !important;flex-wrap:wrap !important;}
+.cw-emoji-opt{width:34px !important;height:34px !important;border-radius:50% !important;background:#fff !important;display:flex !important;align-items:center !important;justify-content:center !important;font-size:15px !important;cursor:pointer !important;border:2px solid transparent !important;transition:border-color .2s,transform .2s cubic-bezier(.34,1.56,.64,1) !important;}
+.cw-emoji-opt:hover{transform:scale(1.15) !important;}
+.cw-emoji-opt.cw-sel{border-color:#0f0f0f !important;}
+.cw-save-btn{background:#0f0f0f !important;color:#fff !important;border:none !important;border-radius:13px !important;padding:12px !important;font-size:13px !important;font-weight:600 !important;font-family:'Inter',sans-serif !important;cursor:pointer !important;transition:opacity .2s,transform .2s cubic-bezier(.22,1,.36,1) !important;}
+.cw-save-btn:hover{opacity:.85 !important;transform:scale(.99) !important;}
+/* dark add-modal */
+#cw-widget.dark .cw-add-modal{background:rgba(28,28,30,.97) !important;}
+#cw-widget.dark .cw-modal-title{color:#f0f0f0 !important;}
+#cw-widget.dark .cw-modal-close{background:#3a3a3c !important;color:#aaa !important;}
+#cw-widget.dark .cw-inp-grp label{color:#888 !important;}
+#cw-widget.dark .cw-inp-grp input{background:#2a2a2c !important;border-color:#3a3a3c !important;color:#f0f0f0 !important;}
+#cw-widget.dark .cw-emoji-opt{background:#2a2a2c !important;}
+#cw-widget.dark .cw-emoji-opt.cw-sel{border-color:#f0f0f0 !important;}
+#cw-widget.dark .cw-save-btn{background:#e07040 !important;}
+</style>
+
+<!-- Widget HTML -->
+<div id="cw-root" dir="ltr">
+<div id="cw-widget">
+  <div class="cw-drag" id="cw-drag"></div>
+
+  <!-- Header -->
+  <div class="cw-header">
+    <div>
+      <div class="cw-date-label" id="cw-date-label"></div>
+      <div class="cw-greeting" id="cw-greeting"></div>
+    </div>
+    <div class="cw-avatar">F</div>
+  </div>
+
+  <!-- Week Strip -->
+  <div class="cw-week">
+    <div class="cw-days-hdr"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+    <div class="cw-dates" id="cw-dates"></div>
+  </div>
+
+  <!-- Events -->
+  <div class="cw-sec-label" id="cw-sec-label">Today</div>
+  <div class="cw-events" id="cw-events"></div>
+  <div class="cw-no-ev" id="cw-no-ev">No events for this day</div>
+
+  <!-- Bottom Nav -->
+  <div class="cw-nav">
+    <div class="cw-tab cw-tab-active" id="cw-tab-profile" onclick="CW.openProfile()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      Fahad
+    </div>
+    <div class="cw-tab" onclick="CW.openCalc()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="3"/><line x1="8" y1="7" x2="16" y2="7"/><circle cx="8" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="8" cy="16" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="16" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="16" r="1" fill="currentColor" stroke="none"/><circle cx="8" cy="20" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="20" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="20" r="1" fill="currentColor" stroke="none"/></svg>
+    </div>
+    <!-- Theme toggle pill -->
+    <div class="cw-toggle-pill" id="cw-toggle-pill" onclick="CW.toggleTheme()">
+      <div class="cw-toggle-thumb" id="cw-toggle-thumb"></div>
+      <div class="cw-toggle-icon cw-moon-icon" id="cw-moon-icon">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        <div class="cw-toggle-bar"></div>
+      </div>
+      <div class="cw-toggle-icon cw-sun-icon cw-ti-active" id="cw-sun-icon">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <div class="cw-toggle-bar"></div>
+      </div>
+    </div>
+    <div class="cw-add" onclick="CW.openAddModal()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </div>
+  </div>
+
+  <!-- Profile Panel -->
+  <div class="cw-profile-panel" id="cw-profile-panel">
+    <div class="cw-cover"><div class="cw-cover-close" onclick="CW.closeProfile()">✕</div></div>
+    <div class="cw-av-wrap"><div class="cw-av-ring"><div class="cw-av-inner">F</div></div></div>
+    <div class="cw-profile-info">
+      <div class="cw-profile-name">Fahad Al-Kandari</div>
+      <div class="cw-profile-bio">Electrical Engineer · Kuwait</div>
+    </div>
+    <div class="cw-stats">
+      <div class="cw-stat"><div class="cw-stat-num" id="cw-stat-done">0</div><div class="cw-stat-lbl">Done</div></div>
+      <div class="cw-stat"><div class="cw-stat-num" id="cw-stat-ev">0</div><div class="cw-stat-lbl">Events</div></div>
+      <div class="cw-stat"><div class="cw-stat-num" id="cw-stat-pend">0</div><div class="cw-stat-lbl">Pending</div></div>
+    </div>
+    <div class="cw-todo-sec">
+      <div class="cw-todo-hdr">
+        <span class="cw-todo-title">To-Do</span>
+        <div class="cw-todo-add" onclick="CW.showTodoInput()">+</div>
+      </div>
+      <div class="cw-todo-list" id="cw-todo-list"></div>
+      <div class="cw-todo-inp-wrap" id="cw-todo-inp-wrap" style="display:none">
+        <input class="cw-todo-inp" id="cw-todo-inp" placeholder="Add a task…" onkeydown="if(event.key==='Enter')CW.addTodo()">
+        <button class="cw-todo-submit" onclick="CW.addTodo()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Calculator Panel -->
+  <div class="cw-calc-panel" id="cw-calc-panel">
+    <div class="cw-calc-topbar">
+      <span class="cw-calc-title">Calculator</span>
+      <div style="display:flex;align-items:center;gap:7px;">
+        <div class="cw-calc-sci-btn" id="cw-sci-btn" onclick="CW.toggleSci()">SCI</div>
+        <div class="cw-calc-close" onclick="CW.closeCalc()">✕</div>
+      </div>
+    </div>
+    <div class="cw-calc-display">
+      <div class="cw-calc-expr" id="cw-calc-expr"></div>
+      <div class="cw-calc-result" id="cw-calc-result">0</div>
+    </div>
+    <div class="cw-sci-row" id="cw-sci-row">
+      <div class="cw-cb cw-cb-sci" onclick="CW.calcSci('sin')">sin</div>
+      <div class="cw-cb cw-cb-sci" onclick="CW.calcSci('cos')">cos</div>
+      <div class="cw-cb cw-cb-sci" onclick="CW.calcSci('tan')">tan</div>
+      <div class="cw-cb cw-cb-sci" onclick="CW.calcSci('√')">√</div>
+      <div class="cw-cb cw-cb-sci" onclick="CW.calcSci('x²')">x²</div>
+      <div class="cw-cb cw-cb-sci" onclick="CW.calcSci('log')">log</div>
+      <div class="cw-cb cw-cb-sci" onclick="CW.calcSci('π')">π</div>
+      <div class="cw-cb cw-cb-sci" onclick="CW.calcSci('e')">e</div>
+    </div>
+    <div class="cw-calc-grid">
+      <div class="cw-cb cw-cb-util" onclick="CW.calcInput('AC')">AC</div>
+      <div class="cw-cb cw-cb-util" onclick="CW.calcInput('+/-')">+/-</div>
+      <div class="cw-cb cw-cb-util" onclick="CW.calcInput('%')">%</div>
+      <div class="cw-cb cw-cb-op"   onclick="CW.calcInput('÷')">÷</div>
+      <div class="cw-cb cw-cb-num"  onclick="CW.calcInput('7')">7</div>
+      <div class="cw-cb cw-cb-num"  onclick="CW.calcInput('8')">8</div>
+      <div class="cw-cb cw-cb-num"  onclick="CW.calcInput('9')">9</div>
+      <div class="cw-cb cw-cb-op"   onclick="CW.calcInput('×')">×</div>
+      <div class="cw-cb cw-cb-num"  onclick="CW.calcInput('4')">4</div>
+      <div class="cw-cb cw-cb-num"  onclick="CW.calcInput('5')">5</div>
+      <div class="cw-cb cw-cb-num"  onclick="CW.calcInput('6')">6</div>
+      <div class="cw-cb cw-cb-op"   onclick="CW.calcInput('-')">−</div>
+      <div class="cw-cb cw-cb-num"  onclick="CW.calcInput('1')">1</div>
+      <div class="cw-cb cw-cb-num"  onclick="CW.calcInput('2')">2</div>
+      <div class="cw-cb cw-cb-num"  onclick="CW.calcInput('3')">3</div>
+      <div class="cw-cb cw-cb-op"   onclick="CW.calcInput('+')">+</div>
+      <div class="cw-cb cw-cb-zero" onclick="CW.calcInput('0')">0</div>
+      <div class="cw-cb cw-cb-num"  onclick="CW.calcInput('.')">.</div>
+      <div class="cw-cb cw-cb-eq"   onclick="CW.calcInput('=')">=</div>
+    </div>
+  </div>
+
+  <!-- Add Event Modal -->
+  <div class="cw-add-modal" id="cw-add-modal">
+    <div class="cw-modal-title">New Event <div class="cw-modal-close" onclick="CW.closeAddModal()">✕</div></div>
+    <div class="cw-inp-grp"><label>Title</label><input type="text" id="cw-inp-title" placeholder="Event name…"></div>
+    <div class="cw-inp-grp"><label>Time</label><input type="time" id="cw-inp-time" value="09:00"></div>
+    <div class="cw-inp-grp"><label>Icon</label><div class="cw-emoji-row" id="cw-emoji-row"></div></div>
+    <div class="cw-inp-grp"><label>Note</label><input type="text" id="cw-inp-note" placeholder="Optional note…"></div>
+    <button class="cw-save-btn" onclick="CW.saveEvent()">Add Event</button>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+const EMOJIS=['⚡','🔧','📋','👷','🏗️','📞','💡','🔩','🛠️','📅','🚗','☕'];
+const today=new Date();
+const fmt=d=>d.toISOString().slice(0,10);
+const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x;};
+
+let cwEvents={};
+cwEvents[fmt(today)]=[
+  {title:'Site Inspection',time:'09:00',emoji:'🏗️',note:'Block 4 Villa'},
+  {title:'Client Meeting',time:'14:30',emoji:'📞',note:'Ahmed Al-Sabah'}
+];
+cwEvents[fmt(addDays(today,2))]=[{title:'Panel Installation',time:'08:00',emoji:'⚡',note:'MDB Room B'}];
+cwEvents[fmt(addDays(today,-1))]=[{title:'BOQ Review',time:'11:00',emoji:'📋',note:''}];
+
+let cwSelDate=null,cwSelEmoji=EMOJIS[0],cwIsDark=localStorage.getItem('cw_theme')==='dark',cwTodoNextId=5;
+let cwTodos=[
+  {id:1,text:'Review BOQ for Villa Block 4',tag:'work',done:false},
+  {id:2,text:'Submit expert report to court',tag:'urgent',done:false},
+  {id:3,text:'Call panel supplier',tag:'work',done:true},
+  {id:4,text:'Update pricing app data',tag:'personal',done:false},
+];
+let cwCalCurrent='0',cwCalExpr='',cwCalOp=null,cwCalNew=true;
+
+// ── Init ──
+function cwInit(){
+  cwRenderHeader();cwRenderWeek();cwRenderEvents(today);
+  cwBuildEmojis();cwRenderTodos();cwUpdateStats();
+  // Apply saved theme
+  if(cwIsDark){
+    document.getElementById('cw-widget').classList.add('dark');
+    const moon=document.getElementById('cw-moon-icon');
+    const sun=document.getElementById('cw-sun-icon');
+    if(moon)moon.classList.add('cw-ti-active');
+    if(sun)sun.classList.remove('cw-ti-active');
+  }
+  // Ensure overlay panels start hidden
+  document.getElementById('cw-calc-panel').classList.remove('cw-visible');
+  document.getElementById('cw-profile-panel').classList.remove('cw-visible');
+  document.getElementById('cw-add-modal').classList.remove('cw-visible');
+  requestAnimationFrame(cwInitThumb);
+  cwInjectNavBtn();
+}
+
+function cwInjectNavBtn(){
+  if(document.getElementById('cw-nav-btn'))return;
+  const bottomBar=document.querySelector('.bottom-bar');
+  if(!bottomBar){
+    // React hasn't mounted yet — wait for it
+    const mo=new MutationObserver(function(_,ob){
+      if(document.querySelector('.bottom-bar')){ob.disconnect();cwInjectNavBtn();}
+    });
+    mo.observe(document.body,{childList:true,subtree:true});
+    return;
+  }
+  const widget=document.getElementById('cw-widget');
+  const btn=document.createElement('button');
+  btn.id='cw-nav-btn';
+  btn.className='nav-item cw-nav-btn';
+  btn.title='التقويم';
+  btn.innerHTML=`<span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>`;
+  btn.addEventListener('click',function(){
+    const isVisible=widget.classList.contains('cw-visible');
+    widget.classList.toggle('cw-visible',!isVisible);
+    btn.classList.toggle('cw-open',!isVisible);
+  });
+  const obs=new MutationObserver(function(){
+    btn.classList.toggle('cw-open',widget.classList.contains('cw-visible'));
+  });
+  obs.observe(widget,{attributes:true,attributeFilter:['class']});
+  bottomBar.appendChild(btn);
+}
+
+function cwRenderHeader(){
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('cw-date-label').textContent=`${months[today.getMonth()]} ${today.getDate()}, ${today.getFullYear()}`;
+  const h=today.getHours();
+  document.getElementById('cw-greeting').textContent=h<12?'Good morning':h<17?'Good afternoon':'Good evening';
+}
+
+function cwRenderWeek(base){
+  base=base||today;
+  const sow=new Date(base);sow.setDate(base.getDate()-base.getDay());
+  const c=document.getElementById('cw-dates');c.innerHTML='';
+  for(let i=0;i<7;i++){
+    const d=addDays(sow,i),key=fmt(d);
+    const isToday=key===fmt(today),isSel=cwSelDate?key===fmt(cwSelDate):isToday;
+    const hasEv=cwEvents[key]&&cwEvents[key].length>0;
+    const el=document.createElement('div');
+    el.className='cw-day'+(isToday?' cw-today':'')+(isSel&&!isToday?' cw-sel':'')+(hasEv?' cw-has-ev':'');
+    el.innerHTML=`<div class="cw-day-num">${d.getDate()}</div><div class="cw-day-dot"></div>`;
+    el.addEventListener('click',()=>{cwSelDate=d;cwRenderWeek(base);cwRenderEvents(d);});
+    c.appendChild(el);
+  }
+}
+
+function cwRenderEvents(date){
+  const key=fmt(date),isToday=key===fmt(today);
+  document.getElementById('cw-sec-label').textContent=isToday?'Today':date.toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
+  const list=document.getElementById('cw-events'),noEv=document.getElementById('cw-no-ev');
+  const evs=cwEvents[key]||[];
+  list.innerHTML='';
+  if(!evs.length){list.style.display='none';noEv.style.display='block';}
+  else{
+    list.style.display='flex';noEv.style.display='none';
+    evs.forEach((ev,i)=>{
+      const c=document.createElement('div');
+      c.className='cw-ev-card';c.style.animationDelay=`${i*.06}s`;
+      c.innerHTML=`<div class="cw-ev-icon">${ev.emoji}</div><div class="cw-ev-info"><div class="cw-ev-title">${ev.title}</div><div class="cw-ev-meta">${cwFmtTime(ev.time)}${ev.note?' • '+ev.note:''}</div></div>`;
+      list.appendChild(c);
+    });
+  }
+}
+
+function cwFmtTime(t){const[h,m]=t.split(':').map(Number);return`${h%12||12}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`;}
+
+function cwBuildEmojis(){
+  const row=document.getElementById('cw-emoji-row');
+  EMOJIS.forEach(em=>{
+    const el=document.createElement('div');
+    el.className='cw-emoji-opt'+(em===cwSelEmoji?' cw-sel':'');
+    el.textContent=em;
+    el.onclick=()=>{cwSelEmoji=em;row.querySelectorAll('.cw-emoji-opt').forEach(x=>x.classList.remove('cw-sel'));el.classList.add('cw-sel');};
+    row.appendChild(el);
+  });
+}
+
+// ── Drag ──
+let cwDragging=false,cwDX,cwDY,cwWX,cwWY;
+const cwW=document.getElementById('cw-widget');
+document.getElementById('cw-drag').addEventListener('mousedown',e=>{
+  cwDragging=true;const r=cwW.getBoundingClientRect();
+  cwDX=e.clientX;cwDY=e.clientY;cwWX=r.left;cwWY=r.top;
+  cwW.style.transition='none';document.body.style.userSelect='none';
+});
+document.addEventListener('mousemove',e=>{
+  if(!cwDragging)return;
+  cwW.style.right='auto';cwW.style.bottom='auto';
+  cwW.style.left=Math.max(0,Math.min(cwWX+(e.clientX-cwDX),window.innerWidth-cwW.offsetWidth))+'px';
+  cwW.style.top=Math.max(0,Math.min(cwWY+(e.clientY-cwDY),window.innerHeight-cwW.offsetHeight))+'px';
+});
+document.addEventListener('mouseup',()=>{cwDragging=false;cwW.style.transition='';document.body.style.userSelect='';});
+
+// ── Theme ──
+function cwInitThumb(){
+  const thumb=document.getElementById('cw-toggle-thumb');
+  thumb.style.transition='none';
+  thumb.style.transform=cwIsDark?'translateX(22px)':'translateX(2px)';
+  requestAnimationFrame(()=>{thumb.style.transition='transform .4s cubic-bezier(.34,1.56,.64,1)';});
+}
+
+// ── Public API ──
+window.CW={
+  toggleWidget(){
+    cwW.classList.toggle('cw-visible');
+    const nb=document.getElementById('cw-nav-btn');
+    if(nb)nb.classList.toggle('cw-open',cwW.classList.contains('cw-visible'));
+  },
+  toggleTheme(){
+    cwIsDark=!cwIsDark;
+    localStorage.setItem('cw_theme',cwIsDark?'dark':'light');
+    cwW.classList.toggle('dark',cwIsDark);
+    const thumb=document.getElementById('cw-toggle-thumb');
+    const moon=document.getElementById('cw-moon-icon');
+    const sun=document.getElementById('cw-sun-icon');
+    if(cwIsDark){
+      thumb.style.transform='translateX(22px)';
+      moon.classList.add('cw-ti-active');sun.classList.remove('cw-ti-active');
+    }else{
+      thumb.style.transform='translateX(2px)';
+      sun.classList.add('cw-ti-active');moon.classList.remove('cw-ti-active');
+    }
+  },
+  openProfile(){document.getElementById('cw-profile-panel').classList.add('cw-visible');cwUpdateStats();},
+  closeProfile(){document.getElementById('cw-profile-panel').classList.remove('cw-visible');},
+  openCalc(){document.getElementById('cw-calc-panel').classList.add('cw-visible');},
+  closeCalc(){document.getElementById('cw-calc-panel').classList.remove('cw-visible');},
+  toggleSci(){
+    const row=document.getElementById('cw-sci-row');
+    const btn=document.getElementById('cw-sci-btn');
+    const panel=document.getElementById('cw-calc-panel');
+    const on=row.classList.toggle('cw-sci-open');
+    panel.classList.toggle('cw-sci-open',on);
+    btn.classList.toggle('cw-sci-on',on);
+    btn.textContent=on?'SIMPLE':'SCI';
+  },
+  calcInput(v){
+    if(v==='AC'){cwCalCurrent='0';cwCalExpr='';cwCalOp=null;cwCalNew=true;}
+    else if(v==='+/-'){cwCalCurrent=String(parseFloat(cwCalCurrent)*-1);}
+    else if(v==='%'){cwCalCurrent=String(parseFloat(cwCalCurrent)/100);}
+    else if(v==='='){
+      if(cwCalOp&&!cwCalNew){
+        const a=parseFloat(cwCalExpr.split(' ')[0]),b=parseFloat(cwCalCurrent);
+        let r;if(cwCalOp==='+')r=a+b;else if(cwCalOp==='-')r=a-b;else if(cwCalOp==='×')r=a*b;else if(cwCalOp==='÷')r=b?a/b:'Error';
+        cwCalExpr=`${cwCalExpr} ${cwCalCurrent} =`;
+        cwCalCurrent=typeof r==='number'?(Number.isInteger(r)?String(r):parseFloat(r.toFixed(10)).toString()):r;
+        cwCalOp=null;cwCalNew=true;
+      }
+    }else if(['+','-','×','÷'].includes(v)){cwCalOp=v;cwCalNew=true;cwCalExpr=`${cwCalCurrent} ${v}`;}
+    else if(v==='.'){if(cwCalNew){cwCalCurrent='0.';cwCalNew=false;}else if(!cwCalCurrent.includes('.'))cwCalCurrent+='.';}
+    else{if(cwCalNew||cwCalCurrent==='0'){cwCalCurrent=v;cwCalNew=false;}else cwCalCurrent+=v;}
+    cwUpdateCalcDisplay();
+  },
+  calcSci(fn){
+    const val=parseFloat(cwCalCurrent);let r;
+    if(fn==='sin')r=Math.sin(val*Math.PI/180);else if(fn==='cos')r=Math.cos(val*Math.PI/180);
+    else if(fn==='tan')r=Math.tan(val*Math.PI/180);else if(fn==='√')r=Math.sqrt(val);
+    else if(fn==='x²')r=val*val;else if(fn==='log')r=Math.log10(val);
+    else if(fn==='π'){cwCalCurrent=String(Math.PI);cwCalNew=false;cwUpdateCalcDisplay();return;}
+    else if(fn==='e'){cwCalCurrent=String(Math.E);cwCalNew=false;cwUpdateCalcDisplay();return;}
+    if(r!==undefined){cwCalExpr=`${fn}(${cwCalCurrent})`;cwCalCurrent=Number.isInteger(r)?String(r):parseFloat(r.toFixed(10)).toString();cwCalNew=true;}
+    cwUpdateCalcDisplay();
+  },
+  openAddModal(){document.getElementById('cw-add-modal').classList.add('cw-visible');document.getElementById('cw-inp-title').focus();},
+  closeAddModal(){document.getElementById('cw-add-modal').classList.remove('cw-visible');},
+  saveEvent(){
+    const title=document.getElementById('cw-inp-title').value.trim();
+    if(!title){document.getElementById('cw-inp-title').style.borderColor='#e07040';return;}
+    document.getElementById('cw-inp-title').style.borderColor='';
+    const time=document.getElementById('cw-inp-time').value;
+    const note=document.getElementById('cw-inp-note').value.trim();
+    const date=cwSelDate||today,key=fmt(date);
+    if(!cwEvents[key])cwEvents[key]=[];
+    cwEvents[key].push({title,time,emoji:cwSelEmoji,note});
+    cwEvents[key].sort((a,b)=>a.time.localeCompare(b.time));
+    CW.closeAddModal();cwRenderWeek(date);cwRenderEvents(date);
+    document.getElementById('cw-inp-title').value='';document.getElementById('cw-inp-time').value='09:00';document.getElementById('cw-inp-note').value='';
+  },
+  showTodoInput(){const w=document.getElementById('cw-todo-inp-wrap');const h=w.style.display==='none';w.style.display=h?'flex':'none';if(h)setTimeout(()=>document.getElementById('cw-todo-inp').focus(),50);},
+  addTodo(){
+    const inp=document.getElementById('cw-todo-inp'),text=inp.value.trim();if(!text)return;
+    cwTodos.unshift({id:cwTodoNextId++,text,tag:'work',done:false});
+    inp.value='';document.getElementById('cw-todo-inp-wrap').style.display='none';
+    cwRenderTodos();
+  },
+};
+
+function cwRenderTodos(){
+  const list=document.getElementById('cw-todo-list');list.innerHTML='';
+  cwTodos.forEach((t,i)=>{
+    const el=document.createElement('div');
+    el.className='cw-todo-item'+(t.done?' cw-done':'');
+    el.style.animationDelay=`${i*.05}s`;
+    el.innerHTML=`<div class="cw-todo-chk" onclick="event.stopPropagation();CW._toggleTodo(${t.id})"><svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,6 5,9 10,3"/></svg></div><div class="cw-todo-txt">${t.text}</div><span class="cw-todo-tag cw-tag-${t.tag}">${t.tag}</span>`;
+    list.appendChild(el);
+  });
+  cwUpdateStats();
+}
+CW._toggleTodo=(id)=>{const t=cwTodos.find(x=>x.id===id);if(t){t.done=!t.done;cwRenderTodos();}};
+
+function cwUpdateStats(){
+  const totalEv=Object.values(cwEvents).reduce((s,a)=>s+a.length,0);
+  document.getElementById('cw-stat-done').textContent=cwTodos.filter(t=>t.done).length;
+  document.getElementById('cw-stat-ev').textContent=totalEv;
+  document.getElementById('cw-stat-pend').textContent=cwTodos.filter(t=>!t.done).length;
+}
+
+function cwUpdateCalcDisplay(){
+  const d=document.getElementById('cw-calc-result'),ex=document.getElementById('cw-calc-expr');
+  const len=cwCalCurrent.length;
+  d.style.fontSize=len>9?'24px':len>6?'32px':'38px';
+  d.textContent=cwCalCurrent;ex.textContent=cwCalExpr;
+  d.classList.remove('cw-pop');void d.offsetWidth;d.classList.add('cw-pop');
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    document.getElementById('cw-add-modal').classList.remove('cw-visible');
+    document.getElementById('cw-calc-panel').classList.remove('cw-visible');
+    document.getElementById('cw-profile-panel').classList.remove('cw-visible');
+  }
+});
+
+cwInit();
+})();
 </script>
 </body>
 </html>
