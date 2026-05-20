@@ -678,9 +678,9 @@ button{
   }
   .source-panel {
     width: 100% !important;
-    height: 220px !important;
-    min-height: 220px !important;
-    max-height: 220px !important;
+    height: 320px !important;
+    min-height: 320px !important;
+    max-height: 320px !important;
     border-left: none !important;
     border-bottom: 1px solid var(--line) !important;
     flex-shrink: 0 !important;
@@ -2172,35 +2172,35 @@ function DashboardCalendarCard() {
 
   return (
     <div style={{ marginTop:20, borderRadius:16, overflow:'hidden',
-      background:'#fff', border:'1px solid #ffe8da',
-      boxShadow:'0 8px 32px rgba(255,140,50,0.08)', maxWidth:680, margin:'20px auto' }}>
+      background:'var(--surface)', border:'1px solid var(--line)',
+      boxShadow:'0 8px 32px rgba(0,0,0,0.08)', maxWidth:680, margin:'20px auto' }}>
 
       {/* ── Header ── */}
-      <div style={{ background:'linear-gradient(135deg, #fff9f5 0%, #ffffff 100%)', padding:'18px 24px', borderBottom:'2px solid #fff5f0',
+      <div style={{ background:'var(--bg-soft)', padding:'18px 24px', borderBottom:'1px solid var(--line)',
         display:'flex', alignItems:'center', justifyContent:'space-between' }}>
         <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-          <span style={{ fontSize:20, fontWeight:800, color:'#1a1a1a', letterSpacing:'-0.5px' }}>
+          <span style={{ fontSize:20, fontWeight:800, color:'var(--ink)', letterSpacing:'-0.5px' }}>
             {MONTHS_AR[mo]} {yr}
           </span>
-          <span style={{ fontSize:12, fontWeight:600, color:'#ff8c32', background:'#fff5f0',
+          <span style={{ fontSize:12, fontWeight:600, color:'#ff8c32', background:'var(--amber-soft)',
             padding:'4px 10px', borderRadius:99 }}>{daysInMonth}</span>
         </div>
         <div style={{ display:'flex', alignItems:'center', gap:8 }}>
           <button onClick={goToday} style={{ padding:'6px 14px', borderRadius:8,
-            background:'#fff', border:'1px solid #ffe8da', color:'#ff8c32',
-            fontSize:11, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}>Today</button>
+            background:'var(--surface)', border:'1px solid var(--line)', color:'#ff8c32',
+            fontSize:11, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}>اليوم</button>
           <button onClick={prevMonth} style={{ width:28, height:28, borderRadius:6,
-            background:'#fff', border:'1px solid #ffe8da', color:'#ff8c32',
+            background:'var(--surface)', border:'1px solid var(--line)', color:'var(--ink-2)',
             cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'inherit' }}>‹</button>
           <button onClick={nextMonth} style={{ width:28, height:28, borderRadius:6,
-            background:'#fff', border:'1px solid #ffe8da', color:'#ff8c32',
+            background:'var(--surface)', border:'1px solid var(--line)', color:'var(--ink-2)',
             cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'inherit' }}>›</button>
         </div>
       </div>
 
       {/* ── Day names ── */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:0,
-        padding:'0 24px', paddingTop:16, marginBottom:8 }}>
+        padding:'0 24px', paddingTop:14, marginBottom:6, background:'var(--surface)' }}>
         {DAYS_EN.map(function(d){ return (
           <div key={d} style={{ textAlign:'center', fontSize:11, fontWeight:700,
             color:'#ff8c32', paddingBottom:8 }}>{d}</div>
@@ -2208,8 +2208,8 @@ function DashboardCalendarCard() {
       </div>
 
       {/* ── Grid ── */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:8,
-        padding:'0 24px 0 24px' }}>
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:6,
+        padding:'0 20px 20px', background:'var(--surface)' }}>
         {cells.map(function(day, ci){
           if(!day) return <div key={'b'+ci}/>;
           var ds = new Date(yr, mo, day).toISOString().slice(0,10);
@@ -2223,14 +2223,14 @@ function DashboardCalendarCard() {
               style={{
                 display:'flex', flexDirection:'column', alignItems:'center',
                 padding:'10px 6px', borderRadius:10, cursor:'pointer',
-                background: isSel ? '#fff5f0' : isToday ? '#fff9f5' : '#fff',
-                border: isSel ? '2px solid #ff8c32' : isToday ? '1.5px solid #ffe8da' : '1.5px solid #ffe8da',
+                background: isSel ? 'rgba(255,140,50,0.15)' : isToday ? 'var(--bg-soft)' : 'var(--bg-soft)',
+                border: isSel ? '2px solid #ff8c32' : '1.5px solid var(--line)',
                 transition:'all 0.12s',
-                minHeight:70,
+                minHeight:62,
               }}>
               <span style={{
                 fontSize:14, fontWeight: isSel?700:isToday?600:400, lineHeight:1, marginBottom:4,
-                color: isSel ? '#ff8c32' : isToday ? '#ff8c32' : '#333',
+                color: isSel ? '#ff8c32' : isToday ? '#ff8c32' : 'var(--ink-2)',
               }}>{day}</span>
               {hasEvts && (
                 <div style={{ display:'flex', gap:2, flexWrap:'wrap', justifyContent:'center', marginTop:2 }}>
@@ -2246,7 +2246,7 @@ function DashboardCalendarCard() {
       </div>
 
       {/* ── Events Section ── */}
-      <div style={{ padding:'20px 24px 24px', borderTop:'1px solid #ffe8da' }}>
+      <div style={{ padding:'16px 24px 20px', borderTop:'1px solid var(--line)', background:'var(--bg-soft)' }}>
         <div style={{ fontSize:11, fontWeight:700, color:'#ff8c32', textTransform:'uppercase',
           letterSpacing:'0.05em', marginBottom:12 }}>
           {selLabel} · {selEvts.length} EVENT{selEvts.length!==1?'S':''}
@@ -2258,18 +2258,18 @@ function DashboardCalendarCard() {
             {selEvts.map(function(ev,ei){
               return (
                 <div key={ei} style={{ display:'flex', alignItems:'flex-start', gap:12,
-                  padding:'10px 14px', background:'#fff5f0', borderRadius:10,
-                  border:'1px solid #ffe8da', borderLeft:'4px solid '+(ev.color||'#ff8c32') }}>
+                  padding:'10px 14px', background:'var(--surface)', borderRadius:10,
+                  border:'1px solid var(--line)', borderLeft:'4px solid '+(ev.color||'#ff8c32') }}>
                   <span style={{ fontSize:16, lineHeight:1, flexShrink:0 }}>{ev.emoji||'📌'}</span>
                   <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{ fontSize:12, fontWeight:600, color:'#1a1a1a' }}>
+                    <div style={{ fontSize:12, fontWeight:600, color:'var(--ink)' }}>
                       {ev.time && <span style={{ color:'#ff8c32', marginRight:8, direction:'ltr', fontSize:11, fontWeight:500 }}>{ev.time}</span>}
                       {ev.title}
                     </div>
                   </div>
                   {ev.category && (
                     <span style={{ fontSize:9, fontWeight:700, padding:'2px 8px', borderRadius:99,
-                      background:ev.color+'18', color:ev.color, whiteSpace:'nowrap' }}>
+                      background:ev.color+'22', color:ev.color, whiteSpace:'nowrap' }}>
                       {ev.category}
                     </span>
                   )}
@@ -2280,20 +2280,20 @@ function DashboardCalendarCard() {
         ) : null}
 
         {/* Add event form */}
-        <div style={{ padding:'12px 14px', background:'#fff5f0', borderRadius:10,
-          border:'1px solid #ffe8da' }}>
+        <div style={{ padding:'12px 14px', background:'var(--surface)', borderRadius:10,
+          border:'1px solid var(--line)' }}>
           <input type="text" placeholder="Dinner"
             value={newTitle}
             onChange={function(e){setNewTitle(e.target.value);}}
-            style={{ width:'100%', padding:'8px 10px', borderRadius:6, border:'1px solid #ffe8da',
-              background:'#fff', color:'#333', fontSize:12, fontFamily:'inherit', marginBottom:8, outline:'none' }}
+            style={{ width:'100%', padding:'8px 10px', borderRadius:6, border:'1px solid var(--line)',
+              background:'var(--bg-soft)', color:'var(--ink)', fontSize:12, fontFamily:'inherit', marginBottom:8, outline:'none' }}
           />
           <div style={{ display:'flex', gap:8, alignItems:'center' }}>
             <input type="time"
               value={newTime}
               onChange={function(e){setNewTime(e.target.value);}}
-              style={{ flex:1, padding:'6px 8px', borderRadius:6, border:'1px solid #ffe8da',
-                background:'#fff', color:'#333', fontSize:11, fontFamily:'inherit', outline:'none' }}
+              style={{ flex:1, padding:'6px 8px', borderRadius:6, border:'1px solid var(--line)',
+                background:'var(--bg-soft)', color:'var(--ink)', fontSize:11, fontFamily:'inherit', outline:'none' }}
             />
             <span style={{ fontSize:10, color:'#ff8c32' }}>{newTime||'9:00'}</span>
           </div>
@@ -2305,7 +2305,7 @@ function DashboardCalendarCard() {
                 <button key={opt.name}
                   onClick={function(){setNewCat(opt.name);}}
                   style={{ width:24, height:24, borderRadius:'50%', background:opt.color,
-                    border: newCat===opt.name ? '3px solid #ff8c32' : '2px solid transparent',
+                    border: newCat===opt.name ? '3px solid var(--ink)' : '2px solid transparent',
                     cursor:'pointer', transition:'all 0.12s' }}
                   title={opt.name}/>
               );
@@ -2315,8 +2315,8 @@ function DashboardCalendarCard() {
           <div style={{ display:'flex', gap:6, alignItems:'center' }}>
             <select value={newCat}
               onChange={function(e){setNewCat(e.target.value);}}
-              style={{ flex:1, padding:'6px 8px', borderRadius:6, border:'1px solid #ffe8da',
-                background:'#fff', color:'#333', fontSize:11, fontFamily:'inherit', outline:'none' }}>
+              style={{ flex:1, padding:'6px 8px', borderRadius:6, border:'1px solid var(--line)',
+                background:'var(--bg-soft)', color:'var(--ink)', fontSize:11, fontFamily:'inherit', outline:'none' }}>
               {COLOR_OPTS.map(function(opt){
                 return <option key={opt.name} value={opt.name}>{opt.name}</option>;
               })}
@@ -4244,23 +4244,30 @@ function SourceChatScreen() {
           </div>
 
           {/* عارض المستند */}
-          <div style={{ flex: 1, overflowY: 'auto', background: '#f0f0ec', padding: activeSource ? 12 : 0 }}
+          <div style={{ flex: 1, overflowY: 'auto', background: 'var(--bg-soft)', padding: activeSource ? 12 : 0, display: 'flex', flexDirection: 'column' }}
             onDragOver={function(e) { e.preventDefault(); }}
             onDrop={function(e) { e.preventDefault(); handleFiles(e.dataTransfer.files); }}
           >
             {!activeSource ? (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 14, padding: 24 }}>
-                <div style={{ fontSize: 52 }}>📁</div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--ink-2)' }}>ارفع مصادرك هنا</div>
-                <div style={{ fontSize: 12, color: 'var(--ink-4)', textAlign: 'center', lineHeight: 1.7 }}>
-                  PDF · صور · ملفات نصية<br/>اسحب وأفلت أو اضغط الزر أعلاه
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: 32 }}>
+                <div style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                  gap: 12, padding: '24px 32px', borderRadius: 16,
+                  border: '2px dashed var(--line-strong)', background: 'var(--surface)',
+                  width: '100%', maxWidth: 360, boxSizing: 'border-box'
+                }}>
+                  <div style={{ fontSize: 48, lineHeight: 1 }}>📁</div>
+                  <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--ink)' }}>ارفع مصادرك هنا</div>
+                  <div style={{ fontSize: 12, color: 'var(--ink-4)', textAlign: 'center', lineHeight: 1.8 }}>
+                    PDF · صور · ملفات نصية<br/>اسحب وأفلت أو اضغط الزر أدناه
+                  </div>
+                  <button
+                    onClick={function() { fileInputRef.current && fileInputRef.current.click(); }}
+                    style={{ padding: '10px 28px', borderRadius: 8, border: 'none', background: 'var(--accent)', color: 'var(--bg)', fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}
+                  >
+                    ＋ اختر ملفات
+                  </button>
                 </div>
-                <button
-                  onClick={function() { fileInputRef.current && fileInputRef.current.click(); }}
-                  style={{ padding: '10px 22px', borderRadius: 8, border: '2px dashed var(--line-strong)', background: 'transparent', color: 'var(--ink-2)', fontFamily: 'inherit', fontWeight: 700, fontSize: 13, cursor: 'pointer' }}
-                >
-                  ＋ اختر ملفات
-                </button>
               </div>
             ) : activeSource.type === 'image' ? (
               <div style={{ textAlign: 'center' }}>
@@ -4269,14 +4276,14 @@ function SourceChatScreen() {
             ) : activeSource.type === 'pdf' ? (
               <div>
                 {activeSource.pages && activeSource.pages.map(function(p) { return (
-                  <div key={p.pageNum} style={{ marginBottom: 12, background: '#fff', borderRadius: 6, overflow: 'hidden', boxShadow: '0 1px 6px rgba(0,0,0,.12)' }}>
+                  <div key={p.pageNum} style={{ marginBottom: 12, background: 'var(--surface)', borderRadius: 6, overflow: 'hidden', boxShadow: '0 1px 6px rgba(0,0,0,.12)' }}>
                     <img src={p.dataUrl} alt={'صفحة ' + p.pageNum} style={{ width: '100%', display: 'block' }} />
-                    <div style={{ padding: '4px 8px', fontSize: 10, color: '#888', textAlign: 'center', borderTop: '1px solid #eee' }}>صفحة {p.pageNum}</div>
+                    <div style={{ padding: '4px 8px', fontSize: 10, color: 'var(--ink-4)', textAlign: 'center', borderTop: '1px solid var(--line)' }}>صفحة {p.pageNum}</div>
                   </div>
                 ); })}
               </div>
             ) : (
-              <div style={{ background: '#fff', borderRadius: 8, padding: 16, boxShadow: '0 1px 4px rgba(0,0,0,.08)' }}>
+              <div style={{ background: 'var(--surface)', borderRadius: 8, padding: 16, boxShadow: '0 1px 4px rgba(0,0,0,.08)' }}>
                 <pre style={{ fontSize: 12, lineHeight: 1.7, color: 'var(--ink)', whiteSpace: 'pre-wrap', fontFamily: 'inherit', margin: 0 }}>{activeSource.text}</pre>
               </div>
             )}
@@ -4591,7 +4598,11 @@ function App({ session, onLogout }) {
   React.useEffect(() => {
     const root = document.getElementById('root');
     root.className = themeClass;
+    // Sync html/body so CSS vars on html.dark / body.dark activate
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+    document.body.classList.toggle('dark', theme === 'dark');
   }, [theme, colorScheme]);
+
 
   return (
     <div style={{ display:'flex', flexDirection:'column', height:'100vh', overflow:'hidden' }}>
@@ -4698,10 +4709,10 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 
 /* ── Widget panel position ── */
 @media(max-width:1100px){
-  #cw-widget{right:62px !important;width:300px !important;}
+  #cw-widget{width:300px !important;}
 }
 @media(min-width:1101px){
-  #cw-widget{right:228px !important;width:340px !important;}
+  #cw-widget{width:340px !important;}
 }
 
 /* ── Widget panel — Orange & White ── */
@@ -5089,6 +5100,13 @@ let cwCalCurrent='0',cwCalExpr='',cwCalOp=null,cwCalNew=true;
 function cwInit(){
   cwRenderHeader();cwRenderWeek();cwRenderEvents(today);
   cwBuildEmojis();cwRenderTodos();cwUpdateStats();
+  // Sync saved dark theme to whole app
+  if(cwIsDark){
+    document.documentElement.classList.add('dark');
+    document.body.classList.add('dark');
+    const root=document.getElementById('root');
+    if(root)root.classList.add('dark');
+  }
   // Apply saved theme
   if(cwIsDark){
     document.getElementById('cw-widget').classList.add('dark');
@@ -5124,6 +5142,22 @@ function cwInjectNavBtn(){
   btn.innerHTML=`<span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>`;
   btn.addEventListener('click',function(){
     const isVisible=widget.classList.contains('cw-visible');
+    if(!isVisible){
+      // Position widget above the button that was clicked
+      const btnRect=btn.getBoundingClientRect();
+      const ww=widget.offsetWidth||340;
+      const wh=widget.offsetHeight||580;
+      // Center widget horizontally over the button, clamp to viewport
+      let left=btnRect.left+(btnRect.width/2)-(ww/2);
+      left=Math.max(8,Math.min(left,window.innerWidth-ww-8));
+      // Place above the button with 12px gap
+      let top=btnRect.top-wh-12;
+      if(top<8)top=8;
+      widget.style.right='auto';
+      widget.style.bottom='auto';
+      widget.style.left=left+'px';
+      widget.style.top=top+'px';
+    }
     widget.classList.toggle('cw-visible',!isVisible);
     btn.classList.toggle('cw-open',!isVisible);
   });
@@ -5223,6 +5257,11 @@ window.CW={
     cwIsDark=!cwIsDark;
     localStorage.setItem('cw_theme',cwIsDark?'dark':'light');
     cwW.classList.toggle('dark',cwIsDark);
+    // Apply dark to the whole app
+    document.documentElement.classList.toggle('dark',cwIsDark);
+    document.body.classList.toggle('dark',cwIsDark);
+    const root=document.getElementById('root');
+    if(root){if(cwIsDark)root.classList.add('dark');else root.classList.remove('dark');}
     const thumb=document.getElementById('cw-toggle-thumb');
     const moon=document.getElementById('cw-moon-icon');
     const sun=document.getElementById('cw-sun-icon');
