@@ -2661,13 +2661,13 @@ function ProductsScreen() {
           placeholder="ابحث عن منتج..."
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
-          style={{ width: '100%', padding: '8px', marginBottom: 10, borderRadius: '8px', border: '1px solid var(--line)' }}
+          style={{ width: '100%', padding: '8px', marginBottom: 10, borderRadius: '8px', border: '1px solid var(--line)', background: 'var(--surface)', color: 'var(--ink)' }}
         />
 
         <select
           value={selectedStore}
           onChange={e => setSelectedStore(e.target.value)}
-          style={{ width: '100%', padding: '8px', marginBottom: 10, borderRadius: '8px', border: '1px solid var(--line)' }}
+          style={{ width: '100%', padding: '8px', marginBottom: 10, borderRadius: '8px', border: '1px solid var(--line)', background: 'var(--surface)', color: 'var(--ink)' }}
         >
           <option value="">جميع المتاجر</option>
           {APP_DATA.stores.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
@@ -2679,14 +2679,14 @@ function ProductsScreen() {
             placeholder="السعر من"
             value={minPrice}
             onChange={e => setMinPrice(e.target.value)}
-            style={{ padding: '8px', borderRadius: '8px', border: '1px solid var(--line)' }}
+            style={{ padding: '8px', borderRadius: '8px', border: '1px solid var(--line)', background: 'var(--surface)', color: 'var(--ink)' }}
           />
           <input
             type="number"
             placeholder="السعر إلى"
             value={maxPrice}
             onChange={e => setMaxPrice(e.target.value)}
-            style={{ padding: '8px', borderRadius: '8px', border: '1px solid var(--line)' }}
+            style={{ padding: '8px', borderRadius: '8px', border: '1px solid var(--line)', background: 'var(--surface)', color: 'var(--ink)' }}
           />
         </div>
       </div>
