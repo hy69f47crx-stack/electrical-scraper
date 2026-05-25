@@ -49,6 +49,25 @@ html, body {
   --nav-active-bg:rgba(79,110,247,.10);
   --nav-active-color:#4F6EF7;
   --nav-indicator:#4F6EF7;
+
+  /* ── Handoff design tokens ── */
+  --indigo:#4F6EF7;
+  --indigo-soft:rgba(79,110,247,.10);
+  --indigo-line:rgba(79,110,247,.28);
+  --amber:#E89C3F;
+  --amber-line:rgba(232,156,63,.30);
+  --green:#2F6F4E;
+  --green-soft:rgba(47,111,78,.10);
+  --coral:#F05A7E;
+  --coral-soft:rgba(240,90,126,.10);
+  --coral-line:rgba(240,90,126,.28);
+  --teal:#2EC4B6;
+  --teal-line:rgba(46,196,182,.28);
+  --surface-soft:#F4F3EE;
+  --bg-2:#F0EEE8;
+  --shadow-1:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --shadow-2:0 4px 12px rgba(0,0,0,.08),0 1px 3px rgba(0,0,0,.05);
+  --radius-lg:16px;
 }
 
 html.dark, body.dark {
@@ -73,6 +92,27 @@ html.dark, body.dark {
   --nav-active-bg:rgba(99,130,255,.15);
   --nav-active-color:#6382FF;
   --nav-indicator:#6382FF;
+
+  /* ── Handoff design tokens (dark) ── */
+  --indigo:#6382FF;
+  --indigo-soft:rgba(99,130,255,.15);
+  --indigo-line:rgba(99,130,255,.30);
+  --amber:#D4903A;
+  --amber-soft:rgba(212,144,58,.12);
+  --amber-line:rgba(212,144,58,.30);
+  --green:#3A8A5F;
+  --green-soft:rgba(58,138,95,.12);
+  --coral:#E05070;
+  --coral-soft:rgba(224,80,112,.12);
+  --coral-line:rgba(224,80,112,.28);
+  --teal:#28B0A4;
+  --teal-soft:rgba(40,176,164,.12);
+  --teal-line:rgba(40,176,164,.28);
+  --surface-soft:#1E1C1A;
+  --bg-2:#1A1916;
+  --shadow-1:0 1px 3px rgba(0,0,0,.20),0 1px 2px rgba(0,0,0,.15);
+  --shadow-2:0 4px 12px rgba(0,0,0,.28),0 1px 3px rgba(0,0,0,.20);
+  --radius-lg:16px;
 }
 
 body{font-family:"IBM Plex Sans Arabic","Tajawal",system-ui,sans-serif;background:var(--bg);color:var(--ink);width:100%;height:100%;margin:0;padding:0}
@@ -2097,18 +2137,225 @@ function DashboardScreen() {
         </div>
       )}
 
-      <DashboardCalendarCard/>
+      <DashboardBottomSection/>
 
     </div>
   );
 }
 
-// ── Dashboard Calendar Card ────────────────────────────────────────────────────
+// ── Dashboard Bottom Section (Workflow + Calendar side by side) ───────────────
+function DashboardBottomSection() {
+  return (
+    <div style={{
+      display:'grid',
+      gridTemplateColumns:'1.4fr 1fr',
+      gap:18,
+      marginTop:20,
+      direction:'ltr', /* force left→right column order regardless of RTL page */
+    }}>
+      {/* LEFT (wider) — Workflow */}
+      <DashboardWorkflowPanel/>
+      {/* RIGHT (narrower) — Calendar */}
+      <DashboardCalendarCard/>
+    </div>
+  );
+}
+
+// ── Dashboard Workflow Panel (handoff design) ──────────────────────────────────
+function DashboardWorkflowPanel() {
+  var [filter, setFilter] = React.useState('all');
+  var [tasks] = React.useState([
+    { id:1, title:'تمديد الكابلات الرئيسية',  category:'كابلات',  owner:'فهد الكندري',   initials:'ف.ك', progress:85,  status:'in-progress', due:'15 يونيو' },
+    { id:2, title:'تركيب لوحات التوزيع',       category:'لوحات',   owner:'أحمد المطيري', initials:'أ.م', progress:60,  status:'in-progress', due:'20 يونيو' },
+    { id:3, title:'تأريض المبنى الرئيسي',      category:'تأريض',   owner:'سعد العنزي',   initials:'س.ع', progress:100, status:'done',        due:'10 مايو'  },
+    { id:4, title:'فحص العزل ABB',             category:'فحص',     owner:'فهد الكندري',  initials:'ف.ك', progress:40,  status:'in-progress', due:'25 يونيو' },
+    { id:5, title:'توريد المفاتيح والبرايز',    category:'توريد',   owner:'محمد الشمري',  initials:'م.ش', progress:25,  status:'in-progress', due:'02 يوليو' },
+    { id:6, title:'تسليم الواجهة للمشرف',       category:'تسليم',   owner:'فريق التشغيل',  initials:'فت',  progress:70,  status:'in-progress', due:'08 يوليو' },
+  ]);
+
+  // ── buckets by status ──
+  var inP  = tasks.filter(function(t){ return t.status === 'in-progress'; });
+  var done = tasks.filter(function(t){ return t.status === 'done'; });
+  var pend = tasks.filter(function(t){ return t.status === 'pending'; });
+
+  var filtered = filter === 'inP'  ? inP
+               : filter === 'done' ? done
+               : filter === 'pend' ? pend
+               :                     tasks;
+
+  var overall = tasks.length
+    ? Math.round(tasks.reduce(function(s,t){ return s+t.progress; },0) / tasks.length)
+    : 0;
+
+  var TABS = [
+    { key:'all',  label:'الكل',  count: tasks.length },
+    { key:'inP',  label:'جارٍ',  count: inP.length   },
+    { key:'done', label:'مكتمل', count: done.length  },
+    { key:'pend', label:'معلق',  count: pend.length  },
+  ];
+
+  // Amber progress ring
+  var RING_SIZE = 64, RING_STROKE = 6;
+  var ringR   = (RING_SIZE - RING_STROKE) / 2;
+  var ringC   = 2 * Math.PI * ringR;
+  var ringOff = ringC - (overall / 100) * ringC;
+
+  return (
+    <section style={{
+      background:'var(--surface)', border:'1px solid var(--line)',
+      borderRadius:'var(--radius-lg)', padding:18,
+      boxShadow:'var(--shadow-2)',
+      display:'flex', flexDirection:'column', gap:14,
+    }}>
+
+      {/* ── Header: ring left, title right ── */}
+      <div style={{ display:'flex', alignItems:'center', gap:16, justifyContent:'space-between' }}>
+        {/* Amber ring */}
+        <div style={{ position:'relative', width:RING_SIZE, height:RING_SIZE, flexShrink:0 }}>
+          <svg width={RING_SIZE} height={RING_SIZE} style={{ display:'block' }}>
+            <circle cx={RING_SIZE/2} cy={RING_SIZE/2} r={ringR}
+              stroke='var(--amber-soft)' strokeWidth={RING_STROKE} fill='none'/>
+            <circle cx={RING_SIZE/2} cy={RING_SIZE/2} r={ringR}
+              stroke='var(--amber)' strokeWidth={RING_STROKE} fill='none'
+              strokeDasharray={ringC} strokeDashoffset={ringOff}
+              strokeLinecap='round'
+              transform={'rotate(-90 '+(RING_SIZE/2)+' '+(RING_SIZE/2)+')'}
+              style={{ transition:'stroke-dashoffset .4s' }}/>
+          </svg>
+          <div style={{
+            position:'absolute', inset:0,
+            display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+          }}>
+            <span style={{ fontSize:16, fontWeight:700, color:'var(--amber)', lineHeight:1 }}>
+              {overall}<span style={{ fontSize:10 }}>%</span>
+            </span>
+            <span style={{ fontSize:9, color:'var(--ink-4)', fontWeight:500, marginTop:1 }}>إنجاز</span>
+          </div>
+        </div>
+        {/* Title block */}
+        <div style={{ flex:1 }}>
+          <div style={{ display:'inline-flex', alignItems:'center', gap:8, fontSize:16, fontWeight:700, color:'var(--ink)' }}>
+            <span>📋</span> سير الأعمال
+          </div>
+          <div style={{ fontSize:12, color:'var(--ink-3)', marginTop:3, fontWeight:500 }}>
+            {tasks.length} مهمة · {done.length} مكتملة
+          </div>
+        </div>
+      </div>
+
+      {/* ── Segmented tabs (indigo pill) ── */}
+      <div style={{
+        display:'flex', gap:4, padding:4,
+        background:'var(--bg-2)', borderRadius:12,
+      }}>
+        {TABS.map(function(t){
+          var isA = filter === t.key;
+          return (
+            <button key={t.key} onClick={function(){ setFilter(t.key); }}
+              style={{
+                flex:1, display:'inline-flex', alignItems:'center', justifyContent:'center', gap:6,
+                padding:'8px 10px', background: isA ? 'var(--indigo)' : 'transparent',
+                border:'none', fontSize:12, fontWeight:600,
+                color: isA ? '#fff' : 'var(--ink-3)',
+                borderRadius:9, transition:'background .12s, color .12s',
+                boxShadow: isA ? '0 2px 6px var(--indigo-line)' : 'none',
+                fontFamily:'inherit', cursor:'pointer',
+              }}>
+              <span>{t.label}</span>
+              <span style={{
+                display:'inline-flex', alignItems:'center', justifyContent:'center',
+                minWidth:18, height:18, borderRadius:999,
+                background: isA ? '#fff' : 'var(--bg-soft)',
+                color: isA ? 'var(--indigo)' : 'var(--ink-3)',
+                fontSize:10, fontWeight:700, padding:'0 5px',
+              }}>{t.count}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ── Task rows ── */}
+      <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+        {filtered.length === 0 && (
+          <div style={{ textAlign:'center', padding:24, color:'var(--ink-4)', fontSize:13 }}>
+            لا توجد مهام في هذه الفئة
+          </div>
+        )}
+        {filtered.map(function(task){
+          var isDone = task.status === 'done';
+          return (
+            <div key={task.id} style={{
+              background:'var(--surface-soft)', border:'1px solid var(--line)',
+              borderRadius:12, padding:'12px 14px',
+              display:'flex', flexDirection:'column', gap:8,
+              transition:'transform .15s, box-shadow .15s',
+            }}
+              onMouseEnter={function(e){ e.currentTarget.style.transform='translateY(-2px)'; e.currentTarget.style.boxShadow='var(--shadow-2)'; }}
+              onMouseLeave={function(e){ e.currentTarget.style.transform=''; e.currentTarget.style.boxShadow=''; }}
+            >
+              {/* row 1: status pill + title */}
+              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+                <span style={{
+                  display:'inline-flex', alignItems:'center', gap:4,
+                  padding:'2px 8px', fontSize:11, fontWeight:600,
+                  color: isDone ? 'var(--green)' : 'var(--amber)',
+                  background: isDone ? 'var(--green-soft)' : 'var(--amber-soft)',
+                  border:'1px solid '+(isDone?'var(--green-soft)':'var(--amber-line)'),
+                  borderRadius:999, whiteSpace:'nowrap', lineHeight:1.3,
+                }}>
+                  {isDone ? 'مكتمل' : 'جارٍ'}
+                </span>
+                <div style={{ fontSize:13.5, fontWeight:700, color:'var(--ink)' }}>{task.title}</div>
+              </div>
+              {/* row 2: category pill + due date */}
+              <div style={{ display:'flex', alignItems:'center', gap:8, fontSize:11.5, color:'var(--ink-3)' }}>
+                <span style={{
+                  display:'inline-flex', alignItems:'center', gap:4,
+                  padding:'2px 8px', fontSize:11, fontWeight:600,
+                  color:'var(--indigo)', background:'var(--indigo-soft)',
+                  border:'1px solid var(--indigo-line)',
+                  borderRadius:999, whiteSpace:'nowrap', lineHeight:1.3,
+                }}>{task.category}</span>
+                <span style={{ display:'inline-flex', alignItems:'center', gap:4, fontWeight:500 }}>
+                  📅 {task.due}
+                </span>
+              </div>
+              {/* row 3: progress bar */}
+              <div style={{ height:6, background:'var(--bg-2)', borderRadius:999, overflow:'hidden' }}>
+                <div style={{
+                  height:'100%', borderRadius:999,
+                  width:task.progress+'%',
+                  background: isDone ? 'var(--green)' : 'var(--indigo)',
+                  transition:'width .3s',
+                }}/>
+              </div>
+              {/* row 4: avatar + owner + % */}
+              <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+                <div style={{ display:'inline-flex', alignItems:'center', gap:6, fontSize:11.5, color:'var(--ink-3)', fontWeight:500 }}>
+                  <div style={{
+                    width:22, height:22, borderRadius:7,
+                    background:'var(--indigo-soft)', color:'var(--indigo)',
+                    display:'inline-flex', alignItems:'center', justifyContent:'center',
+                    fontSize:10, fontWeight:700,
+                  }}>{task.initials}</div>
+                  <span>{task.owner}</span>
+                </div>
+                <span style={{ fontWeight:700, color: isDone ? 'var(--green)' : 'var(--indigo)', fontSize:13 }}>
+                  {task.progress}%
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+// ── Dashboard Calendar Card (handoff design + toggleable add-event) ────────────
 function DashboardCalendarCard() {
   var STORAGE_KEY = 'ea_calendar_v1';
   var MONTHS_AR = ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
-  var DAYS_EN   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  var DAYS_AR   = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
   var today = new Date(); today.setHours(0,0,0,0);
   var todayStr = today.toISOString().slice(0,10);
 
@@ -2121,9 +2368,10 @@ function DashboardCalendarCard() {
   });
   var [viewDate, setViewDate] = React.useState(new Date(today.getFullYear(), today.getMonth(), 1));
   var [selDate,  setSelDate]  = React.useState(todayStr);
+  var [showForm, setShowForm] = React.useState(false);
   var [newTitle, setNewTitle] = React.useState('');
   var [newTime,  setNewTime]  = React.useState('');
-  var [newCat,   setNewCat]   = React.useState('Personal');
+  var [newCat,   setNewCat]   = React.useState('عمل');
 
   React.useEffect(function(){
     function onStorage(){ try{ var r=JSON.parse(localStorage.getItem(STORAGE_KEY))||{}; if(!Array.isArray(r))setEvents(r); }catch(e){} }
@@ -2140,196 +2388,247 @@ function DashboardCalendarCard() {
   function nextMonth(){ setViewDate(new Date(yr, mo+1, 1)); }
   function goToday(){ setViewDate(new Date(today.getFullYear(), today.getMonth(), 1)); setSelDate(todayStr); }
 
+  var CAT_OPTS = [
+    { name:'عمل',    color:'var(--indigo)' },
+    { name:'شخصي',  color:'var(--coral)'  },
+    { name:'صحة',   color:'var(--green)'  },
+    { name:'أخرى',  color:'var(--amber)'  },
+  ];
+
   function addEvent(){
     if(!newTitle.trim()) return;
-    var eObj = { title:newTitle, time:newTime, category:newCat, emoji:'📌', color:'#4ECDC4' };
-    var newEvents = {...events};
+    var catColor = (CAT_OPTS.find(function(c){return c.name===newCat;}) || {}).color || 'var(--indigo)';
+    var eObj = { title:newTitle, time:newTime, category:newCat, emoji:'📌', color:catColor };
+    var newEvents = Object.assign({}, events);
     if(!newEvents[selDate]) newEvents[selDate] = [];
-    newEvents[selDate].push(eObj);
+    newEvents[selDate] = newEvents[selDate].concat([eObj]);
     setEvents(newEvents);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newEvents));
     setNewTitle('');
     setNewTime('');
-    setNewCat('Personal');
+    setShowForm(false);
   }
 
-  var selEvts = events[selDate]||[];
-  var selObj  = new Date(selDate+'T00:00:00');
-  var selDayName = DAYS_AR[selObj.getDay()];
-  var selLabel = selDayName.toUpperCase() + ', ' + MONTHS_AR[selObj.getMonth()] + ' ' + selObj.getDate();
-
-  var COLOR_OPTS = [
-    {name:'Personal', color:'#FF6B6B'},
-    {name:'Work', color:'#ff8c32'},
-    {name:'Health', color:'#AA96DA'},
-    {name:'Other', color:'#F5A623'},
-  ];
-  var selColor = COLOR_OPTS.find(function(c){return c.name===newCat;})?.color||'#ff8c32';
-
+  // Build grid cells: pad to week-start (Sunday=0)
   var cells = [];
   for(var b=0;b<firstDay;b++) cells.push(null);
   for(var d=1;d<=daysInMonth;d++) cells.push(d);
 
+  var selEvts = events[selDate]||[];
+
+  // Arabic week-day single letters: Sat→أ, Fri→ج, Thu→خ, Wed→ر, Tue→ث, Mon→ث, Sun→أح
+  var DAY_LETTERS = ['أح','ث','ث','ر','خ','ج','أ'];
+
   return (
-    <div style={{ marginTop:20, borderRadius:16, overflow:'hidden',
+    <section style={{
       background:'var(--surface)', border:'1px solid var(--line)',
-      boxShadow:'0 8px 32px rgba(0,0,0,0.08)', maxWidth:680, margin:'20px auto' }}>
+      borderRadius:'var(--radius-lg)', padding:18,
+      boxShadow:'var(--shadow-2)',
+      display:'flex', flexDirection:'column', gap:14,
+    }}>
 
       {/* ── Header ── */}
-      <div style={{ background:'var(--bg-soft)', padding:'18px 24px', borderBottom:'1px solid var(--line)',
-        display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-          <span style={{ fontSize:20, fontWeight:800, color:'var(--ink)', letterSpacing:'-0.5px' }}>
-            {MONTHS_AR[mo]} {yr}
-          </span>
-          <span style={{ fontSize:12, fontWeight:600, color:'#ff8c32', background:'var(--amber-soft)',
-            padding:'4px 10px', borderRadius:99 }}>{daysInMonth}</span>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
+        {/* Nav buttons + today */}
+        <div style={{ display:'flex', alignItems:'center', gap:4 }}>
+          <button onClick={prevMonth} style={{
+            width:30, height:30, borderRadius:8,
+            background:'transparent', border:'1px solid var(--line)',
+            color:'var(--ink-2)',
+            display:'inline-flex', alignItems:'center', justifyContent:'center',
+            cursor:'pointer', fontFamily:'inherit', fontSize:14,
+          }}>›</button>
+          <button onClick={nextMonth} style={{
+            width:30, height:30, borderRadius:8,
+            background:'transparent', border:'1px solid var(--line)',
+            color:'var(--ink-2)',
+            display:'inline-flex', alignItems:'center', justifyContent:'center',
+            cursor:'pointer', fontFamily:'inherit', fontSize:14,
+          }}>‹</button>
+          <button onClick={goToday} style={{
+            padding:'6px 12px', background:'transparent',
+            border:'1px solid var(--line)', borderRadius:999,
+            color:'var(--ink-2)', fontWeight:600, fontSize:12,
+            marginInlineStart:4, cursor:'pointer', fontFamily:'inherit',
+          }}>اليوم</button>
         </div>
-        <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-          <button onClick={goToday} style={{ padding:'6px 14px', borderRadius:8,
-            background:'var(--surface)', border:'1px solid var(--line)', color:'#ff8c32',
-            fontSize:11, fontWeight:600, cursor:'pointer', fontFamily:'inherit' }}>اليوم</button>
-          <button onClick={prevMonth} style={{ width:28, height:28, borderRadius:6,
-            background:'var(--surface)', border:'1px solid var(--line)', color:'var(--ink-2)',
-            cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'inherit' }}>‹</button>
-          <button onClick={nextMonth} style={{ width:28, height:28, borderRadius:6,
-            background:'var(--surface)', border:'1px solid var(--line)', color:'var(--ink-2)',
-            cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'inherit' }}>›</button>
-        </div>
-      </div>
-
-      {/* ── Day names ── */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:0,
-        padding:'0 24px', paddingTop:14, marginBottom:6, background:'var(--surface)' }}>
-        {DAYS_EN.map(function(d){ return (
-          <div key={d} style={{ textAlign:'center', fontSize:11, fontWeight:700,
-            color:'#ff8c32', paddingBottom:8 }}>{d}</div>
-        ); })}
-      </div>
-
-      {/* ── Grid ── */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:6,
-        padding:'0 20px 20px', background:'var(--surface)' }}>
-        {cells.map(function(day, ci){
-          if(!day) return <div key={'b'+ci}/>;
-          var ds = new Date(yr, mo, day).toISOString().slice(0,10);
-          var isToday  = ds === todayStr;
-          var isSel    = ds === selDate;
-          var dayEvts  = events[ds]||[];
-          var hasEvts  = dayEvts.length > 0;
-          return (
-            <div key={ds}
-              onClick={function(){ setSelDate(ds); }}
-              style={{
-                display:'flex', flexDirection:'column', alignItems:'center',
-                padding:'10px 6px', borderRadius:10, cursor:'pointer',
-                background: isSel ? 'rgba(255,140,50,0.15)' : isToday ? 'var(--bg-soft)' : 'var(--bg-soft)',
-                border: isSel ? '2px solid #ff8c32' : '1.5px solid var(--line)',
-                transition:'all 0.12s',
-                minHeight:62,
-              }}>
-              <span style={{
-                fontSize:14, fontWeight: isSel?700:isToday?600:400, lineHeight:1, marginBottom:4,
-                color: isSel ? '#ff8c32' : isToday ? '#ff8c32' : 'var(--ink-2)',
-              }}>{day}</span>
-              {hasEvts && (
-                <div style={{ display:'flex', gap:2, flexWrap:'wrap', justifyContent:'center', marginTop:2 }}>
-                  {dayEvts.slice(0,3).map(function(ev,ei){
-                    return <div key={ei} style={{ width:5, height:5, borderRadius:'50%',
-                      background: ev.color||'#ff8c32' }}/>;
-                  })}
-                </div>
-              )}
+        {/* Month title + day badge */}
+        <div style={{ display:'flex', alignItems:'center', gap:10 }}>
+          <div>
+            <div style={{ fontSize:16, fontWeight:700, color:'var(--ink)', lineHeight:1 }}>
+              {MONTHS_AR[mo]} {yr}
             </div>
+          </div>
+          <div style={{
+            width:36, height:36, borderRadius:10,
+            background:'var(--ink)', color:'#fff',
+            display:'inline-flex', alignItems:'center', justifyContent:'center',
+            fontWeight:700, fontSize:14,
+          }}>{today.getDate()}</div>
+        </div>
+      </div>
+
+      {/* ── Day-letter row ── */}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(7, 1fr)', gap:6 }}>
+        {DAY_LETTERS.map(function(w, i){
+          return (
+            <div key={i} style={{
+              textAlign:'center', fontSize:11, color:'var(--ink-4)',
+              fontWeight:600, padding:'2px 0',
+            }}>{w}</div>
           );
         })}
       </div>
 
-      {/* ── Events Section ── */}
-      <div style={{ padding:'16px 24px 20px', borderTop:'1px solid var(--line)', background:'var(--bg-soft)' }}>
-        <div style={{ fontSize:11, fontWeight:700, color:'#ff8c32', textTransform:'uppercase',
-          letterSpacing:'0.05em', marginBottom:12 }}>
-          {selLabel} · {selEvts.length} EVENT{selEvts.length!==1?'S':''}
-        </div>
+      {/* ── Calendar grid ── */}
+      <div style={{ display:'grid', gridTemplateColumns:'repeat(7, 1fr)', gap:6 }}>
+        {cells.map(function(day, ci){
+          if(!day) return <div key={'b'+ci} style={{ aspectRatio:'1/1' }}/>;
+          var ds = new Date(yr, mo, day).toISOString().slice(0,10);
+          var isToday = ds === todayStr;
+          var isSel   = ds === selDate;
+          var dayEvts = events[ds]||[];
+          return (
+            <button key={ds}
+              onClick={function(){ setSelDate(ds); }}
+              style={{
+                aspectRatio:'1/1',
+                background: isToday ? 'var(--ink)' : isSel ? 'var(--indigo-soft)' : 'var(--surface-soft)',
+                border: isSel && !isToday ? '1px solid var(--indigo)' : '1px solid var(--line)',
+                borderRadius:10,
+                display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+                gap:3, fontSize:13,
+                cursor:'pointer', fontFamily:'inherit',
+                transition:'background .12s, transform .12s',
+              }}>
+              <span style={{
+                fontWeight: isToday ? 800 : isSel ? 700 : 500,
+                color: isToday ? '#fff' : isSel ? 'var(--indigo)' : 'var(--ink-2)',
+                lineHeight:1,
+              }}>{day}</span>
+              {dayEvts.length > 0 && !isToday && (
+                <span style={{ display:'inline-flex', gap:2 }}>
+                  {dayEvts.slice(0,3).map(function(_,j){
+                    return <span key={j} style={{ width:4, height:4, borderRadius:'50%', background:'var(--indigo)' }}/>;
+                  })}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
 
-        {/* Events list */}
-        {selEvts.length > 0 ? (
-          <div style={{ display:'flex', flexDirection:'column', gap:8, marginBottom:16 }}>
-            {selEvts.map(function(ev,ei){
-              return (
-                <div key={ei} style={{ display:'flex', alignItems:'flex-start', gap:12,
-                  padding:'10px 14px', background:'var(--surface)', borderRadius:10,
-                  border:'1px solid var(--line)', borderLeft:'4px solid '+(ev.color||'#ff8c32') }}>
-                  <span style={{ fontSize:16, lineHeight:1, flexShrink:0 }}>{ev.emoji||'📌'}</span>
-                  <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{ fontSize:12, fontWeight:600, color:'var(--ink)' }}>
-                      {ev.time && <span style={{ color:'#ff8c32', marginRight:8, direction:'ltr', fontSize:11, fontWeight:500 }}>{ev.time}</span>}
-                      {ev.title}
-                    </div>
-                  </div>
-                  {ev.category && (
-                    <span style={{ fontSize:9, fontWeight:700, padding:'2px 8px', borderRadius:99,
-                      background:ev.color+'22', color:ev.color, whiteSpace:'nowrap' }}>
-                      {ev.category}
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        ) : null}
+      {/* ── Legend ── */}
+      <div style={{
+        display:'flex', gap:14, paddingTop:10,
+        borderTop:'1px solid var(--line)',
+        fontSize:11.5, color:'var(--ink-3)', fontWeight:500,
+      }}>
+        <span style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
+          <span style={{ width:7, height:7, borderRadius:'50%', background:'var(--indigo)' }}/>
+          مهام مجدولة
+        </span>
+        <span style={{ display:'inline-flex', alignItems:'center', gap:6 }}>
+          <span style={{ width:7, height:7, borderRadius:'50%', background:'var(--ink)' }}/>
+          اليوم
+        </span>
+        {/* Toggle add-event button */}
+        <button
+          onClick={function(){ setShowForm(function(v){return !v;}); }}
+          style={{
+            marginInlineStart:'auto',
+            display:'inline-flex', alignItems:'center', gap:5,
+            padding:'4px 12px', borderRadius:999,
+            background: showForm ? 'var(--indigo)' : 'var(--indigo-soft)',
+            border:'1px solid var(--indigo-line)',
+            color: showForm ? '#fff' : 'var(--indigo)',
+            fontSize:11, fontWeight:600, cursor:'pointer', fontFamily:'inherit',
+            transition:'all .15s',
+          }}>
+          {showForm ? '✕ إغلاق' : '+ إضافة حدث'}
+        </button>
+      </div>
 
-        {/* Add event form */}
-        <div style={{ padding:'12px 14px', background:'var(--surface)', borderRadius:10,
-          border:'1px solid var(--line)' }}>
-          <input type="text" placeholder="Dinner"
+      {/* ── Toggleable Add-event form ── */}
+      {showForm && (
+        <div style={{
+          padding:'14px', background:'var(--surface-soft)',
+          borderRadius:12, border:'1px solid var(--line)',
+          display:'flex', flexDirection:'column', gap:8,
+        }}>
+          <input type="text" placeholder="اسم الحدث…"
             value={newTitle}
             onChange={function(e){setNewTitle(e.target.value);}}
-            style={{ width:'100%', padding:'8px 10px', borderRadius:6, border:'1px solid var(--line)',
-              background:'var(--bg-soft)', color:'var(--ink)', fontSize:12, fontFamily:'inherit', marginBottom:8, outline:'none' }}
+            style={{
+              width:'100%', padding:'8px 10px', borderRadius:8,
+              border:'1px solid var(--line)',
+              background:'var(--surface)', color:'var(--ink)',
+              fontSize:12, fontFamily:'inherit', outline:'none',
+            }}
           />
-          <div style={{ display:'flex', gap:8, alignItems:'center' }}>
+          <div style={{ display:'flex', gap:8 }}>
             <input type="time"
               value={newTime}
               onChange={function(e){setNewTime(e.target.value);}}
-              style={{ flex:1, padding:'6px 8px', borderRadius:6, border:'1px solid var(--line)',
-                background:'var(--bg-soft)', color:'var(--ink)', fontSize:11, fontFamily:'inherit', outline:'none' }}
+              style={{
+                flex:1, padding:'7px 8px', borderRadius:8,
+                border:'1px solid var(--line)',
+                background:'var(--surface)', color:'var(--ink)',
+                fontSize:11, fontFamily:'inherit', outline:'none',
+              }}
             />
-            <span style={{ fontSize:10, color:'#ff8c32' }}>{newTime||'9:00'}</span>
-          </div>
-
-          {/* Color picker */}
-          <div style={{ display:'flex', alignItems:'center', gap:8, marginTop:8, marginBottom:10 }}>
-            {COLOR_OPTS.map(function(opt){
-              return (
-                <button key={opt.name}
-                  onClick={function(){setNewCat(opt.name);}}
-                  style={{ width:24, height:24, borderRadius:'50%', background:opt.color,
-                    border: newCat===opt.name ? '3px solid var(--ink)' : '2px solid transparent',
-                    cursor:'pointer', transition:'all 0.12s' }}
-                  title={opt.name}/>
-              );
-            })}
-          </div>
-
-          <div style={{ display:'flex', gap:6, alignItems:'center' }}>
             <select value={newCat}
               onChange={function(e){setNewCat(e.target.value);}}
-              style={{ flex:1, padding:'6px 8px', borderRadius:6, border:'1px solid var(--line)',
-                background:'var(--bg-soft)', color:'var(--ink)', fontSize:11, fontFamily:'inherit', outline:'none' }}>
-              {COLOR_OPTS.map(function(opt){
+              style={{
+                flex:1, padding:'7px 8px', borderRadius:8,
+                border:'1px solid var(--line)',
+                background:'var(--surface)', color:'var(--ink)',
+                fontSize:11, fontFamily:'inherit', outline:'none',
+              }}>
+              {CAT_OPTS.map(function(opt){
                 return <option key={opt.name} value={opt.name}>{opt.name}</option>;
               })}
             </select>
-            <button onClick={addEvent}
-              style={{ padding:'6px 16px', borderRadius:6, background:'linear-gradient(135deg, #ff8c32 0%, #ff7e26 100%)', border:'none',
-                color:'#fff', fontSize:11, fontWeight:700, cursor:'pointer', fontFamily:'inherit' }}>
-              Add
-            </button>
           </div>
+          <button onClick={addEvent}
+            style={{
+              padding:'8px 16px', borderRadius:8,
+              background:'var(--indigo)', border:'none',
+              color:'#fff', fontSize:12, fontWeight:700,
+              cursor:'pointer', fontFamily:'inherit',
+            }}>
+            حفظ الحدث
+          </button>
+          {/* Selected day events */}
+          {selEvts.length > 0 && (
+            <div style={{ display:'flex', flexDirection:'column', gap:6, marginTop:4 }}>
+              {selEvts.map(function(ev,ei){
+                return (
+                  <div key={ei} style={{
+                    display:'flex', alignItems:'center', gap:10,
+                    padding:'8px 10px', background:'var(--surface)',
+                    borderRadius:8, border:'1px solid var(--line)',
+                    borderInlineStart:'3px solid var(--indigo)',
+                  }}>
+                    <span style={{ fontSize:14 }}>{ev.emoji||'📌'}</span>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ fontSize:12, fontWeight:600, color:'var(--ink)' }}>
+                        {ev.time && <span style={{ fontSize:10, color:'var(--indigo)', marginInlineEnd:6 }}>{ev.time}</span>}
+                        {ev.title}
+                      </div>
+                    </div>
+                    <span style={{
+                      fontSize:10, fontWeight:600, padding:'2px 7px', borderRadius:999,
+                      background:'var(--indigo-soft)', color:'var(--indigo)',
+                    }}>{ev.category}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
-      </div>
-    </div>
+      )}
+    </section>
   );
 }
 
