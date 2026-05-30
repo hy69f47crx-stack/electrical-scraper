@@ -2151,11 +2151,12 @@ function DashboardBottomSection() {
       gridTemplateColumns:'1.4fr 1fr',
       gap:18,
       marginTop:20,
-      direction:'ltr', /* force left→right column order regardless of RTL page */
+      /* RTL page: first child (Workflow) lands on the RIGHT at 1.4fr,
+         second child (Calendar) lands on the LEFT at 1fr — exactly as requested */
     }}>
-      {/* LEFT (wider) — Workflow */}
+      {/* RIGHT (wider) — Workflow */}
       <DashboardWorkflowPanel/>
-      {/* RIGHT (narrower) — Calendar */}
+      {/* LEFT (narrower) — Calendar */}
       <DashboardCalendarCard/>
     </div>
   );
@@ -2416,8 +2417,9 @@ function DashboardCalendarCard() {
 
   var selEvts = events[selDate]||[];
 
-  // Arabic week-day single letters: Sat→أ, Fri→ج, Thu→خ, Wed→ر, Tue→ث, Mon→ث, Sun→أح
-  var DAY_LETTERS = ['أح','ث','ث','ر','خ','ج','أ'];
+  // Conventional Arabic day initials, Sunday-first to match the Sunday-padded grid
+  // Sun=ح  Mon=ن  Tue=ث  Wed=ر  Thu=خ  Fri=ج  Sat=س
+  var DAY_LETTERS = ['ح','ن','ث','ر','خ','ج','س'];
 
   return (
     <section style={{
