@@ -1160,8 +1160,8 @@ input, select, textarea {
 <body>
 <div id="root"></div>
 
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"></script>
 
 <script type="text/babel">
@@ -5080,9 +5080,46 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   z-index:9999;overflow:hidden;
   display:flex;flex-direction:column;
   opacity:0;transform:translateY(30px) scale(0.92);pointer-events:none;
-  transition:all .45s cubic-bezier(.34,1.56,.64,1);
+  /* visibility:hidden when closed removes the widget (and its backdrop-filter
+     descendants) from the paint/composite path, eliminating scroll jank. */
+  visibility:hidden;
+  transition:opacity .45s cubic-bezier(.34,1.56,.64,1),
+             transform .45s cubic-bezier(.34,1.56,.64,1),
+             visibility 0s linear .45s;
 }
-#cw-widget.cw-visible{opacity:1;transform:translateY(0) scale(1);pointer-events:all;}
+#cw-widget.cw-visible{opacity:1;transform:translateY(0) scale(1);pointer-events:all;visibility:visible;transition-delay:0s;}
+
+/* ── Close button ── */
+.cw-close{
+  position:absolute;top:11px;left:11px;width:30px;height:30px;
+  border:none;border-radius:50%;background:rgba(0,0,0,.06);color:#666;
+  font-size:22px;line-height:1;cursor:pointer;z-index:25;
+  display:flex;align-items:center;justify-content:center;padding:0;
+  transition:background .2s,transform .2s;
+}
+.cw-close:hover{background:rgba(0,0,0,.12);transform:rotate(90deg);}
+.cw-close:active{transform:scale(.9) rotate(90deg);}
+#cw-widget.dark .cw-close{background:rgba(255,255,255,.12);color:#ccc;}
+/* keep header text clear of the close button */
+.cw-header > div:first-child{padding-left:30px;}
+
+/* ── Backdrop (mobile: tap outside to close) ── */
+#cw-backdrop{
+  position:fixed;inset:0;z-index:9998;
+  background:rgba(0,0,0,.28);opacity:0;pointer-events:none;
+  transition:opacity .3s ease;
+}
+#cw-backdrop.cw-visible{opacity:1;pointer-events:auto;}
+@media(min-width:1101px){
+  /* Desktop: widget is a non-modal floating panel — no dimming backdrop */
+  #cw-backdrop{display:none !important;}
+}
+
+/* Respect users who prefer reduced motion — disable infinite animations */
+@media(prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important;animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;scroll-behavior:auto !important;}
+}
 #cw-widget.dark{background:#1a1a1a;box-shadow:0 0 0 2px #2a2a2a,0 20px 60px rgba(255,140,50,.1),0 10px 25px rgba(0,0,0,.3);}
 
 /* drag handle */
@@ -5291,8 +5328,10 @@ ReactDOM.createRoot(document.getElementById('root')).render(
 
 <!-- Widget HTML -->
 <div id="cw-root" dir="ltr">
+<div id="cw-backdrop"></div>
 <div id="cw-widget">
   <div class="cw-drag" id="cw-drag"></div>
+  <button class="cw-close" id="cw-close" type="button" aria-label="إغلاق" title="إغلاق">&times;</button>
 
   <!-- Header -->
   <div class="cw-header">
@@ -5475,6 +5514,38 @@ function cwInit(){
   cwInjectNavBtn();
 }
 
+// ── Open / close helpers (keep widget, backdrop & nav button in sync) ──
+function cwOpenWidget(){
+  const widget=document.getElementById('cw-widget');
+  const backdrop=document.getElementById('cw-backdrop');
+  const navBtn=document.getElementById('cw-nav-btn');
+  widget.classList.add('cw-visible');
+  if(backdrop)backdrop.classList.add('cw-visible');
+  if(navBtn)navBtn.classList.add('cw-open');
+}
+function cwCloseWidget(){
+  const widget=document.getElementById('cw-widget');
+  const backdrop=document.getElementById('cw-backdrop');
+  const navBtn=document.getElementById('cw-nav-btn');
+  widget.classList.remove('cw-visible');
+  if(backdrop)backdrop.classList.remove('cw-visible');
+  if(navBtn)navBtn.classList.remove('cw-open');
+}
+// Wire close button + backdrop tap + Escape key (once)
+(function cwWireClose(){
+  function wire(){
+    const closeBtn=document.getElementById('cw-close');
+    const backdrop=document.getElementById('cw-backdrop');
+    if(closeBtn)closeBtn.addEventListener('click',cwCloseWidget);
+    if(backdrop)backdrop.addEventListener('click',cwCloseWidget);
+    document.addEventListener('keydown',function(e){
+      if(e.key==='Escape')cwCloseWidget();
+    });
+  }
+  if(document.getElementById('cw-close'))wire();
+  else document.addEventListener('DOMContentLoaded',wire);
+})();
+
 function cwInjectNavBtn(){
   if(document.getElementById('cw-nav-btn'))return;
   const bottomBar=document.querySelector('.bottom-bar');
@@ -5509,9 +5580,10 @@ function cwInjectNavBtn(){
       widget.style.bottom='auto';
       widget.style.left=left+'px';
       widget.style.top=top+'px';
+      cwOpenWidget();
+    }else{
+      cwCloseWidget();
     }
-    widget.classList.toggle('cw-visible',!isVisible);
-    btn.classList.toggle('cw-open',!isVisible);
   });
   const obs=new MutationObserver(function(){
     btn.classList.toggle('cw-open',widget.classList.contains('cw-visible'));
@@ -5577,18 +5649,30 @@ function cwBuildEmojis(){
 // ── Drag ──
 let cwDragging=false,cwDX,cwDY,cwWX,cwWY;
 const cwW=document.getElementById('cw-widget');
-document.getElementById('cw-drag').addEventListener('mousedown',e=>{
+function cwDragStart(cx,cy){
   cwDragging=true;const r=cwW.getBoundingClientRect();
-  cwDX=e.clientX;cwDY=e.clientY;cwWX=r.left;cwWY=r.top;
+  cwDX=cx;cwDY=cy;cwWX=r.left;cwWY=r.top;
   cwW.style.transition='none';document.body.style.userSelect='none';
-});
-document.addEventListener('mousemove',e=>{
+}
+function cwDragMove(cx,cy){
   if(!cwDragging)return;
   cwW.style.right='auto';cwW.style.bottom='auto';
-  cwW.style.left=Math.max(0,Math.min(cwWX+(e.clientX-cwDX),window.innerWidth-cwW.offsetWidth))+'px';
-  cwW.style.top=Math.max(0,Math.min(cwWY+(e.clientY-cwDY),window.innerHeight-cwW.offsetHeight))+'px';
-});
-document.addEventListener('mouseup',()=>{cwDragging=false;cwW.style.transition='';document.body.style.userSelect='';});
+  cwW.style.left=Math.max(0,Math.min(cwWX+(cx-cwDX),window.innerWidth-cwW.offsetWidth))+'px';
+  cwW.style.top=Math.max(0,Math.min(cwWY+(cy-cwDY),window.innerHeight-cwW.offsetHeight))+'px';
+}
+function cwDragEnd(){cwDragging=false;cwW.style.transition='';document.body.style.userSelect='';}
+const cwDragEl=document.getElementById('cw-drag');
+cwDragEl.addEventListener('mousedown',e=>cwDragStart(e.clientX,e.clientY));
+document.addEventListener('mousemove',e=>cwDragMove(e.clientX,e.clientY));
+document.addEventListener('mouseup',cwDragEnd);
+// Touch support (mobile)
+cwDragEl.addEventListener('touchstart',e=>{const t=e.touches[0];cwDragStart(t.clientX,t.clientY);},{passive:true});
+document.addEventListener('touchmove',e=>{
+  if(!cwDragging)return;
+  const t=e.touches[0];cwDragMove(t.clientX,t.clientY);
+  e.preventDefault(); // stop page scroll while dragging the handle
+},{passive:false});
+document.addEventListener('touchend',cwDragEnd);
 
 // ── Theme ──
 function cwInitThumb(){
@@ -5601,10 +5685,10 @@ function cwInitThumb(){
 // ── Public API ──
 window.CW={
   toggleWidget(){
-    cwW.classList.toggle('cw-visible');
-    const nb=document.getElementById('cw-nav-btn');
-    if(nb)nb.classList.toggle('cw-open',cwW.classList.contains('cw-visible'));
+    if(cwW.classList.contains('cw-visible'))cwCloseWidget();
+    else cwOpenWidget();
   },
+  closeWidget(){cwCloseWidget();},
   toggleTheme(){
     cwIsDark=!cwIsDark;
     localStorage.setItem('cw_theme',cwIsDark?'dark':'light');
