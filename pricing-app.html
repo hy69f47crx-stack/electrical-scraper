@@ -1145,14 +1145,29 @@ function _hp(pw) {
 
 function authGetUsers() {
   const raw = localStorage.getItem(_AU);
-  if (raw) try { return JSON.parse(raw); } catch(e) {}
-  const admin = {
-    id:'admin_001', name:'المشرف', email:ADMIN_EMAIL,
-    passHash:_hp('admin2024'), role:'admin',
-    registeredAt:new Date().toISOString(), status:'active'
-  };
-  localStorage.setItem(_AU, JSON.stringify([admin]));
-  return [admin];
+  let users = [];
+  if (raw) try { users = JSON.parse(raw); } catch(e) {}
+
+  // Always ensure admin exists
+  if (!users.find(u => u.id === 'admin_001')) {
+    users.unshift({
+      id:'admin_001', name:'المشرف', email:ADMIN_EMAIL,
+      passHash:_hp('admin2024'), role:'admin',
+      registeredAt:new Date().toISOString(), status:'active'
+    });
+  }
+
+  // Always ensure test user exists
+  if (!users.find(u => u.id === 'user_test_001')) {
+    users.push({
+      id:'user_test_001', name:'مستخدم تجريبي', email:'test@electrical.kw',
+      passHash:_hp('test2024'), role:'user',
+      registeredAt:'2026-01-01T00:00:00.000Z', status:'active'
+    });
+    localStorage.setItem(_AU, JSON.stringify(users));
+  }
+
+  return users;
 }
 function authSaveUsers(u) { localStorage.setItem(_AU, JSON.stringify(u)); }
 function authGetSession() { try { return JSON.parse(localStorage.getItem(_AS)); } catch(e) { return null; } }

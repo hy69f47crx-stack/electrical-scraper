@@ -4,7 +4,7 @@
     {
       "name": "pricing-app",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "8765", "-d", "/Users/fahadalkandri/Desktop/claude/electrical-scraper"],
+      "runtimeArgs": ["/tmp/serve_pricing.py"],
       "port": 8765,
       "url": "http://localhost:8765/pricing-app.html"
     }
