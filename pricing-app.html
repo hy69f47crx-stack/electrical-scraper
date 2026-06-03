@@ -504,6 +504,13 @@ button{
   font-variant-numeric:tabular-nums;
 }
 
+/* Form controls default to a ~20-char intrinsic min-width, which prevents
+   their grid/flex track from shrinking and causes horizontal overflow on
+   narrow (mobile) layouts. Allow them to shrink to their container. */
+input, select, textarea {
+  min-width: 0;
+}
+
 /* ── Always sidebar layout (right side, RTL) ── */
 #root {
   display: flex !important;
@@ -729,6 +736,35 @@ button{
     flex: 1 !important;
     min-height: 0 !important;
     width: 100% !important;
+  }
+}
+
+/* ── Phone breakpoint: stack cramped multi-column grids ── */
+@media (max-width:600px){
+  /* Dashboard KPI cards: 4 columns clip numbers → 2 columns */
+  .dash-kpi-grid {
+    grid-template-columns: repeat(2,1fr) !important;
+  }
+  /* Dashboard workflow + calendar: side-by-side clips content → stack.
+     minmax(0,1fr) lets the track shrink below content min-width (prevents overflow) */
+  .dash-bottom-grid {
+    grid-template-columns: minmax(0,1fr) !important;
+  }
+  /* Work pricing summary cards → stack */
+  .work-summary-grid {
+    grid-template-columns: 1fr !important;
+  }
+  /* Market price comparison cards → stack */
+  .market-price-grid {
+    grid-template-columns: 1fr !important;
+  }
+  /* Pricing engine header: let title + button breathe */
+  .pricing-header {
+    align-items: stretch !important;
+  }
+  .pricing-add-btn {
+    width: 100% !important;
+    padding: 10px 16px !important;
   }
 }
 
@@ -1936,19 +1972,19 @@ function DashboardScreen() {
       {/* ══════════════════════════════════════════════════════ */}
 
       {/* Header */}
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:14 }}>
+      <div className="pricing-header" style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:10, marginBottom:14, flexWrap:'wrap' }}>
         <div>
           <div style={{ fontSize:17, fontWeight:800, color:'var(--ink)', letterSpacing:'-0.3px' }}>⚡ محرك التسعير</div>
           <div style={{ fontSize:11, color:'var(--ink-4)', marginTop:2 }}>أثبت المبالغة · قارن السوق · احسب الانحراف</div>
         </div>
-        <button onClick={addRow} style={{
+        <button onClick={addRow} className="pricing-add-btn" style={{
           padding:'8px 16px', borderRadius:99, background:'var(--accent)', color:'var(--bg)',
-          fontSize:12, fontWeight:700, border:'none', cursor:'pointer', fontFamily:'inherit',
+          fontSize:12, fontWeight:700, border:'none', cursor:'pointer', fontFamily:'inherit', whiteSpace:'nowrap',
         }}>+ إضافة بند</button>
       </div>
 
       {/* Summary KPIs */}
-      <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, marginBottom:14 }}>
+      <div className="dash-kpi-grid" style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:10, marginBottom:14 }}>
         <div className="kpi-card kpi-card--rose" style={{ borderRight:'3px solid #F05A7E', boxShadow:'0 2px 14px rgba(240,90,126,.10)' }}>
           <div style={{ fontSize:22, fontWeight:800, color:'#F05A7E', lineHeight:1 }} className="num kpi-value">{toEnglishNumbers(String(overItems.length))}</div>
           <div style={{ fontSize:10, color:'var(--ink-4)', marginTop:5, lineHeight:1.4 }}>بند مبالغ فيه<br/><span style={{fontSize:9}}>Overpriced</span></div>
@@ -2122,7 +2158,7 @@ function DashboardScreen() {
           </div>
 
           {activePrices.length > 0 ? (
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:10 }}>
+            <div className="market-price-grid" style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:10 }}>
               {activePrices.map(function(src, si) {
                 var cp = parseFloat(activeItem.cPrice)||0;
                 var diff = cp > 0 ? (cp - src.price) / src.price * 100 : null;
@@ -2161,7 +2197,7 @@ function DashboardScreen() {
 // ── Dashboard Bottom Section (Workflow + Calendar side by side) ───────────────
 function DashboardBottomSection() {
   return (
-    <div style={{
+    <div className="dash-bottom-grid" style={{
       display:'grid',
       gridTemplateColumns:'1.4fr 1fr',
       gap:18,
@@ -2793,7 +2829,7 @@ function WorkPricingScreen() {
               value={total}
               onChange={e => setTotal(e.target.value)}
               placeholder="مثال: 7000"
-              style={{flex:1, padding:'10px 14px', borderRadius:8, border:'2px solid var(--line)',
+              style={{flex:1, minWidth:0, padding:'10px 14px', borderRadius:8, border:'2px solid var(--line)',
                 background:'var(--surface)', color:'var(--ink)', fontSize:18, fontFamily:'inherit',
                 fontWeight:700, outline:'none'}}
             />
@@ -2933,7 +2969,7 @@ function WorkPricingScreen() {
 
       {/* ── Summary cards ── */}
       {totalVal > 0 && (
-        <div style={{display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:10, marginBottom:14}}>
+        <div className="work-summary-grid" style={{display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:10, marginBottom:14}}>
           {[
             {lbl:'البنود المضمّنة',  col:'var(--pos)',  val: includedCount + ' / ' + WORK_DIST.length + ' بنداً'},
             {lbl:'البنود المستثناة', col:'var(--warn)', val: excludedCount > 0 ? excludedCount + ' بنود' : 'لا يوجد'},
@@ -3654,7 +3690,7 @@ function MindMapScreen() {
 
       {/* ── Main inputs ── */}
       <div style={{
-        display:'grid', gridTemplateColumns:'1fr 1fr', gap:'10px',
+        display:'grid', gridTemplateColumns:'minmax(0,1fr) minmax(0,1fr)', gap:'10px',
         marginBottom:'10px', padding:'14px',
         backgroundColor:'var(--surface)', borderRadius:'8px', border:'1px solid var(--line)'
       }}>
